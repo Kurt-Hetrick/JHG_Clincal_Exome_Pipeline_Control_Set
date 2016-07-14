@@ -1,30 +1,37 @@
 #!/bin/bash
 
-module load sge
-
 SAMPLE_SHEET=$1
 PED_FILE=$2
 
 # CHANGE SCRIPT DIR TO WHERE YOU HAVE HAVE THE SCRIPTS BEING SUBMITTED
 
-SCRIPT_DIR="/isilon/sequencing/Kurt/GIT_REPO/JHGenomics_CGC_Clinical_Exome_Control_Set/scripts"
+SCRIPT_DIR="/isilon/cgc/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/70380114c5c5f9129fd01fa775ae2c1e0cde4792/scripts"
+# The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
 
-JAVA_1_8="/isilon/sequencing/Kurt/Programs/Java/jdk1.8.0_73/bin"
-CORE_PATH="/isilon/sequencing/Seq_Proj/"
-BWA_DIR="/isilon/sequencing/Kurt/Programs/BWA/bwa-0.7.8"
-PICARD_DIR="/isilon/sequencing/Kurt/Programs/Picard/picard-tools-2.1.1"
-GATK_DIR="/isilon/sequencing/CIDRSeqSuiteSoftware/gatk/GATK_3/GenomeAnalysisTK-nightly-2016-07-12-gaa9ac69"
-VERIFY_DIR="/isilon/sequencing/Kurt/Programs/VerifyBamID/verifyBamID_20120620/bin/"
-GENE_LIST="/isilon/sequencing/CIDRSeqSuiteSoftware/RELEASES/5.0.0/aux_files/RefSeqGene.GRCh37.Ready.txt"
-VERIFY_VCF="/isilon/sequencing/CIDRSeqSuiteSoftware/RELEASES/5.0.0/aux_files/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
-CODING_BED="/isilon/sequencing/CIDRSeqSuiteSoftware/RELEASES/5.0.0/aux_files/UCSC_hg19_CodingOnly_083013_MERGED_noContigs_noCHR.bed"
-SAMTOOLS_DIR="/isilon/sequencing/Kurt/Programs/samtools/samtools-0.1.18"
-TABIX_DIR="/isilon/sequencing/Kurt/Programs/TABIX/tabix-0.2.6"
-CORE_PATH="/isilon/sequencing/Seq_Proj"
-DATAMASH_DIR="/isilon/sequencing/Kurt/Programs/PATH"
-CYTOBAND_BED="/isilon/sequencing/Kurt/CGC/GRCh37.Cytobands.bed"
-# BEDTOOLS IS v2.22.0
-BEDTOOLS_DIR="/isilon/sequencing/Kurt/Programs/PATH"
+CORE_PATH="/isilon/cgc/SS_CRE/"
+
+# PIPELINE PROGRAMS
+JAVA_1_8="/isilon/cgc/PROGRAMS/jdk1.8.0_73/bin"
+BWA_DIR="/isilon/cgc/PROGRAMS/bwa-0.7.8"
+PICARD_DIR="/isilon/cgc/PROGRAMS/picard-tools-2.1.1"
+GATK_DIR="/isilon/cgc/PROGRAMS/GenomeAnalysisTK-nightly-2016-07-12-gaa9ac69"
+VERIFY_DIR="/isilon/cgc/PROGRAMS/verifyBamID_20120620/bin/"
+TABIX_DIR="/isilon/cgc/PROGRAMS/tabix-0.2.6"
+SAMTOOLS_DIR="/isilon/cgc/PROGRAMS/samtools-0.1.18"
+DATAMASH_DIR="/isilon/cgc/PROGRAMS/datamash-1.0.6"
+BEDTOOLS_DIR="/isilon/cgc/PROGRAMS/bedtools-2.22.0/bin"
+
+# PIPELINE FILES
+GENE_LIST="/isilon/cgc/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
+VERIFY_VCF="/isilon/cgc/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
+CODING_BED="/isilon/cgc/PIPELINE_FILES/UCSC_hg19_CodingOnly_083013_MERGED_noContigs_noCHR.bed"
+CYTOBAND_BED="/isilon/cgc/PIPELINE_FILES/GRCh37.Cytobands.bed"
+HAPMAP="/isilon/cgc/PIPELINE_FILES/hapmap_3.3.b37.vcf"
+OMNI_1KG="/isilon/cgc/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
+HI_CONF_1KG_PHASE1_SNP="/isilon/cgc/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
+MILLS_1KG_GOLD_INDEL="/isilon/cgc/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
+PHASE3_1KG_AUTOSOMES="/isilon/cgc/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf"
+DBSNP_129="/isilon/cgc/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
 
 ##### MAKE A DIRECTORY TREE ##### SHOULD BE COMPLETE #####
 
@@ -125,7 +132,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
 
 ### Run Variant Recalibrator for the SNP model, this is done in parallel with the INDEL model
 
-awk 'BEGIN {OFS="\t"} {print $1,$12}' \
+awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -133,11 +140,11 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 "-hold_jid","I.01_GENOTYPE_GVCF_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_RECALIBRATOR_SNP.log",\
 "'$SCRIPT_DIR'""/J.01_VARIANT_RECALIBRATOR_SNP.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$17,"'$HAPMAP'","'$OMNI_1KG'","'$HI_CONF_1KG_PHASE1_SNP'""\n""sleep 3s"}'
 
 ### Run Variant Recalibrator for the INDEL model, this is done in parallel with the SNP model
 
-awk 'BEGIN {OFS="\t"} {print $1,$12}' \
+awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -145,7 +152,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 "-hold_jid","I.01_GENOTYPE_GVCF_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_RECALIBRATOR_INDEL.log",\
 "'$SCRIPT_DIR'""/J.02_VARIANT_RECALIBRATOR_INDEL.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,"'$MILLS_1KG_GOLD_INDEL'""\n""sleep 3s"}'
 
 ### Run Apply Recalbration with the SNP model to the VCF file
 
@@ -181,7 +188,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 "-hold_jid","L.01_APPLY_RECALIBRATION_INDEL_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_ANNOTATOR.log",\
 "'$SCRIPT_DIR'""/P.01_VARIANT_ANNOTATOR.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$PED_FILE'",$1,$2"\n""sleep 3s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$PED_FILE'",$1,$2,"'$PHASE3_1KG_AUTOSOMES'""\n""sleep 3s"}'
 
 ##### DOING VCF BREAKOUTS #####
 
@@ -333,30 +340,6 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
 "'$SCRIPT_DIR'""/S.15_FILTER_TO_SAMPLE_ALL_SITES_TARGET.sh",\
 "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
 
-# ## SUBSET TO SAMPLE VARIANTS ONLY ON TARGET
-# 
-# awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{print "qsub","-N","S.16_FILTER_TO_SAMPLE_VARIANTS_TARGET_"$2"_"$1,\
-# "-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_VARIANTS_TARGET.log",\
-# "'$SCRIPT_DIR'""/S.16_FILTER_TO_SAMPLE_VARIANTS_TARGET.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
-# 
-# ## SUBSET TO SAMPLE PASSING VARIANTS ON TARGET
-# 
-# awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{print "qsub","-N","S.17_FILTER_TO_SAMPLE_VARIANTS_PASS_TARGET_"$2"_"$1,\
-# "-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_VARIANTS_PASS_TARGET.log",\
-# "'$SCRIPT_DIR'""/S.17_FILTER_TO_SAMPLE_VARIANTS_PASS_TARGET.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
-
 ### TITV SECTION ###
 
 # BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE
@@ -381,7 +364,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$14}' \
 "-hold_jid","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TITV_VCF_KNOWN.log",\
 "'$SCRIPT_DIR'""/S.09-A.02_FILTER_TO_SAMPLE_TITV_VCF_KNOWN.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4,"'$DBSNP_129'""\n""sleep 3s"}'
 
 # BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE AND DO NOT OVERLAP WITH DBSNP 129
 
@@ -393,7 +376,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$14}' \
 "-hold_jid","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TITV_VCF_NOVEL.log",\
 "'$SCRIPT_DIR'""/S.09-A.03_FILTER_TO_SAMPLE_TITV_VCF_NOVEL.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4,"'$DBSNP_129'""\n""sleep 3s"}'
 
 ### RUN TITV FOR THE PASSING SNVS THAT FALL IN UCSC CODING REGIONS THAT TOUCH EITHER THE BED OR TARGET FILE
 
@@ -594,17 +577,3 @@ gsub (/,/,",X.01-QC_REPORT_PREP_"$1"_",$2) \
 # BARCODE_2D=${SM_TAG#*@} # no longer needed when using PHOENIX. used to needed to break out the "@" in the sm tag so it wouldn't break things.
 #
 ####################################################################################
-
-#### BOILERPLATE...I HAVE NOT DECIDED WHAT I AM GOING TO DO HERE######
-
-# function GRAB_MANIFEST {
-# sed 's/\r//g' $SAMPLE_SHEET \
-# | awk 'BEGIN {FS=","} NR>1 \
-# {split($19,INDEL,";");split($8,smtag,"@");print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$12,$15,$16,$17,$18,INDEL[1],INDEL[2]}'
-# }
-#
-# function GRAB_PROJECT_NAMES {
-# PROJECT_NAMES=`sed 's/\r//g' $SAMPLE_SHEET \
-# | awk 'BEGIN {FS=","} NR>1 print $1}'`
-# }
-######################################################################
