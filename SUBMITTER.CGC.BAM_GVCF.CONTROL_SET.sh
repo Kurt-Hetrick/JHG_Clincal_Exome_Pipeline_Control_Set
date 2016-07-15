@@ -8,13 +8,13 @@ PED_FILE=$2
 SCRIPT_DIR="/isilon/cgc/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/70380114c5c5f9129fd01fa775ae2c1e0cde4792/scripts"
 # The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
 
-CORE_PATH="/isilon/cgc/SS_CRE/"
+CORE_PATH="/isilon/cgc/SS_CRE"
 
 # PIPELINE PROGRAMS
 JAVA_1_8="/isilon/cgc/PROGRAMS/jdk1.8.0_73/bin"
 BWA_DIR="/isilon/cgc/PROGRAMS/bwa-0.7.8"
 PICARD_DIR="/isilon/cgc/PROGRAMS/picard-tools-2.1.1"
-GATK_DIR="/isilon/cgc/PROGRAMS/GenomeAnalysisTK-nightly-2016-07-12-gaa9ac69"
+GATK_DIR="/isilon/cgc/PROGRAMS/GenomeAnalysisTK-nightly-2016-06-26-g15888ad"
 VERIFY_DIR="/isilon/cgc/PROGRAMS/verifyBamID_20120620/bin/"
 TABIX_DIR="/isilon/cgc/PROGRAMS/tabix-0.2.6"
 SAMTOOLS_DIR="/isilon/cgc/PROGRAMS/samtools-0.1.18"
@@ -138,12 +138,12 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam"}' \
 | $DATAMASH_DIR/datamash -s -g 1,2 collapse 3 collapse 4 \
 | awk 'BEGIN {FS="\t"} \
 gsub(/,/,",A.01_BWA_"$2"_",$3) \
-gsub(/,/,",INPUT=/isilon/sequencing/Seq_Proj/"$1"/TEMP/",$4) \
+gsub(/,/,",INPUT=/isilon/cgc/SS_CRE/"$1"/TEMP/",$4) \
 {print "qsub","-N","B.01_MERGE_BAM_"$2"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".MERGE.BAM.FILES.log",\
 "-hold_jid","A.01_BWA_"$2"_"$3, \
 "'$SCRIPT_DIR'""/B.01_MERGE_SORT_AGGRO.sh",\
-"'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'",$1,$2,"INPUT=/isilon/sequencing/Seq_Proj/"$1"/TEMP/"$4"\n""sleep 1s"}'
+"'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'",$1,$2,"INPUT=/isilon/cgc/SS_CRE/"$1"/TEMP/"$4"\n""sleep 1s"}'
 
 # Mark duplicates on the bam file above. Create a Mark Duplicates report which goes into the QC report
 
