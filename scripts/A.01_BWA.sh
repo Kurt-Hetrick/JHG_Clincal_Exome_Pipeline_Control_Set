@@ -48,6 +48,18 @@ BARCODE_2D=${SM_TAG#*@} # no longer needed when using PHOENIX. used to needed to
 
 PLATFORM_UNIT=$FLOWCELL"_"$LANE"_"$INDEX
 
+echo
+
+umask
+
+umask 0007
+
+echo
+
+umask
+
+echo
+
 # Need to convert data in sample manifest to Iso 8601 date since we are not using bwa mem to populate this.
 # Picard AddOrReplaceReadGroups is much more stringent here.
 

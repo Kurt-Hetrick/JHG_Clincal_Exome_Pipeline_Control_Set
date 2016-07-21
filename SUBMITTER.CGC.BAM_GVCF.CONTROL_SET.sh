@@ -9,6 +9,7 @@ SCRIPT_DIR="/isilon/cgc/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/7038
 # The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
 
 CORE_PATH="/isilon/cgc/SS_CRE"
+CONTROL_REPO="/isilon/cgc/SS_CRE/CGC_CONTROL_SET_3_6"
 
 # PIPELINE PROGRAMS
 JAVA_1_8="/isilon/cgc/PROGRAMS/jdk1.8.0_73/bin"
@@ -30,7 +31,7 @@ HAPMAP="/isilon/cgc/PIPELINE_FILES/hapmap_3.3.b37.vcf"
 OMNI_1KG="/isilon/cgc/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
 HI_CONF_1KG_PHASE1_SNP="/isilon/cgc/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
 MILLS_1KG_GOLD_INDEL="/isilon/cgc/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
-PHASE3_1KG_AUTOSOMES="/isilon/cgc/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf"
+PHASE3_1KG_AUTOSOMES="/isilon/cgc/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz"
 DBSNP_129="/isilon/cgc/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
 
 ##### MAKE A DIRECTORY TREE ##### SHOULD BE COMPLETE #####

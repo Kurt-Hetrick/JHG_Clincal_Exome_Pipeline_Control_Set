@@ -9,6 +9,7 @@ SCRIPT_DIR="/isilon/cgc/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/7038
 # The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
 
 CORE_PATH="/isilon/cgc/SS_CRE/"
+CONTROL_REPO="/isilon/cgc/SS_CRE/CGC_CONTROL_SET_3_6"
 
 # PIPELINE PROGRAMS
 JAVA_1_8="/isilon/cgc/PROGRAMS/jdk1.8.0_73/bin"
@@ -30,7 +31,7 @@ HAPMAP="/isilon/cgc/PIPELINE_FILES/hapmap_3.3.b37.vcf"
 OMNI_1KG="/isilon/cgc/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
 HI_CONF_1KG_PHASE1_SNP="/isilon/cgc/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
 MILLS_1KG_GOLD_INDEL="/isilon/cgc/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
-PHASE3_1KG_AUTOSOMES="/isilon/cgc/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf"
+PHASE3_1KG_AUTOSOMES="/isilon/cgc/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz"
 DBSNP_129="/isilon/cgc/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
 
 ##### MAKE A DIRECTORY TREE ##### SHOULD BE COMPLETE #####
@@ -128,7 +129,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
 {print "qsub","-N","I.01_GENOTYPE_GVCF_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$1".GENOTYPE_GVCF.log",\
 "'$SCRIPT_DIR'""/I.01_GENOTYPE_GVCF.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,"'$CONTROL_REPO'""\n""sleep 3s"}'
 
 ### Run Variant Recalibrator for the SNP model, this is done in parallel with the INDEL model
 
@@ -140,11 +141,11 @@ awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
 "-hold_jid","I.01_GENOTYPE_GVCF_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_RECALIBRATOR_SNP.log",\
 "'$SCRIPT_DIR'""/J.01_VARIANT_RECALIBRATOR_SNP.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$17,"'$HAPMAP'","'$OMNI_1KG'","'$HI_CONF_1KG_PHASE1_SNP'""\n""sleep 3s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,"'$HAPMAP'","'$OMNI_1KG'","'$HI_CONF_1KG_PHASE1_SNP'""\n""sleep 3s"}'
 
 ### Run Variant Recalibrator for the INDEL model, this is done in parallel with the SNP model
 
-awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
+awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \

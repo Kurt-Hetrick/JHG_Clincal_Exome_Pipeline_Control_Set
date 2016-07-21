@@ -24,9 +24,22 @@
 # redirecting stderr/stdout to file as a log.
 
 # This would be a good candidate to write a bright module to load this.
-source /u01/home/khetrick/bashrc_change_R
+
+# source /isilon/cgc/PROGRAMS/change_R_version
+# Somewhere along the way it looks like GATK fixed the issue where R pacakges had renamed packages. So know I shouldn't have to source this specific version of R with specific packages.
+
 
 set
+
+echo
+
+umask
+
+umask 0007
+
+echo
+
+umask
 
 JAVA_1_8=$1
 GATK_DIR=$2
@@ -35,9 +48,6 @@ CORE_PATH=$3
 PROJECT=$4
 SM_TAG=$5
 REF_GENOME=$6
-
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
 
 ## --Generate BQSR plots--
 
