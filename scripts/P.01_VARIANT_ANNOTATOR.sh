@@ -32,7 +32,7 @@ PED_FILE=$4
 
 PROJECT=$5
 REF_GENOME=$6
-
+PHASE3_1KG_AUTOSOMES=$7
 
 START_ADD_MORE_ANNOTATION=`date '+%s'`
 
@@ -53,7 +53,7 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotation TandemRepeatAnnotator \
 --annotation TransmissionDisequilibriumTest \
 --annotation VariantType \
---resource:OneKGP /isilon/sequencing/1000genomes/Full_Project/Sep_2014/20130502/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf \
+--resource:OneKGP $PHASE3_1KG_AUTOSOMES \
 --expression OneKGP.AF \
 --expression OneKGP.EAS_AF \
 --expression OneKGP.AMR_AF \
@@ -91,7 +91,7 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotation TandemRepeatAnnotator \
 --annotation TransmissionDisequilibriumTest \
 --annotation VariantType \
---resource:OneKGP /isilon/sequencing/1000genomes/Full_Project/Sep_2014/20130502/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf \
+--resource:OneKGP $PHASE3_1KG_AUTOSOMES \
 --expression OneKGP.AF \
 --expression OneKGP.EAS_AF \
 --expression OneKGP.AMR_AF \

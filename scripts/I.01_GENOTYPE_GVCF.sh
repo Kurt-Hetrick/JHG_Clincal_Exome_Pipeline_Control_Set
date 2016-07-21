@@ -56,9 +56,11 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotation StrandBiasBySample \
 --annotation StrandAlleleCountsBySample \
 --annotation LikelihoodRankSumTest \
---excludeIntervals 1:145017822-145017822 \
 --variant $CONTROL_REPO/Control_GVCF.list \
 -o $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf
+
+# --excludeIntervals 1:145017822-145017822 \
+# removing this for the moment b/c I want to see how the June 26th nightly handles it.
 
 END_GENOTYPE_GVCF=`date '+%s'`
 
@@ -87,7 +89,6 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotation StrandBiasBySample \
 --annotation StrandAlleleCountsBySample \
 --annotation LikelihoodRankSumTest \
---excludeIntervals 1:145017822-145017822 \
 --variant $CONTROL_REPO/Control_GVCF.list \
 -o $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf \
 >> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt

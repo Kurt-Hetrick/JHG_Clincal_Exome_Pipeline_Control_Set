@@ -25,7 +25,7 @@
 
 
 # This would be a good candidate to write a bright module to load this.
-source /u01/home/khetrick/bashrc_change_R
+source /isilon/cgc/PROGRAMS/change_R_version
 
 set
 
@@ -35,6 +35,7 @@ CORE_PATH=$3
 
 PROJECT=$4
 REF_GENOME=$5
+MILLS_1KG_GOLD_INDEL=$6
 
 START_VARIANT_RECALIBRATOR_INDEL=`date '+%s'`
 
@@ -42,7 +43,7 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -T VariantRecalibrator \
 -R $REF_GENOME \
 --input:VCF $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf \
--resource:mills,known=true,training=true,truth=true,prior=12.0 /isilon/sequencing/GATK_resource_bundle/2.2/b37/Mills_and_1000G_gold_standard.indels.b37.vcf \
+-resource:mills,known=true,training=true,truth=true,prior=12.0 $MILLS_1KG_GOLD_INDEL \
 --maxGaussians 4 \
 --disable_auto_index_creation_and_locking_when_reading_rods \
 -an QD \
@@ -82,7 +83,7 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -T VariantRecalibrator \
 -R $REF_GENOME \
 --input:VCF $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf \
--resource:mills,known=true,training=true,truth=true,prior=12.0 /isilon/sequencing/GATK_resource_bundle/2.2/b37/Mills_and_1000G_gold_standard.indels.b37.vcf \
+-resource:mills,known=true,training=true,truth=true,prior=12.0 $MILLS_1KG_GOLD_INDEL \
 --maxGaussians 4 \
 --disable_auto_index_creation_and_locking_when_reading_rods \
 -an QD \

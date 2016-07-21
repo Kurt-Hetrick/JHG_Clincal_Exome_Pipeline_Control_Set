@@ -33,7 +33,7 @@ PROJECT=$4
 SM_TAG=$5
 REF_GENOME=$6
 TITV_BED=$7
-
+DBSNP_129=$8
 
 # Filter to just on all of the variants all
 
@@ -46,7 +46,7 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -L $TITV_BED \
 --excludeNonVariants \
 --excludeFiltered \
---concordance /isilon/sequencing/GATK_resource_bundle/2.8/b37/dbsnp_138.b37.excluding_sites_after_129.vcf \
+--concordance $DBSNP_129 \
 --variant $CORE_PATH/$PROJECT/SNV/FILTERED_ON_BAIT/$SM_TAG".SNV.ON_BAIT.PASS.vcf.gz" \
 -o $CORE_PATH/$PROJECT/TEMP/$SM_TAG".SNV.TITV_KNOWN.vcf"
 
@@ -64,7 +64,7 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -L $TITV_BED \
 --excludeNonVariants \
 --excludeFiltered \
---concordance /isilon/sequencing/GATK_resource_bundle/2.8/b37/dbsnp_138.b37.excluding_sites_after_129.vcf \
+--concordance $DBSNP_129 \
 --variant $CORE_PATH/$PROJECT/SNV/FILTERED_ON_BAIT/$SM_TAG".SNV.ON_BAIT.PASS.vcf.gz" \
 >> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
 
