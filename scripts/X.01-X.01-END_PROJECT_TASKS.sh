@@ -32,7 +32,7 @@ PROJECT=$3
 # Sorting concatenated sample meta by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*SAMPLE_META.txt \
-| sort -k 2 \
+| sort -k 2,2 \
 | uniq \
 | awk 'BEGIN {print "PROJECT","SM_TAG","RG_PU","LIBRARY","FAMILY","FATHER","MOTHER","LIMS_SEX","PHENOTYPE"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -41,7 +41,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*SAMPLE_META.txt \
 # Sorting concatenated gender check report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*GENDER_CHECK.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","X_AVG_DP","X_NORM_DP","Y_AVG_DP","Y_NORM_DP"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -50,7 +50,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*GENDER_CHECK.TXT \
 # Sorting concatenated verify bam ID report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*VERFIY_BAM_ID.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","VERIFYBAM_FREEMIX","VERIFYBAM_#SNPS","VERIFYBAM_FREELK1","VERIFYBAM_FREELK0","VERIFYBAM_DIFF_LK0_LK1","VERIFYBAM_AVG_DP"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -59,7 +59,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*VERFIY_BAM_ID.TXT \
 # Sorting concatenated insert size report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*INSERT_SIZE_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE","STANDARD_DEVIATION_INSERT_SIZE"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -68,7 +68,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*INSERT_SIZE_METRICS.TXT \
 # Sorting concatenated read 1 alignment summary metric report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*ALIGNMENT_SUMMARY_READ_1_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","PCT_PF_READS_ALIGNED_R1","PF_HQ_ALIGNED_READS_R1",\
 "PF_MISMATCH_RATE_R1","PF_HQ_ERROR_RATE_R1","PF_INDEL_RATE_R1",\
@@ -79,7 +79,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*ALIGNMENT_SUMMARY_READ_1_METRICS.TXT \
 # Sorting concatenated read 2 alignment summary metric report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*ALIGNMENT_SUMMARY_READ_2_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","PCT_PF_READS_ALIGNED_R2","PF_HQ_ALIGNED_READS_R2",\
 "PF_MISMATCH_RATE_R2","PF_HQ_ERROR_RATE_R2","PF_INDEL_RATE_R2",\
@@ -90,7 +90,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*ALIGNMENT_SUMMARY_READ_2_METRICS.TXT \
 # Sorting concatenated pair alignment summary metric report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*ALIGNMENT_SUMMARY_READ_PAIR_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","TOTAL_READS","RAW_GIGS","PCT_PF_READS_ALIGNED_PAIR",\
 "PF_MISMATCH_RATE_PAIR","PF_HQ_ERROR_RATE_PAIR","PF_INDEL_RATE_PAIR",\
@@ -101,7 +101,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*ALIGNMENT_SUMMARY_READ_PAIR_METRICS.TXT \
 # Sorting concatenated pair mark duplicates report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*MARK_DUPLICATES_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","UNMAPPED_READS",\
 "READ_PAIR_OPTICAL_DUPLICATES","PERCENT_DUPLICATION","ESTIMATED_LIBRARY_SIZE"} {print $0}' \
@@ -111,7 +111,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*MARK_DUPLICATES_METRICS.TXT \
 # Sorting concatenated pair hyb selection report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*HYB_SELECTION.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","GENOME_SIZE","BAIT_TERRITORY","TARGET_TERRITORY",\
 "PCT_PF_UQ_READS_ALIGNED","PF_UQ_GIGS_ALIGNED","PCT_SELECTED_BASES","MEAN_BAIT_COVERAGE","MEAN_TARGET_COVERAGE","MEDIAN_TARGET_COVERAGE",\
@@ -124,7 +124,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*HYB_SELECTION.TXT \
 # Sorting concatenated bait bias report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*BAIT_BIAS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","Cref_Q","Gref_Q"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -133,7 +133,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*BAIT_BIAS.TXT \
 # Sorting concatenated pre adapter report by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*PRE_ADAPTER.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","DEAMINATION_Q","OxoG_Q"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -142,7 +142,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*PRE_ADAPTER.TXT \
 # Sorting concatenated ON BAIT SNV metrics by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*BAIT_SNV_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","COUNT_SNV_ON_BAIT","PERCENT_SNV_ON_BAIT_SNP138"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -151,7 +151,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*BAIT_SNV_METRICS.TXT \
 # Sorting concatenated ON TARGET SNV metrics by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*TARGET_SNV_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","COUNT_SNV_ON_TARGET","PERCENT_SNV_ON_TARGET_SNP138"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -160,7 +160,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*TARGET_SNV_METRICS.TXT \
 # Sorting concatenated TITV FOR ALL CODING SNVS metrics by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*TITV_ALL.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","ALL_TI_TV_COUNT","ALL_TI_TV_RATIO"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -169,7 +169,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*TITV_ALL.TXT \
 # Sorting concatenated TITV FOR KNOWN CODING SNVS metrics by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*TITV_KNOWN.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","KNOWN_TI_TV_COUNT","KNOWN_TI_TV_RATIO"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -178,7 +178,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*TITV_KNOWN.TXT \
 # Sorting concatenated TITV FOR NOVEL CODING SNVS metrics by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*TITV_NOVEL.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","NOVEL_TI_TV_COUNT","NOVEL_TI_TV_RATIO"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -187,7 +187,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*TITV_NOVEL.TXT \
 # Sorting concatenated ON BAIT INDEL metrics by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*BAIT_INDEL_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","COUNT_ALL_INDEL_BAIT","ALL_INDEL_BAIT_PCT_SNP138","COUNT_BIALLELIC_INDEL_BAIT","BIALLELIC_INDEL_BAIT_PCT_SNP138"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -196,7 +196,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*BAIT_INDEL_METRICS.TXT \
 # Sorting concatenated ON TARGET INDEL metrics by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*TARGET_INDEL_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","COUNT_ALL_INDEL_TARGET","ALL_INDEL_TARGET_PCT_SNP138","COUNT_BIALLELIC_INDEL_TARGET","BIALLELIC_INDEL_TARGET_PCT_SNP138"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -205,7 +205,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*TARGET_INDEL_METRICS.TXT \
 # Sorting concatenated ON BAIT MIXED metrics by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*BAIT_MIXED_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","COUNT_MIXED_ON_BAIT","PERCENT_MIXED_ON_BAIT_SNP138"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -214,7 +214,7 @@ cat $CORE_PATH/$PROJECT/TEMP/*BAIT_MIXED_METRICS.TXT \
 # Sorting concatenated ON TARGET MIXED metrics by SM TAG and adding headers
 
 cat $CORE_PATH/$PROJECT/TEMP/*TARGET_MIXED_METRICS.TXT \
-| sort -k 1 \
+| sort -k 1,1 \
 | uniq \
 | awk 'BEGIN {print "SM_TAG","COUNT_MIXED_ON_TARGET","PERCENT_MIXED_ON_TARGET_SNP138"} {print $0}' \
 | sed 's/ /\t/g' \
@@ -265,7 +265,7 @@ cat $CORE_PATH/$PROJECT/REPORTS/VERIFYBAMID_CHR/*.VERIFYBAMID.PER_CHR.txt | grep
 # Summarize Wall Clock times
 
 sed 's/,/\t/g' $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv" \
-| sort -k 1 -k 2 -k 3 \
+| sort -k 1,1 -k 2,2 -k 3,3 \
 | awk 'BEGIN {OFS="\t"} {print $0,($6-$5),($6-$5)/60,($6-$5)/3600}' \
 | $DATAMASH/datamash -s -g 1,2 max 7 max 8 max 9 | tee $CORE_PATH/$PROJECT/TEMP/WALL.CLOCK.TIMES.BY.GROUP.txt \
 | $DATAMASH/datamash -g 1 sum 3 sum 4 sum 5 \
@@ -277,3 +277,5 @@ sed 's/\t/,/g' $CORE_PATH/$PROJECT/WALL.CLOCK.TIMES.BY.GROUP.txt \
 | awk 'BEGIN {print "SAMPLE_PROJECT","TASK_GROUP","WALL_CLOCK_SECONDS","WALL_CLOCK_MINUTES","WALL_CLOCK_HOURS"} {print $0}' \
 | sed -r 's/[[:space:]]+/,/g' \
 >| $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.BY_SAMPLE_GROUP.csv"
+
+chmod 770 -R $CORE_PATH/$PROJECT
