@@ -56,7 +56,7 @@ FORMAT_MANIFEST ()
 sed 's/\r//g' $SAMPLE_SHEET \
 | awk 'NR>1' \
 | sed 's/,/\t/g' \
-| sort -k 8 \
+| sort -k 8,8 \
 >| ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt
 }
 
