@@ -9,13 +9,13 @@ SCRIPT_DIR="/isilon/cgc/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/7038
 # The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
 
 CORE_PATH="/isilon/cgc/SS_CRE"
-CONTROL_REPO="/isilon/cgc/SS_CRE/CGC_CONTROL_SET_3_6"
+CONTROL_REPO="/isilon/cgc/SS_CRE/CGC_CONTROL_SET_3_7"
 
 # PIPELINE PROGRAMS
 JAVA_1_8="/isilon/cgc/PROGRAMS/jdk1.8.0_73/bin"
 BWA_DIR="/isilon/cgc/PROGRAMS/bwa-0.7.8"
 PICARD_DIR="/isilon/cgc/PROGRAMS/picard-tools-2.1.1"
-GATK_DIR="/isilon/cgc/PROGRAMS/GenomeAnalysisTK-nightly-2016-06-26-g15888ad"
+GATK_DIR="/isilon/cgc/PROGRAMS/GenomeAnalysisTK-3.7"
 VERIFY_DIR="/isilon/cgc/PROGRAMS/verifyBamID_20120620/bin/"
 TABIX_DIR="/isilon/cgc/PROGRAMS/tabix-0.2.6"
 SAMTOOLS_DIR="/isilon/cgc/PROGRAMS/samtools-0.1.18"
