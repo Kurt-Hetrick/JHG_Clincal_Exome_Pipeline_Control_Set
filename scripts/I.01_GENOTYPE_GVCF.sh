@@ -43,8 +43,6 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotateNDA \
 --includeNonVariantSites \
 --disable_auto_index_creation_and_locking_when_reading_rods \
---standard_min_confidence_threshold_for_calling 30 \
---standard_min_confidence_threshold_for_emitting 0 \
 --annotation AS_BaseQualityRankSumTest \
 --annotation AS_FisherStrand \
 --annotation AS_InbreedingCoeff \
@@ -76,8 +74,6 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotateNDA \
 --includeNonVariantSites \
 --disable_auto_index_creation_and_locking_when_reading_rods \
---standard_min_confidence_threshold_for_calling 30 \
---standard_min_confidence_threshold_for_emitting 0 \
 --annotation AS_BaseQualityRankSumTest \
 --annotation AS_FisherStrand \
 --annotation AS_InbreedingCoeff \
