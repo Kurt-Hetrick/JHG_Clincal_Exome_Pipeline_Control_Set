@@ -4,7 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
 # tell sge to submit any of these queue when available
 #$ -q cgc.q
 
@@ -25,6 +24,8 @@
 
 set
 
+echo
+
 JAVA_1_8=$1
 PICARD_DIR=$2
 CORE_PATH=$3
@@ -34,9 +35,6 @@ SM_TAG=$5
 INPUT_BAM_FILE_STRING=$6
 
 INPUT=`echo $INPUT_BAM_FILE_STRING | sed 's/,/ /g'`
-
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
 
 ## --Merge and Sort Bam files--
 

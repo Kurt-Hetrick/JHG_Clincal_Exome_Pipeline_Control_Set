@@ -89,7 +89,7 @@ START_BWA_MEM=`date '+%s'`
 
 $BWA_DIR/bwa mem \
 -M \
--t 4 \
+-t 6 \
 $REF_GENOME \
 $FASTQ_1 \
 $FASTQ_2 \
@@ -120,7 +120,7 @@ echo $SM_TAG"_"$PROJECT",A.001,BWA_MEM,"$HOSTNAME","$START_BWA_MEM","$END_BWA_ME
 
 echo $BWA_DIR/bwa mem \
 -M \
--t 4 \
+-t 6 \
 $REF_GENOME \
 $FASTQ_1 \
 $FASTQ_2 \

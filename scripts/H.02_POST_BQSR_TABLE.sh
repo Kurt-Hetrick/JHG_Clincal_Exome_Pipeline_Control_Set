@@ -36,9 +36,6 @@ KNOWN_INDEL_1=$7
 KNOWN_INDEL_2=$8
 DBSNP=$9
 
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
-
 ## --Generate post BQSR table--
 
 START_AFTER_BQSR=`date '+%s'`

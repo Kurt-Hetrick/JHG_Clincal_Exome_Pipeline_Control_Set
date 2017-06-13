@@ -33,9 +33,6 @@ PROJECT=$4
 SM_TAG=$5
 REF_GENOME=$6
 
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
-
 ## --write out file with new scores, retain old scores, no downsampling
 
 START_FINAL_BAM=`date '+%s'`

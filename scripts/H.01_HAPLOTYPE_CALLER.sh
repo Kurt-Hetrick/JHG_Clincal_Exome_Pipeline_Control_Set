@@ -32,7 +32,7 @@ CORE_PATH=$3
 PROJECT=$4
 SM_TAG=$5
 REF_GENOME=$6
-BAIT_BED=$7
+# BAIT_BED=$7
 
 ## -----Haplotype Caller-----
 
@@ -44,7 +44,7 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -T HaplotypeCaller \
 -R $REF_GENOME \
 --input_file $CORE_PATH/$PROJECT/BAM/$SM_TAG".bam" \
--L $BAIT_BED \
+-L $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_BAIT.bed" \
 --emitRefConfidence BP_RESOLUTION \
 --variant_index_type LINEAR \
 --variant_index_parameter 128000 \
@@ -77,7 +77,7 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -T HaplotypeCaller \
 -R $REF_GENOME \
 --input_file $CORE_PATH/$PROJECT/BAM/$SM_TAG".bam" \
--L $BAIT_BED \
+-L $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_BAIT.bed" \
 --emitRefConfidence BP_RESOLUTION \
 --variant_index_type LINEAR \
 --variant_index_parameter 128000 \

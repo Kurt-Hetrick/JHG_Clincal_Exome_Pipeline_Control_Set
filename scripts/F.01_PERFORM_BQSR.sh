@@ -4,7 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
 # tell sge to submit any of these queue when available
 #$ -q cgc.q
 
@@ -25,8 +24,7 @@
 
 set
 
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
+echo
 
 JAVA_1_8=$1
 GATK_DIR=$2
@@ -38,7 +36,7 @@ REF_GENOME=$6
 KNOWN_INDEL_1=$7
 KNOWN_INDEL_2=$8
 DBSNP=$9
-BAIT_BED=${10}
+# BAIT_BED=${10}
 
 ## --BQSR using data only from the baited intervals
 ## --I am actually going to downsample here, b/c it actually makes more sense to do so.
@@ -52,7 +50,7 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -knownSites $KNOWN_INDEL_1 \
 -knownSites $KNOWN_INDEL_2 \
 -knownSites $DBSNP \
--L $BAIT_BED \
+-L $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_BAIT.bed" \
 -nct 8 \
 -o $CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT/$SM_TAG"_PERFORM_BQSR.bqsr"
 
@@ -73,7 +71,7 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -knownSites $KNOWN_INDEL_1 \
 -knownSites $KNOWN_INDEL_2 \
 -knownSites $DBSNP \
--L $BAIT_BED \
+-L $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_BAIT.bed" \
 -nct 8 \
 -o $CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT/$SM_TAG"_PERFORM_BQSR.bqsr" \
 >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"

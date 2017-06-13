@@ -33,10 +33,7 @@ GENE_LIST=$4
 PROJECT=$5
 SM_TAG=$6
 REF_GENOME=$7
-TARGET_BED=$8
-
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
+# TARGET_BED=$8
 
 ### --Depth of Coverage On Target--
 
@@ -47,7 +44,7 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -R $REF_GENOME \
 -I $CORE_PATH/$PROJECT/BAM/$SM_TAG".bam" \
 -geneList:REFSEQ $GENE_LIST \
--L $TARGET_BED \
+-L $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_TARGET.bed" \
 -mmq 20 \
 -mbq 10 \
 --outputFormat csv \
@@ -71,7 +68,7 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -R $REF_GENOME \
 -I $CORE_PATH/$PROJECT/BAM/$SM_TAG".bam" \
 -geneList:REFSEQ $GENE_LIST \
--L $TARGET_BED \
+-L $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_TARGET.bed" \
 -mmq 20 \
 -mbq 10 \
 --outputFormat csv \

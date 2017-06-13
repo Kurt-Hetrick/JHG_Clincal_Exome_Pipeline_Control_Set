@@ -25,6 +25,8 @@
 
 set
 
+echo
+
 JAVA_1_8=$1
 GATK_DIR=$2
 CORE_PATH=$3
@@ -34,9 +36,6 @@ SM_TAG=$5
 REF_GENOME=$6
 KNOWN_INDEL_1=$7
 KNOWN_INDEL_2=$8
-
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
 
 ## --Realigner Target Creator, turn off downsampling
 
@@ -49,7 +48,7 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -known $KNOWN_INDEL_1 \
 -known $KNOWN_INDEL_2 \
 -dt NONE \
--nt 4 \
+-nt 6 \
 -o $CORE_PATH/$PROJECT/REPORTS/LOCAL_REALIGNMENT_INTERVALS/$SM_TAG"_LOCAL_REALIGNMENT_INTERVALS.intervals"
 
 END_REALIGNER_TARGET_CREATOR=`date '+%s'`
@@ -69,7 +68,7 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -known $KNOWN_INDEL_1 \
 -known $KNOWN_INDEL_2 \
 -dt NONE \
--nt 4 \
+-nt 6 \
 -o $CORE_PATH/$PROJECT/REPORTS/LOCAL_REALIGNMENT_INTERVALS/$SM_TAG"_LOCAL_REALIGNMENT_INTERVALS.intervals" \
 >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
 

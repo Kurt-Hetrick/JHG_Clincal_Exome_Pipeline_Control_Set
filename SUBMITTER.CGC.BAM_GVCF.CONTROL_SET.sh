@@ -21,11 +21,14 @@ TABIX_DIR="/isilon/cgc/PROGRAMS/tabix-0.2.6"
 SAMTOOLS_DIR="/isilon/cgc/PROGRAMS/samtools-0.1.18"
 DATAMASH_DIR="/isilon/cgc/PROGRAMS/datamash-1.0.6"
 BEDTOOLS_DIR="/isilon/cgc/PROGRAMS/bedtools-2.22.0/bin"
+JAVA_1_6="/isilon/cgc/PROGRAMS/jre1.6.0_25/bin/"
+CIDRSEQSUITE_DIR="/isilon/cgc/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
+ANNOVAR_DIR="/isilon/cgc/PROGRAMS/ANNOVAR/2013_09_11"
 
 # PIPELINE FILES
 GENE_LIST="/isilon/cgc/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
 VERIFY_VCF="/isilon/cgc/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
-CODING_BED="/isilon/cgc/PIPELINE_FILES/UCSC_hg19_CodingOnly_083013_MERGED_noContigs_noCHR.bed"
+CODING_BED="/isilon/cgc/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.bed"
 CYTOBAND_BED="/isilon/cgc/PIPELINE_FILES/GRCh37.Cytobands.bed"
 HAPMAP="/isilon/cgc/PIPELINE_FILES/hapmap_3.3.b37.vcf"
 OMNI_1KG="/isilon/cgc/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
@@ -49,6 +52,12 @@ FORMAT_MANIFEST
 MERGE_PED_MANIFEST
 CREATE_SAMPLE_INFO_ARRAY
 MAKE_PROJ_DIR_TREE
+# echo "echo Making padded annotated RefSeq coding bed file for $SAMPLE"
+# PAD_REFSEQ
+# echo "echo Making padded target bed file for $SAMPLE"
+# PAD_TARGET
+# echo "echo Making everything merged together bait file for $SAMPLE"
+# MAKE_BAIT
 }
 
 FORMAT_MANIFEST ()
@@ -64,9 +73,9 @@ MERGE_PED_MANIFEST ()
 {
 awk 1 $PED_FILE \
 | sed 's/\r//g' \
-| sort -k 2 \
-| join -1 8 -2 2 ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
-| awk 'BEGIN {OFS="\t"} {print $2,$3,$4,$5,$6,$7,$8,$1,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23}' \
+| sort -k 2,2 \
+| join -1 8 -2 2 -e '-'  -t $'\t' -o '1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19,2.1,2.3,2.4,2.5,2.6' \
+~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
 >| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
 }
 
@@ -75,10 +84,12 @@ awk 1 $PED_FILE \
 	## SAMPLE_INFO_ARRAY[1] = FAMILY
 	## SAMPLE_INFO_ARRAY[2] = SM_TAG
 		## SAMPLE = SM_TAG
+	## SAMPLE_INFO_ARRAY[3] = BAIT BED FILE
+	## SAMPLE_INFO_ARRAY[4] = TARGET_BED_FILE
 
 CREATE_SAMPLE_INFO_ARRAY ()
 {
-SAMPLE_INFO_ARRAY=(`awk '$8=="'$SAMPLE'" {print $1,$19,$8}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
+SAMPLE_INFO_ARRAY=(`awk 'BEGIN {FS="\t"; OFS="\t"} $8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
 }
 
 # PROJECT DIRECTORY TREE CREATOR
@@ -100,14 +111,49 @@ $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASE_DISTRIBUTION_BY_CYCLE/{METRICS,P
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/CONCORDANCE \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/COUNT_COVARIATES/{GATK_REPORT,PDF} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/GC_BIAS/{METRICS,PDF,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/DEPTH_OF_COVERAGE/{TARGET,UCSC_CODING_PLUS_10bp} \
+$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/DEPTH_OF_COVERAGE/{TARGET,REFSEQ_CODING_PLUS_10bp} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/HYB_SELECTION/PER_TARGET_COVERAGE \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/INSERT_SIZE/{METRICS,PDF} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/LOCAL_REALIGNMENT_INTERVALS \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/MEAN_QUALITY_BY_CYCLE/{METRICS,PDF} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/ANEUPLOIDY_CHECK \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/JOINT_VCF/ \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/{TEMP,FASTQ,LOGS,COMMAND_LINES}
+$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_ANNOVAR \
+$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/{FASTQ,LOGS,COMMAND_LINES}
+}
+
+# PAD THE REFSEQ canonical transcript bed file by 10 bases.
+# can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
+
+PAD_REFSEQ ()
+{
+awk 1 $CODING_BED \
+| sed 's/\r//g' \
+| sed -r 's/[[:space:]]+/\t/g' \
+| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
+>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_CODING.bed"
+}
+
+# PAD THE TARGET BED FILE BY 10 BP
+
+PAD_TARGET ()
+{
+awk 1 ${SAMPLE_INFO_ARRAY[4]} \
+| sed 's/\r//g' \
+| sed -r 's/[[:space:]]+/\t/g' \
+| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
+>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed"
+}
+
+# MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
+
+MAKE_BAIT ()
+{
+cat $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed" \
+${SAMPLE_INFO_ARRAY[3]} \
+| sort -k 1,1 -k 2,2n -k 3,3n \
+| $BEDTOOLS_DIR/bedtools merge -i - \
+>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_BAIT.bed
 }
 
 for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
@@ -121,7 +167,7 @@ done
 # handle blank lines
 # handle something else too
 
-awk '{split($18,INDEL,";");split($8,smtag,"[@-]"); \
+awk 'BEGIN {FS="\t"} {split($19,INDEL,";");split($8,smtag,"[@-]"); \
 print "qsub","-N","A.01_BWA_"$8"_"$2"_"$3"_"$4,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$8"_"$2"_"$3"_"$4".BWA.log",\
 "'$SCRIPT_DIR'""/A.01_BWA.sh",\
@@ -132,7 +178,7 @@ print "qsub","-N","A.01_BWA_"$8"_"$2"_"$3"_"$4,\
 # submit merging the bam files created by bwa mem above
 # only launch when every lane for a sample is done being processed by bwa mem
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam"}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam"}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -148,7 +194,7 @@ gsub(/,/,",INPUT=/isilon/cgc/SS_CRE/"$1"/TEMP/",$4) \
 
 # Mark duplicates on the bam file above. Create a Mark Duplicates report which goes into the QC report
 
-awk 'BEGIN {OFS="\t"} {print $1,$8}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -161,7 +207,7 @@ print "qsub","-N","C.01_MARK_DUPLICATES_"$2"_"$1,\
 
 # Generate a list of places that could be potentially realigned.
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$18}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$19}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -175,7 +221,7 @@ print "qsub","-N","D.01_REALIGNER_TARGET_CREATOR_"$2"_"$1,\
 # With the list generated above walk through the BAM file and realign where necessary
 # Write out a new bam file
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$18}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$19}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -188,7 +234,7 @@ print "qsub","-N","E.01_INDEL_REALIGNER_"$2"_"$1,\
 
 # Run Base Quality Score Recalibration
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$18,$17,$15}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$19,$18}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -197,11 +243,11 @@ print "qsub","-N","F.01_PERFORM_BQSR_"$2"_"$1,\
 "-hold_jid","E.01_INDEL_REALIGNER_"$2"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PERFORM_BQSR.log",\
 "'$SCRIPT_DIR'""/F.01_PERFORM_BQSR.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,INDEL[1],INDEL[2],$5,$6"\n""sleep 1s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,INDEL[1],INDEL[2],$5"\n""sleep 1s"}'
 
 # write Final Bam file
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -216,7 +262,7 @@ print "qsub","-N","G.01_FINAL_BAM_"$2"_"$1,\
 
 # Run Haplotype Caller in GVCF mode
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$15}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -225,11 +271,11 @@ print "qsub","-N","H.01_HAPLOTYPE_CALLER_"$1"_"$2,\
 "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".HAPLOTYPE_CALLER.log",\
 "'$SCRIPT_DIR'""/H.01_HAPLOTYPE_CALLER.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 1s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
 
 # Run POST BQSR TABLE
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$18,$17}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$19,$18}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -242,7 +288,7 @@ print "qsub","-N","H.02_POST_BQSR_TABLE_"$2"_"$1,\
 
 # Run ANALYZE COVARIATES
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -253,9 +299,10 @@ print "qsub","-N","H.02-A.01_ANALYZE_COVARIATES_"$2"_"$1,\
 "'$SCRIPT_DIR'""/H.02-A.01_ANALYZE_COVARIATES.sh",\
 "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
 
-# RUN DOC CODING PLUS 10 BP FLANKS
+# RUN DOC RefSeq CODING PLUS 10 BP FLANKS
+# This will specifically be for the RefSeg transcript IDs merged with UCSC canonical transcripts
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -264,11 +311,11 @@ print "qsub","-N","H.03_DOC_CODING_10bpFLANKS_"$2"_"$1,\
 "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".DOC_CODING_10bpFLANKS.log",\
 "'$SCRIPT_DIR'""/H.03_DOC_CODING_10bpFLANKS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$CODING_BED'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
 
-# RUN ANEUPLOIDY_CHECK AFTER DOC TARGET BED FINISHES
+# RUN ANEUPLOIDY_CHECK AFTER DOC RefSeq CODING PLUS 10 BP FLANKS
 
-awk 'BEGIN {OFS="\t"} {print $1,$8}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -279,9 +326,9 @@ print "qsub","-N","H.03-A.01_DOC_CHROM_DEPTH_"$2"_"$1,\
 "'$SCRIPT_DIR'""/H.03-A.01_CHROM_DEPTH.sh",\
 "'$CORE_PATH'","'$CYTOBAND_BED'","'$DATAMASH_DIR'","'$BEDTOOLS_DIR'",$1,$2"\n""sleep 1s"}'
 
-# RUN DOC TARGET BED
+# RUN DOC TARGET BED (Generally this with all RefGene coding exons unless it becomes targeted)
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -290,11 +337,11 @@ print "qsub","-N","H.05_DOC_TARGET_BED_"$2"_"$1,\
 "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".DOC_TARGET_BED.log",\
 "'$SCRIPT_DIR'""/H.05_DOC_TARGET_BED.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3,$4"\n""sleep 1s"}'
+"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
 
 # RUN COLLECT MULTIPLE METRICS
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$17,$14}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$18,$15}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -307,7 +354,7 @@ print "qsub","-N","H.06_COLLECT_MULTIPLE_METRICS_"$2"_"$1,\
 
 # RUN COLLECT HS METRICS
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$15,$16}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -316,11 +363,11 @@ print "qsub","-N","H.07_COLLECT_HS_METRICS_"$2"_"$1,\
 "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".COLLECT_HS_METRICS.log",\
 "'$SCRIPT_DIR'""/H.07_COLLECT_HS_METRICS.sh",\
-"'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'","'$SAMTOOLS_DIR'",$1,$2,$3,$4,$5"\n""sleep 1s"}'
+"'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'","'$SAMTOOLS_DIR'",$1,$2,$3"\n""sleep 1s"}'
 
 # RUN SELECT VERIFYBAM ID VCF
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$14}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -333,7 +380,7 @@ print "qsub","-N","H.08_SELECT_VERIFYBAMID_VCF_"$2"_"$1,\
 
 # RUN VERIFYBAMID ALL
 
-awk 'BEGIN {OFS="\t"} {print $1,$8}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -350,7 +397,7 @@ print "qsub","-N","H.08-A.01_VERIFYBAMID_"$2"_"$1,\
 
 CREATE_SAMPLE_INFO_ARRAY_VERIFY_BAM ()
 {
-SAMPLE_INFO_ARRAY_VERIFY_BAM=(`awk '$8=="'$SAMPLE'" {print $1,$19,$8,$12,$14}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
+SAMPLE_INFO_ARRAY_VERIFY_BAM=(`awk 'BEGIN {FS="\t"; OFS="\t"} $8=="'$SAMPLE'" {print $1,$20,$8,$12,$15}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
 }
 
 CALL_SELECT_VERIFY_BAM ()
@@ -432,29 +479,31 @@ for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 
 ### kEY FOR BLAH ###
 #
-#      1  CGC_160212_HJLWVBCXX_CGCDev1_TEST
-#      2  HJLWVBCXX
-#      3  1
-#      4  ATGCCTAA
-#      5  ILLUMINA
-#      6  A01_NA12878
-#      7  2/12/2016
-#      8  NA12878
-#      9  CGC
-#     10  HiSeq2500_RapidRun
-#     11  HJLWVBCXX_1_ATGCCTAA_A01_NA12878
-#     12  /isilon/sequencing/GATK_resource_bundle/bwa_mem_0.7.5a_ref/human_g1k_v37_decoy.fasta
-#     13  MBS
-#     14  /isilon/sequencing/data/Work/BED/Production_BED_files/TsTv_BED_File_Agilent_ClinicalExome_S06588914_OnExon_merged_021015_noCHR.bed
-#     15  /isilon/sequencing/data/Work/BED/Production_BED_files/ALLBED_BED_File_Agilent_ClinicalExome_S06588914_ALLBed_merged_021015_noCHR.bed
-#     16  /isilon/sequencing/data/Work/BED/Production_BED_files/Targets_BED_File_Agilent_ClinicalExome_S06588914_OnTarget_merged_noCHR_013015.bed
-#     17  /isilon/sequencing/GATK_resource_bundle/2.8/b37/dbsnp_138.b37.vcf
-#     18  /isilon/sequencing/GATK_resource_bundle/2.2/b37/1000G_phase1.indels.b37.vcf;/isilon/sequencing/GATK_resource_bundle/2.2/b37/Mills_and_1000G_gold_standard.indels.b37.vcf
-#     19  XC01463
-#     20  NA12891
-#     21  NA12892
-#     22  2
-#     23  2
+#     1  CGC_CONTROL_SET_3_7_REFSEQ_TEMP
+#     2  HV3JGBCXX
+#     3  1
+#     4  CTGAGCCA
+#     5  ILLUMINA
+#     6  D01_CRE10-1_H05
+#     7  7/29/2016
+#     8  CRE10-1
+#     9  Johns_Hopkins_DNA_Diagnostic_Lab
+#    10  HiSeq2500_RapidRun
+#    11  HV3JGBCXX_1_CTGAGCCA_D01_CRE10-1_H05
+#    12  /isilon/cgc/PIPELINE_FILES/human_g1k_v37_decoy.fasta
+#    13  MBS
+#    14  -2
+#    15  /isilon/cgc/BED_FILES/RefGene.Coding.Clean.Format.bed
+#    16  /isilon/cgc/BED_FILES/ALLBED_BED_File_Agilent_ClinicalExome_S06588914_RefSeqCoding_051017_noCHR.bed
+#    17  /isilon/cgc/BED_FILES/RefGene.Coding.Clean.Format.bed
+#    18  /isilon/cgc/PIPELINE_FILES/dbsnp_138.b37.vcf
+#    19  /isilon/cgc/PIPELINE_FILES/1000G_phase1.indels.b37.vcf;/isilon/cgc/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf
+#    20  CRE10
+#    21  0
+#    22  0
+#    23  1
+#    24  2
+#
 #######
 
 

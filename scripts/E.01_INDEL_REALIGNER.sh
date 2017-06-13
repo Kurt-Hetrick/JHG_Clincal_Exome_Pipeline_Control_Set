@@ -25,6 +25,8 @@
 
 set
 
+echo
+
 JAVA_1_8=$1
 GATK_DIR=$2
 CORE_PATH=$3

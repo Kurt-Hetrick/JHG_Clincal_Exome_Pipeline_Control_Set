@@ -4,7 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
 # tell sge to submit any of these queue when available
 #$ -q cgc.q
 
@@ -25,6 +24,8 @@
 
 set
 
+echo
+
 CORE_PATH=$1
 CYTOBAND_BED=$2
 DATAMASH_DIR=$3
@@ -32,9 +33,6 @@ BEDTOOLS_DIR=$4
 
 PROJECT=$5
 SM_TAG=$6
-
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
 
 # Format the cytoband file.
 # strip out the "chr" prefix from the chromsome name
@@ -80,10 +78,11 @@ sed 's/^chr//g' $CYTOBAND_BED \
 
 # Below does calculate for X PAR, but I don't think that it removes PAR from the X calculation...
 
+### The refseq file might have the name changed based on the padding level.
 
 awk 'BEGIN {FS=","};{OFS="\t"} $1~"-" {split($1,CHROM,":"); split(CHROM[2],POS,"-"); \
 print CHROM[1],POS[1]-1,POS[2],$2}' \
-$CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/UCSC_CODING_PLUS_10bp/$SM_TAG".ALL_UCSC_CODING_10bpFlanks.sample_interval_summary.csv" \
+$CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/REFSEQ_CODING_PLUS_10bp/$SM_TAG".ALL_REFSEQ_CODING_10bpFlanks.sample_interval_summary.csv" \
 | $BEDTOOLS_DIR/bedtools intersect -wo -a - -b $CORE_PATH/$PROJECT/TEMP/$SM_TAG".CHROM_ARM.bed" \
 | awk 'BEGIN {OFS="\t"} {if ($1=="X"&&$2<=2699520) print "'$SM_TAG'","X.PAR",$8,$4,$9 ; \
 else if ($1=="X"&&$2>=154931044) print "'$SM_TAG'","X.PAR",$8,$4,$9 ; \

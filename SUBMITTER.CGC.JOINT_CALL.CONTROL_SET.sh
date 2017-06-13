@@ -21,6 +21,9 @@ TABIX_DIR="/isilon/cgc/PROGRAMS/tabix-0.2.6"
 SAMTOOLS_DIR="/isilon/cgc/PROGRAMS/samtools-0.1.18"
 DATAMASH_DIR="/isilon/cgc/PROGRAMS/datamash-1.0.6"
 BEDTOOLS_DIR="/isilon/cgc/PROGRAMS/bedtools-2.22.0/bin"
+JAVA_1_6="/isilon/cgc/PROGRAMS/jre1.6.0_25/bin/"
+CIDRSEQSUITE_DIR="/isilon/cgc/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
+ANNOVAR_DIR="/isilon/cgc/PROGRAMS/ANNOVAR/2013_09_11"
 
 # PIPELINE FILES
 GENE_LIST="/isilon/cgc/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
@@ -49,6 +52,12 @@ FORMAT_MANIFEST
 MERGE_PED_MANIFEST
 CREATE_SAMPLE_INFO_ARRAY
 MAKE_PROJ_DIR_TREE
+# echo "echo Making padded annotated RefSeq coding bed file for $SAMPLE"
+# PAD_REFSEQ
+# echo "echo Making padded target bed file for $SAMPLE"
+# PAD_TARGET
+# echo "echo Making everything merged together bait file for $SAMPLE"
+# MAKE_BAIT
 }
 
 FORMAT_MANIFEST ()
@@ -66,7 +75,7 @@ awk 1 $PED_FILE \
 | sed 's/\r//g' \
 | sort -k 2 \
 | join -1 8 -2 2 ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
-| awk 'BEGIN {OFS="\t"} {print $2,$3,$4,$5,$6,$7,$8,$1,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23}' \
+| awk 'BEGIN {FS=" "; OFS="\t"} {print $2,$3,$4,$5,$6,$7,$8,$1,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24}' \
 >| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
 }
 
@@ -75,10 +84,12 @@ awk 1 $PED_FILE \
 	## SAMPLE_INFO_ARRAY[1] = FAMILY
 	## SAMPLE_INFO_ARRAY[2] = SM_TAG
 		## SAMPLE = SM_TAG
+	## SAMPLE_INFO_ARRAY[3] = BAIT BED FILE
+	## SAMPLE_INFO_ARRAY[4] = TARGET_BED_FILE
 
 CREATE_SAMPLE_INFO_ARRAY ()
 {
-SAMPLE_INFO_ARRAY=(`awk '$8=="'$SAMPLE'" {print $1,$19,$8}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
+SAMPLE_INFO_ARRAY=(`awk '$8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
 }
 
 # PROJECT DIRECTORY TREE CREATOR
@@ -92,7 +103,7 @@ $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/SNV/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/MIXED/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/VCF/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/GVCF \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID} \
+$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BAIT_BIAS/{METRICS,SUMMARY} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/PRE_ADAPTER/{METRICS,SUMMARY} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASECALL_Q_SCORE_DISTRIBUTION/{METRICS,PDF} \
@@ -100,14 +111,49 @@ $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASE_DISTRIBUTION_BY_CYCLE/{METRICS,P
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/CONCORDANCE \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/COUNT_COVARIATES/{GATK_REPORT,PDF} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/GC_BIAS/{METRICS,PDF,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/DEPTH_OF_COVERAGE/{TARGET,UCSC_CODING_PLUS_10bp} \
+$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/DEPTH_OF_COVERAGE/{TARGET,REFSEQ_CODING_PLUS_10bp} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/HYB_SELECTION/PER_TARGET_COVERAGE \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/INSERT_SIZE/{METRICS,PDF} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/LOCAL_REALIGNMENT_INTERVALS \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/MEAN_QUALITY_BY_CYCLE/{METRICS,PDF} \
 $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/ANEUPLOIDY_CHECK \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/JOINT_VCF \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/{TEMP,FASTQ,LOGS,COMMAND_LINES}
+$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/JOINT_VCF/ \
+$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_ANNOVAR \
+$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/{FASTQ,LOGS,COMMAND_LINES}
+}
+
+# PAD THE REFSEQ canonical transcript bed file by 10 bases.
+# can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
+
+PAD_REFSEQ ()
+{
+awk 1 $CODING_BED \
+| sed 's/\r//g' \
+| sed -r 's/[[:space:]]+/\t/g' \
+| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$2+10}' \
+>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_CODING.bed"
+}
+
+# PAD THE TARGET BED FILE BY 10 BP
+
+PAD_TARGET ()
+{
+awk 1 ${SAMPLE_INFO_ARRAY[4]} \
+| sed 's/\r//g' \
+| sed -r 's/[[:space:]]+/\t/g' \
+| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$2+10}' \
+>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed"
+}
+
+# MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
+
+MAKE_BAIT ()
+{
+cat $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed" \
+${SAMPLE_INFO_ARRAY[3]} \
+| sort -k 1,1 -k 2,2n -k 3,3n \
+| $BEDTOOLS_DIR/bedtools merge -i - \
+>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_BAIT.bed
 }
 
 for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
@@ -121,7 +167,7 @@ done
 
 ### Run GenotypeGVCF per Family
 
-awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12,$18}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -133,7 +179,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
 
 ### Run Variant Recalibrator for the SNP model, this is done in parallel with the INDEL model
 
-awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12,$18}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -145,7 +191,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12,$17}' \
 
 ### Run Variant Recalibrator for the INDEL model, this is done in parallel with the SNP model
 
-awk 'BEGIN {OFS="\t"} {print $1,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -157,7 +203,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 
 ### Run Apply Recalbration with the SNP model to the VCF file
 
-awk 'BEGIN {OFS="\t"} {print $1,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -169,7 +215,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 
 ### Run Apply Recalibration with the INDEL model to the VCF file.
 
-awk 'BEGIN {OFS="\t"} {print $1,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -181,7 +227,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 
 ### Add all possible GATK annotations to the VCF file.
 
-awk 'BEGIN {OFS="\t"} {print $1,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -197,7 +243,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 
 # FILTER TO JUST VARIANT SITES
 
-awk 'BEGIN {OFS="\t"} {print $1,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -209,7 +255,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 
 # FILTER TO JUST PASSING VARIANT SITES
 
-awk 'BEGIN {OFS="\t"} {print $1,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -223,7 +269,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 
 ## SUBSET TO SAMPLE VCF ALL SITES ##
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -235,7 +281,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
 
 ## SUBSET TO SAMPLE VARIANTS ONLY 
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -247,7 +293,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
 
 ## SUBSET TO SAMPLE PASSING VARIANTS
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -259,7 +305,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
 
 ## SUBSET TO SAMPLE PASSING SNVS
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -271,7 +317,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
 
 ## SUBSET TO SAMPLE PASSING INDELS
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -283,7 +329,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
 
 ## SUBSET TO SAMPLE PASSING MIXED
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -295,7 +341,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
 
 ## SUBSET TO TARGET SNV ONLY PASS
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -307,7 +353,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
 
 ## SUBSET TO TARGET INDEL ONLY PASS
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -319,7 +365,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
 
 ## SUBSET TO TARGET MIXED ONLY PASS
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -331,7 +377,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
 
 ## SUBSET TO SAMPLE VCF ALL SITES ON TARGET##
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -341,11 +387,14 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$16}' \
 "'$SCRIPT_DIR'""/S.15_FILTER_TO_SAMPLE_ALL_SITES_TARGET.sh",\
 "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
 
-### TITV SECTION ###
+
+########################
+##### TITV SECTION #####
+########################
 
 # BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$14}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -357,7 +406,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$14}' \
 
 # BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE AND OVERLAP WITH DBSNP 129
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$14}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -369,7 +418,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$14}' \
 
 # BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE AND DO NOT OVERLAP WITH DBSNP 129
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$14}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -383,7 +432,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12,$14}' \
 
 ## ALL SNVS TITV
 
-awk 'BEGIN {OFS="\t"} {print $1,$8}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -395,7 +444,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8}' \
 
 ## ALL KNOWN SNVS TITV
 
-awk 'BEGIN {OFS="\t"} {print $1,$8}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -407,7 +456,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8}' \
 
 ## ALL NOVEL SNVS TITV
 
-awk 'BEGIN {OFS="\t"} {print $1,$8}' \
+awk 'BBEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -423,7 +472,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8}' \
 
 ## CONVERT INITIAL JOINT CALLED VCF TO TABLE##
 
-awk 'BEGIN {OFS="\t"} {print $1,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -435,7 +484,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$12}' \
 
 ## BGZIP INITIAL JOINT CALLED VCF TABLE##
 
-awk 'BEGIN {OFS="\t"} {print $1}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -447,7 +496,7 @@ awk 'BEGIN {OFS="\t"} {print $1}' \
 
 ## TABIX INDEX INITIAL JOINT CALLED VCF TABLE##
 
-awk 'BEGIN {OFS="\t"} {print $1}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 \
 | uniq \
@@ -461,7 +510,7 @@ awk 'BEGIN {OFS="\t"} {print $1}' \
 
 ## CONVERT SAMPLE ONLY VCF TO TABLE##
 
-awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -473,7 +522,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8,$12}' \
 
 ## BGZIP SAMPLE ONLY VCF TABLE##
 
-awk 'BEGIN {OFS="\t"} {print $1,$8}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -485,7 +534,7 @@ awk 'BEGIN {OFS="\t"} {print $1,$8}' \
 
 ## TABIX INDEX SAMPLE ONLY VCF TABLE##
 
-awk 'BEGIN {OFS="\t"} {print $1,$8}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \
@@ -495,22 +544,53 @@ awk 'BEGIN {OFS="\t"} {print $1,$8}' \
 "'$SCRIPT_DIR'""/S.06-A.01-A.01-A.01_VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES.sh",\
 "'$TABIX_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
-### QC REPORT PREP ###
+###################
+##### ANNOVAR #####
+###################
 
-awk 'BEGIN {OFS="\t"} {print $1,$19,$8,$20,$21,$22,$23}' \
+## RUN ANNOVAR
+
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+| sort -k 1,1 -k 2,2 \
+| uniq \
+| awk '{print "qsub","-N","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
+"-hold_jid","S.07_FILTER_TO_SAMPLE_VARIANTS_"$2"_"$1,\
+"-pe slots 5",\
+"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_ANNOVAR.log",\
+"'$SCRIPT_DIR'""/S.07-A.01_RUN_ANNOVAR.sh",\
+"'$JAVA_1_6'","'$CIDRSEQSUITE_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+
+## REFORMAT ANNOVAR
+
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+| sort -k 1,1 -k 2,2 \
+| uniq \
+| awk '{print "qsub","-N","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$2"_"$1,\
+"-hold_jid","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
+"-o","'$CORE_PATH'"$1"/LOGS/"$2"_"$1".REFORMAT_ANNOVAR.log",\
+"'$SCRIPT_DIR'""/S.07-A.01-A.01_REFORMAT_ANNOVAR.sh",\
+"'$ANNOVAR_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+
+##########################
+##### QC REPORT PREP #####
+##########################
+
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$20,$8,$21,$22,$23,$24}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 -k 3 \
 | uniq \
 | awk 'BEGIN {FS="\t"}
 {print "qsub","-N","X.01-QC_REPORT_PREP_"$1"_"$3,\
-"-hold_jid","S.06-A.01-A.01-A.01_VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES_"$3"_"$1,\
+"-hold_jid","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$3"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$3"_"$1".QC_REPORT_PREP.log",\
 "'$SCRIPT_DIR'""/X.01-QC_REPORT_PREP.sh",\
 "'$SAMTOOLS_DIR'","'$CORE_PATH'","'$DATAMASH_DIR'",$1,$2,$3,$4,$5,$6,$7"\n""sleep 30s"}'
 
 ### END PROJECT TASKS ###
 
-awk 'BEGIN {OFS="\t"} {print $1,$8}' \
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
 | sort -k 1 -k 2 \
 | uniq \

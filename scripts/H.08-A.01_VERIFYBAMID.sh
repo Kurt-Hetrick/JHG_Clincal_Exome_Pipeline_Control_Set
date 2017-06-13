@@ -24,14 +24,13 @@
 
 set
 
+echo
+
 CORE_PATH=$1
 VERIFY_DIR=$2
 
 PROJECT=$3
 SM_TAG=$4
-
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
 
 ## --Running verifyBamID--
 

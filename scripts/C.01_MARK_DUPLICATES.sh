@@ -25,15 +25,14 @@
 
 set
 
+echo
+
 JAVA_1_8=$1
 PICARD_DIR=$2
 CORE_PATH=$3
 
 PROJECT=$4
 SM_TAG=$5
-
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
 
 ## --Mark Duplicates with Picard, write a duplicate report
 

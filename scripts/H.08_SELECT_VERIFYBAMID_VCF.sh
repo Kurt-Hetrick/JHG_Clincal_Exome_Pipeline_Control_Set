@@ -4,7 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
 # tell sge to submit any of these queue when available
 #$ -q cgc.q
 
@@ -25,6 +24,8 @@
 
 set
 
+echo
+
 JAVA_1_8=$1
 GATK_DIR=$2
 CORE_PATH=$3
@@ -34,9 +35,6 @@ PROJECT=$5
 SM_TAG=$6
 REF_GENOME=$7
 TI_TV_BED=$8
-
-RIS_ID=${SM_TAG%@*}
-BARCODE_2D=${SM_TAG#*@}
 
 ## --Creating an on the fly VCF file to be used as the reference for verifyBamID--
 ## --remove X and Y data
