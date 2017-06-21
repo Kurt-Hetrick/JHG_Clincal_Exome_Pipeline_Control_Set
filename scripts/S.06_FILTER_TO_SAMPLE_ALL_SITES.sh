@@ -4,7 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
 # tell sge to submit any of these queue when available
 #$ -q cgc.q
 
@@ -25,6 +24,8 @@
 
 set
 
+echo
+
 JAVA_1_8=$1
 GATK_DIR=$2
 CORE_PATH=$3
@@ -32,7 +33,6 @@ CORE_PATH=$3
 PROJECT=$4
 SM_TAG=$5
 REF_GENOME=$6
-
 
 # Filter to just on all of the variants all
 

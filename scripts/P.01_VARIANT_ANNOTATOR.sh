@@ -45,13 +45,11 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotation AlleleCountBySample \
 --annotation GCContent \
 --annotation GenotypeSummaries \
---annotation HardyWeinberg \
 --annotation HomopolymerRun \
 --annotation InbreedingCoeff \
 --annotation MVLikelihoodRatio \
 --annotation SampleList \
 --annotation TandemRepeatAnnotator \
---annotation TransmissionDisequilibriumTest \
 --annotation VariantType \
 --resource:OneKGP $PHASE3_1KG_AUTOSOMES \
 --expression OneKGP.AF \
@@ -83,13 +81,11 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotation AlleleCountBySample \
 --annotation GCContent \
 --annotation GenotypeSummaries \
---annotation HardyWeinberg \
 --annotation HomopolymerRun \
 --annotation InbreedingCoeff \
 --annotation MVLikelihoodRatio \
 --annotation SampleList \
 --annotation TandemRepeatAnnotator \
---annotation TransmissionDisequilibriumTest \
 --annotation VariantType \
 --resource:OneKGP $PHASE3_1KG_AUTOSOMES \
 --expression OneKGP.AF \
@@ -107,9 +103,3 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 >> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
 
 echo >> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
-
-md5sum $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
-
-md5sum $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz.tbi \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"

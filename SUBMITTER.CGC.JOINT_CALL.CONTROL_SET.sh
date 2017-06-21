@@ -9,9 +9,10 @@ SCRIPT_DIR="/isilon/cgc/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/7038
 # The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
 
 CORE_PATH="/isilon/cgc/SS_CRE/"
-CONTROL_REPO="/isilon/cgc/SS_CRE/CGC_CONTROL_SET_3_7"
+CONTROL_REPO="/isilon/cgc/SS_CRE/CGC_CONTROL_SET_3_7_REFSEQ_TEMP"
 
 # PIPELINE PROGRAMS
+JAVA_1_6="/isilon/cgc/PROGRAMS/jre1.6.0_25/bin"
 JAVA_1_8="/isilon/cgc/PROGRAMS/jdk1.8.0_73/bin"
 BWA_DIR="/isilon/cgc/PROGRAMS/bwa-0.7.8"
 PICARD_DIR="/isilon/cgc/PROGRAMS/picard-tools-2.1.1"
@@ -21,14 +22,16 @@ TABIX_DIR="/isilon/cgc/PROGRAMS/tabix-0.2.6"
 SAMTOOLS_DIR="/isilon/cgc/PROGRAMS/samtools-0.1.18"
 DATAMASH_DIR="/isilon/cgc/PROGRAMS/datamash-1.0.6"
 BEDTOOLS_DIR="/isilon/cgc/PROGRAMS/bedtools-2.22.0/bin"
-JAVA_1_6="/isilon/cgc/PROGRAMS/jre1.6.0_25/bin/"
+VCFTOOLS_DIR="/isilon/cgc/PROGRAMS/vcftools_0.1.12b/bin"
+PLINK2_DIR="/isilon/cgc/PROGRAMS/PLINK2"
+KING_DIR="/isilon/cgc/PROGRAMS/KING/Linux-king19"
 CIDRSEQSUITE_DIR="/isilon/cgc/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
 ANNOVAR_DIR="/isilon/cgc/PROGRAMS/ANNOVAR/2013_09_11"
 
 # PIPELINE FILES
 GENE_LIST="/isilon/cgc/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
 VERIFY_VCF="/isilon/cgc/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
-CODING_BED="/isilon/cgc/PIPELINE_FILES/UCSC_hg19_CodingOnly_083013_MERGED_noContigs_noCHR.bed"
+CODING_BED="/isilon/cgc/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.bed"
 CYTOBAND_BED="/isilon/cgc/PIPELINE_FILES/GRCh37.Cytobands.bed"
 HAPMAP="/isilon/cgc/PIPELINE_FILES/hapmap_3.3.b37.vcf"
 OMNI_1KG="/isilon/cgc/PIPELINE_FILES/1000G_omni2.5.b37.vcf"

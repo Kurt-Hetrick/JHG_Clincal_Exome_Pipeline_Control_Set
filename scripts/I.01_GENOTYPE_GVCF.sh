@@ -43,17 +43,9 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotateNDA \
 --includeNonVariantSites \
 --disable_auto_index_creation_and_locking_when_reading_rods \
---annotation AS_BaseQualityRankSumTest \
---annotation AS_FisherStrand \
---annotation AS_InbreedingCoeff \
---annotation AS_MappingQualityRankSumTest \
---annotation AS_RMSMappingQuality \
---annotation AS_ReadPosRankSumTest \
---annotation AS_StrandOddsRatio \
 --annotation FractionInformativeReads \
 --annotation StrandBiasBySample \
 --annotation StrandAlleleCountsBySample \
---annotation LikelihoodRankSumTest \
 --variant $CONTROL_REPO/Control_GVCF.list \
 -o $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf
 
@@ -74,17 +66,9 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 --annotateNDA \
 --includeNonVariantSites \
 --disable_auto_index_creation_and_locking_when_reading_rods \
---annotation AS_BaseQualityRankSumTest \
---annotation AS_FisherStrand \
---annotation AS_InbreedingCoeff \
---annotation AS_MappingQualityRankSumTest \
---annotation AS_RMSMappingQuality \
---annotation AS_ReadPosRankSumTest \
---annotation AS_StrandOddsRatio \
 --annotation FractionInformativeReads \
 --annotation StrandBiasBySample \
 --annotation StrandAlleleCountsBySample \
---annotation LikelihoodRankSumTest \
 --variant $CONTROL_REPO/Control_GVCF.list \
 -o $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf \
 >> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt

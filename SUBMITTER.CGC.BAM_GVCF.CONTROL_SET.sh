@@ -9,9 +9,10 @@ SCRIPT_DIR="/isilon/cgc/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/7038
 # The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
 
 CORE_PATH="/isilon/cgc/SS_CRE"
-CONTROL_REPO="/isilon/cgc/SS_CRE/CGC_CONTROL_SET_3_7"
+CONTROL_REPO="/isilon/cgc/SS_CRECGC_CONTROL_SET_3_7_REFSEQ_TEMP"
 
 # PIPELINE PROGRAMS
+JAVA_1_6="/isilon/cgc/PROGRAMS/jre1.6.0_25/bin"
 JAVA_1_8="/isilon/cgc/PROGRAMS/jdk1.8.0_73/bin"
 BWA_DIR="/isilon/cgc/PROGRAMS/bwa-0.7.8"
 PICARD_DIR="/isilon/cgc/PROGRAMS/picard-tools-2.1.1"
@@ -21,7 +22,9 @@ TABIX_DIR="/isilon/cgc/PROGRAMS/tabix-0.2.6"
 SAMTOOLS_DIR="/isilon/cgc/PROGRAMS/samtools-0.1.18"
 DATAMASH_DIR="/isilon/cgc/PROGRAMS/datamash-1.0.6"
 BEDTOOLS_DIR="/isilon/cgc/PROGRAMS/bedtools-2.22.0/bin"
-JAVA_1_6="/isilon/cgc/PROGRAMS/jre1.6.0_25/bin/"
+VCFTOOLS_DIR="/isilon/cgc/PROGRAMS/vcftools_0.1.12b/bin"
+PLINK2_DIR="/isilon/cgc/PROGRAMS/PLINK2"
+KING_DIR="/isilon/cgc/PROGRAMS/KING/Linux-king19"
 CIDRSEQSUITE_DIR="/isilon/cgc/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
 ANNOVAR_DIR="/isilon/cgc/PROGRAMS/ANNOVAR/2013_09_11"
 
@@ -325,6 +328,84 @@ print "qsub","-N","H.03-A.01_DOC_CHROM_DEPTH_"$2"_"$1,\
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".ANEUPLOIDY_CHECK.log",\
 "'$SCRIPT_DIR'""/H.03-A.01_CHROM_DEPTH.sh",\
 "'$CORE_PATH'","'$CYTOBAND_BED'","'$DATAMASH_DIR'","'$BEDTOOLS_DIR'",$1,$2"\n""sleep 1s"}'
+
+# RUN FORMATTING PER BASE COVERAGE WITH GENE NAME ANNNOTATION
+
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+| sort -k 1,1 -k 2,2 \
+| uniq \
+| awk '{split($2,smtag,"[@]"); \
+print "qsub","-N","H.03-A.02_PER_BASE_"smtag[1]"_"smtag[2]"_"$1,\
+"-hold_jid","H.03_DOC_CODING_10bpFLANKS_"smtag[1]"_"smtag[2]"_"$1,\
+"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_BASE.log",\
+"'$SCRIPT_DIR'""/H.03-A.02_PER_BASE.sh",\
+"'$CORE_PATH'","'$BEDTOOLS_DIR'","'$CODING_BED'",$1,$2"\n""sleep 1s"}'
+
+# RUN FILTERING PER BASE COVERAGE WITH GENE NAME ANNNOTATION WITH LESS THAN 30x
+
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+| sort -k 1,1 -k 2,2 \
+| uniq \
+| awk '{split($2,smtag,"[@]"); \
+print "qsub","-N","H.03-A.02_PER_BASE_FILTER_"smtag[1]"_"smtag[2]"_"$1,\
+"-hold_jid","H.03-A.02_PER_BASE_"smtag[1]"_"smtag[2]"_"$1,\
+"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_BASE_FILTER.log",\
+"'$SCRIPT_DIR'""/H.03-A.02-A.01_PER_BASE_FILTERED.sh",\
+"'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
+
+# BGZIP PER BASE COVERAGE WITH GENE NAME ANNNOTATION
+
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+| sort -k 1,1 -k 2,2 \
+| uniq \
+| awk '{split($2,smtag,"[@]"); \
+print "qsub","-N","H.03-A.02-A.02_PER_BASE_BGZIP_"smtag[1]"_"smtag[2]"_"$1,\
+"-hold_jid","H.03-A.02_PER_BASE_"smtag[1]"_"smtag[2]"_"$1,\
+"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_BASE_BGZIP.log",\
+"'$SCRIPT_DIR'""/H.03-A.02-A.02_PER_BASE_BGZIP.sh",\
+"'$CORE_PATH'","'$TABIX_DIR'",$1,$2"\n""sleep 1s"}'
+
+# TABIX PER BASE COVERAGE WITH GENE NAME ANNNOTATION
+
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+| sort -k 1,1 -k 2,2 \
+| uniq \
+| awk '{split($2,smtag,"[@]"); \
+print "qsub","-N","H.03-A.02-A.02-A.01_PER_BASE_TABIX_"smtag[1]"_"smtag[2]"_"$1,\
+"-hold_jid","H.03-A.02-A.02_PER_BASE_BGZIP_"smtag[1]"_"smtag[2]"_"$1,\
+"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_BASE_TABIX.log",\
+"'$SCRIPT_DIR'""/H.03-A.02-A.02-A.01_PER_BASE_TABIX.sh",\
+"'$CORE_PATH'","'$TABIX_DIR'",$1,$2"\n""sleep 1s"}'
+
+# RUN FORMATTING PER CODING INTERVAL COVERAGE WITH GENE NAME ANNNOTATION
+
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+| sort -k 1,1 -k 2,2 \
+| uniq \
+| awk '{split($2,smtag,"[@]"); \
+print "qsub","-N","H.03-A.03_PER_INTERVAL_"smtag[1]"_"smtag[2]"_"$1,\
+"-hold_jid","H.03_DOC_CODING_10bpFLANKS_"smtag[1]"_"smtag[2]"_"$1,\
+"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_INTERVAL.log",\
+"'$SCRIPT_DIR'""/H.03-A.03_PER_INTERVAL.sh",\
+"'$CORE_PATH'","'$BEDTOOLS_DIR'","'$CODING_BED'",$1,$2"\n""sleep 1s"}'
+
+# RUN FILTERING PER CODING INTERVAL COVERAGE WITH GENE NAME ANNNOTATION WITH LESS THAN 30x
+
+awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+| sort -k 1,1 -k 2,2 \
+| uniq \
+| awk '{split($2,smtag,"[@]"); \
+print "qsub","-N","H.03-A.03_PER_INTERVAL_FILTER_"smtag[1]"_"smtag[2]"_"$1,\
+"-hold_jid","H.03-A.03_PER_INTERVAL_"smtag[1]"_"smtag[2]"_"$1,\
+"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_INTERVAL_FILTER.log",\
+"'$SCRIPT_DIR'""/H.03-A.03-A.01_PER_INTERVAL_FILTERED.sh",\
+"'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
 # RUN DOC TARGET BED (Generally this with all RefGene coding exons unless it becomes targeted)
 

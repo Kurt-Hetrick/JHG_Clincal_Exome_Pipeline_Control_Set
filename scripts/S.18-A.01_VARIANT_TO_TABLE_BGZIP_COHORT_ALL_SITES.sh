@@ -4,9 +4,8 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
 # tell sge to submit any of these queue when available
-#$ -q prod.q,rnd.q,test.q
+#$ -q cgc.q
 
 # tell sge that you are in the users current working directory
 #$ -cwd
