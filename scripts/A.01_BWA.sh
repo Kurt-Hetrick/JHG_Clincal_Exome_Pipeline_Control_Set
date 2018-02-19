@@ -5,7 +5,7 @@
 #$ -S /bin/bash 
 
 # tell sge to submit any of these queue when available
-#$ -q cgc.q
+#$ -q bigdata.q,lemon.q,prod.q,rnd.q,uhoh.q
 
 # tell sge that you are in the users current working directory
 #$ -cwd
