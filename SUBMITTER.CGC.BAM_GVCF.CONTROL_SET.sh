@@ -5,7 +5,7 @@ PED_FILE=$2
 
 # CHANGE SCRIPT DIR TO WHERE YOU HAVE HAVE THE SCRIPTS BEING SUBMITTED
 
-SCRIPT_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set"
+SCRIPT_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/scripts"
 # The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
 
 CORE_PATH="/mnt/clinical/ddl/NGS/Exome_Data"
@@ -193,7 +193,7 @@ gsub(/,/,",INPUT=/isilon/cgc/SS_CRE/"$1"/TEMP/",$4) \
 "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".MERGE.BAM.FILES.log",\
 "-hold_jid","A.01_BWA_"$2"_"$3, \
 "'$SCRIPT_DIR'""/B.01_MERGE_SORT_AGGRO.sh",\
-"'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'",$1,$2,"INPUT=/isilon/cgc/SS_CRE/"$1"/TEMP/"$4"\n""sleep 1s"}'
+"'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'",$1,$2,"INPUT=" "'$CORE_PATH'" $1"/TEMP/"$4"\n""sleep 1s"}'
 
 # Mark duplicates on the bam file above. Create a Mark Duplicates report which goes into the QC report
 
