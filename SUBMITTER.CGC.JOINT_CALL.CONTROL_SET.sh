@@ -32,7 +32,7 @@ ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
 GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
 VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
 CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.19Feb2018.bed"
-CYTOBAND_BED="/isilon/cgc/PIPELINE_FILES/GRCh37.Cytobands.bed"
+CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
 HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
 OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
 HI_CONF_1KG_PHASE1_SNP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
@@ -572,7 +572,7 @@ awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 | uniq \
 | awk '{print "qsub","-N","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$2"_"$1,\
 "-hold_jid","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
-"-o","'$CORE_PATH'"$1"/LOGS/"$2"_"$1".REFORMAT_ANNOVAR.log",\
+"-o","'$CORE_PATH'" "/" $1"/LOGS/"$2"_"$1".REFORMAT_ANNOVAR.log",\
 "'$SCRIPT_DIR'""/S.07-A.01-A.01_REFORMAT_ANNOVAR.sh",\
 "'$ANNOVAR_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 

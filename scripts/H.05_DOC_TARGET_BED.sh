@@ -4,7 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
 # tell sge to submit any of these queue when available
 #$ -q bigdata.q,lemon.q,prod.q,rnd.q,uhoh.q
 
@@ -83,11 +82,13 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 
 echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
 
-mv -v $CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/TARGET/$SM_TAG".TARGET.BED" \
-$CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/TARGET/$SM_TAG".TARGET.BED.EveryBase.csv"
+# apparently I took this out of the pipeline. since -omitBaseOutput is above
 
-md5sum $CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/TARGET/$SM_TAG".TARGET.BED.EveryBase.csv" \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
+# mv -v $CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/TARGET/$SM_TAG".TARGET.BED" \
+# $CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/TARGET/$SM_TAG".TARGET.BED.EveryBase.csv"
+
+# md5sum $CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/TARGET/$SM_TAG".TARGET.BED.EveryBase.csv" \
+# >> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
 
 #####
 

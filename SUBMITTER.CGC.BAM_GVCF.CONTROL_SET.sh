@@ -32,7 +32,7 @@ ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
 GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
 VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
 CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.19Feb2018.bed"
-CYTOBAND_BED="/isilon/cgc/PIPELINE_FILES/GRCh37.Cytobands.bed"
+CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
 HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
 OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
 HI_CONF_1KG_PHASE1_SNP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
@@ -58,7 +58,7 @@ MERGE_PED_MANIFEST
 CREATE_SAMPLE_INFO_ARRAY
 MAKE_PROJ_DIR_TREE
 echo "echo Making padded annotated RefSeq coding bed file for $SAMPLE"
-PAD_REFSEQ
+# PAD_REFSEQ
 # echo "echo Making padded target bed file for $SAMPLE"
 # PAD_TARGET
 # echo "echo Making everything merged together bait file for $SAMPLE"
@@ -319,7 +319,6 @@ print "qsub","-N","H.03_DOC_CODING_10bpFLANKS_"$2"_"$1,\
 "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
 
 # RUN ANEUPLOIDY_CHECK AFTER DOC RefSeq CODING PLUS 10 BP FLANKS
-# redo
 
 awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
