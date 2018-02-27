@@ -38,6 +38,7 @@ START_GENOTYPE_GVCF=`date '+%s'`
 
 $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -T GenotypeGVCFs \
+--logging_level ERROR \
 -R $REF_GENOME \
 --dbsnp $DBSNP \
 --annotateNDA \
@@ -61,6 +62,7 @@ echo $PROJECT",I.001,GENOTYPE_GVCF,"$HOSTNAME","$START_GENOTYPE_GVCF","$END_GENO
 
 echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -T GenotypeGVCFs \
+--logging_level ERROR \
 -R $REF_GENOME \
 --dbsnp $DBSNP \
 --annotateNDA \
