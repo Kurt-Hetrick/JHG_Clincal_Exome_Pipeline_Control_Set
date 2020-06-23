@@ -9,36 +9,41 @@ SCRIPT_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINES/JHGenomics_CGC_Clini
 # The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
 
 CORE_PATH="/mnt/clinical/ddl/NGS/Exome_Data"
-CONTROL_REPO="/mnt/clinical/ddl/NGS/Exome_Resources/CONTROL_REPO"
+
+# the control repo is where the gvcf list resides. file is named.
+# Control_GVCF.list
+CONTROL_REPO="/mnt/clinical/ddl/NGS/Exome_Data/CGC_CONTROLS_ALL"
+# this path is for the unique control set used in the pipeline
+# CONTROL_REPO="/mnt/clinical/ddl/NGS/Exome_Resources/CONTROL_REPO"
 
 # PIPELINE PROGRAMS
-JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
-JAVA_1_8="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jdk1.8.0_73/bin"
-BWA_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bwa-0.7.8"
-PICARD_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/picard-tools-2.1.1"
-GATK_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/GenomeAnalysisTK-3.7"
-VERIFY_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/verifyBamID_20120620/bin/"
-TABIX_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/tabix-0.2.6"
-SAMTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/samtools-0.1.18"
-DATAMASH_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/datamash-1.0.6"
-BEDTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bedtools-2.22.0/bin"
-VCFTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/vcftools_0.1.12b/bin"
-PLINK2_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/PLINK2"
-KING_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/KING/Linux-king19"
-CIDRSEQSUITE_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
-ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
+	JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
+	JAVA_1_8="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jdk1.8.0_73/bin"
+	BWA_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bwa-0.7.8"
+	PICARD_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/picard-tools-2.1.1"
+	GATK_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/GenomeAnalysisTK-3.7"
+	VERIFY_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/verifyBamID_20120620/bin/"
+	TABIX_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/tabix-0.2.6"
+	SAMTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/samtools-0.1.18"
+	DATAMASH_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/datamash-1.0.6"
+	BEDTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bedtools-2.22.0/bin"
+	VCFTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/vcftools_0.1.12b/bin"
+	PLINK2_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/PLINK2"
+	KING_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/KING/Linux-king19"
+	CIDRSEQSUITE_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
+	ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
 
 # PIPELINE FILES
-GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
-VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
-CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.19Feb2018.bed"
-CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
-HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
-OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
-HI_CONF_1KG_PHASE1_SNP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
-MILLS_1KG_GOLD_INDEL="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
-PHASE3_1KG_AUTOSOMES="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz"
-DBSNP_129="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
+	GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
+	VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
+	CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.19Feb2018.bed"
+	CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
+	HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
+	OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
+	HI_CONF_1KG_PHASE1_SNP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
+	MILLS_1KG_GOLD_INDEL="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
+	PHASE3_1KG_AUTOSOMES="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz"
+	DBSNP_129="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
 
 ##### MAKE A DIRECTORY TREE ##### SHOULD BE COMPLETE #####
 
@@ -51,35 +56,35 @@ PED_PREFIX=`basename $PED_FILE .ped`
 
 SETUP_PROJECT ()
 {
-FORMAT_MANIFEST
-MERGE_PED_MANIFEST
-CREATE_SAMPLE_INFO_ARRAY
-MAKE_PROJ_DIR_TREE
-# echo "echo Making padded annotated RefSeq coding bed file for $SAMPLE"
-# PAD_REFSEQ
-# echo "echo Making padded target bed file for $SAMPLE"
-# PAD_TARGET
-# echo "echo Making everything merged together bait file for $SAMPLE"
-# MAKE_BAIT
+	FORMAT_MANIFEST
+	MERGE_PED_MANIFEST
+	CREATE_SAMPLE_INFO_ARRAY
+	MAKE_PROJ_DIR_TREE
+	# echo "echo Making padded annotated RefSeq coding bed file for $SAMPLE"
+	# PAD_REFSEQ
+	# echo "echo Making padded target bed file for $SAMPLE"
+	# PAD_TARGET
+	# echo "echo Making everything merged together bait file for $SAMPLE"
+	# MAKE_BAIT
 }
 
 FORMAT_MANIFEST ()
 {
-sed 's/\r//g' $SAMPLE_SHEET \
-| awk 'NR>1' \
-| sed 's/,/\t/g' \
-| sort -k 8,8 \
->| ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt
+	sed 's/\r//g' $SAMPLE_SHEET \
+	| awk 'NR>1' \
+	| sed 's/,/\t/g' \
+	| sort -k 8,8 \
+	>| ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt
 }
 
 MERGE_PED_MANIFEST ()
 {
-awk 1 $PED_FILE \
-| sed 's/\r//g' \
-| sort -k 2 \
-| join -1 8 -2 2 ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
-| awk 'BEGIN {FS=" "; OFS="\t"} {print $2,$3,$4,$5,$6,$7,$8,$1,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24}' \
->| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
+	awk 1 $PED_FILE \
+	| sed 's/\r//g' \
+	| sort -k 2 \
+	| join -1 8 -2 2 ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
+	| awk 'BEGIN {FS=" "; OFS="\t"} {print $2,$3,$4,$5,$6,$7,$8,$1,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24}' \
+	>| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
 }
 
 # MAKE AN ARRAY FOR EACH SAMPLE
@@ -90,74 +95,74 @@ awk 1 $PED_FILE \
 	## SAMPLE_INFO_ARRAY[3] = BAIT BED FILE
 	## SAMPLE_INFO_ARRAY[4] = TARGET_BED_FILE
 
-CREATE_SAMPLE_INFO_ARRAY ()
-{
-SAMPLE_INFO_ARRAY=(`awk '$8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
-}
+	CREATE_SAMPLE_INFO_ARRAY ()
+	{
+	SAMPLE_INFO_ARRAY=(`awk '$8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
+	}
 
-# PROJECT DIRECTORY TREE CREATOR
+	# PROJECT DIRECTORY TREE CREATOR
 
-MAKE_PROJ_DIR_TREE ()
-{
-mkdir -p $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/BAM \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/HC_BAM \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/INDEL/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/SNV/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/MIXED/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/VCF/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/GVCF \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BAIT_BIAS/{METRICS,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/PRE_ADAPTER/{METRICS,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASECALL_Q_SCORE_DISTRIBUTION/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASE_DISTRIBUTION_BY_CYCLE/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/CONCORDANCE \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/COUNT_COVARIATES/{GATK_REPORT,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/GC_BIAS/{METRICS,PDF,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/DEPTH_OF_COVERAGE/{TARGET,REFSEQ_CODING_PLUS_10bp} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/HYB_SELECTION/PER_TARGET_COVERAGE \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/INSERT_SIZE/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/LOCAL_REALIGNMENT_INTERVALS \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/MEAN_QUALITY_BY_CYCLE/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/ANEUPLOIDY_CHECK \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/JOINT_VCF/ \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_ANNOVAR \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/{FASTQ,LOGS,COMMAND_LINES}
-}
+	MAKE_PROJ_DIR_TREE ()
+	{
+		mkdir -p $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/BAM \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/HC_BAM \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/INDEL/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/SNV/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/MIXED/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/VCF/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/GVCF \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BAIT_BIAS/{METRICS,SUMMARY} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/PRE_ADAPTER/{METRICS,SUMMARY} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASECALL_Q_SCORE_DISTRIBUTION/{METRICS,PDF} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASE_DISTRIBUTION_BY_CYCLE/{METRICS,PDF} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/CONCORDANCE \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/COUNT_COVARIATES/{GATK_REPORT,PDF} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/GC_BIAS/{METRICS,PDF,SUMMARY} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/DEPTH_OF_COVERAGE/{TARGET,REFSEQ_CODING_PLUS_10bp} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/HYB_SELECTION/PER_TARGET_COVERAGE \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/INSERT_SIZE/{METRICS,PDF} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/LOCAL_REALIGNMENT_INTERVALS \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/MEAN_QUALITY_BY_CYCLE/{METRICS,PDF} \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/ANEUPLOIDY_CHECK \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/JOINT_VCF/ \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_ANNOVAR \
+		$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/{FASTQ,LOGS,COMMAND_LINES}
+		}
 
-# PAD THE REFSEQ canonical transcript bed file by 10 bases.
-# can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
+	# PAD THE REFSEQ canonical transcript bed file by 10 bases.
+	# can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
 
-PAD_REFSEQ ()
-{
-awk 1 $CODING_BED \
-| sed 's/\r//g' \
-| sed -r 's/[[:space:]]+/\t/g' \
-| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$2+10}' \
->| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_CODING.bed"
-}
+	PAD_REFSEQ ()
+	{
+		awk 1 $CODING_BED \
+		| sed 's/\r//g' \
+		| sed -r 's/[[:space:]]+/\t/g' \
+		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$2+10}' \
+		>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_CODING.bed"
+	}
 
-# PAD THE TARGET BED FILE BY 10 BP
+	# PAD THE TARGET BED FILE BY 10 BP
 
-PAD_TARGET ()
-{
-awk 1 ${SAMPLE_INFO_ARRAY[4]} \
-| sed 's/\r//g' \
-| sed -r 's/[[:space:]]+/\t/g' \
-| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$2+10}' \
->| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed"
-}
+	PAD_TARGET ()
+	{
+		awk 1 ${SAMPLE_INFO_ARRAY[4]} \
+		| sed 's/\r//g' \
+		| sed -r 's/[[:space:]]+/\t/g' \
+		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$2+10}' \
+		>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed"
+	}
 
-# MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
+	# MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
 
-MAKE_BAIT ()
-{
-cat $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed" \
-${SAMPLE_INFO_ARRAY[3]} \
-| sort -k 1,1 -k 2,2n -k 3,3n \
-| $BEDTOOLS_DIR/bedtools merge -i - \
->| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_BAIT.bed
-}
+	MAKE_BAIT ()
+	{
+		cat $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed" \
+		${SAMPLE_INFO_ARRAY[3]} \
+		| sort -k 1,1 -k 2,2n -k 3,3n \
+		| $BEDTOOLS_DIR/bedtools merge -i - \
+		>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_BAIT.bed
+	}
 
 for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 do
@@ -168,77 +173,77 @@ done
 
 #### JOINT CALLING AND VQSR ####
 
-### Run GenotypeGVCF per Family
+	### Run GenotypeGVCF per Family
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12,$18}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk 'BEGIN {FS="\t"} \
-{print "qsub","-N","I.01_GENOTYPE_GVCF_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".GENOTYPE_GVCF.log",\
-"'$SCRIPT_DIR'""/I.01_GENOTYPE_GVCF.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,"'$CONTROL_REPO'""\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12,$18}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 \
+		| uniq \
+		| awk 'BEGIN {FS="\t"} \
+		{print "qsub","-N","I.01_GENOTYPE_GVCF_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$1".GENOTYPE_GVCF.log",\
+		"'$SCRIPT_DIR'""/I.01_GENOTYPE_GVCF.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,"'$CONTROL_REPO'""\n""sleep 3s"}'
 
-### Run Variant Recalibrator for the SNP model, this is done in parallel with the INDEL model
+	### Run Variant Recalibrator for the SNP model, this is done in parallel with the INDEL model
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12,$18}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","J.01_VARIANT_RECALIBRATOR_SNP_"$1,\
-"-hold_jid","I.01_GENOTYPE_GVCF_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_RECALIBRATOR_SNP.log",\
-"'$SCRIPT_DIR'""/J.01_VARIANT_RECALIBRATOR_SNP.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,"'$HAPMAP'","'$OMNI_1KG'","'$HI_CONF_1KG_PHASE1_SNP'""\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12,$18}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 \
+		| uniq \
+		| awk '{print "qsub","-N","J.01_VARIANT_RECALIBRATOR_SNP_"$1,\
+		"-hold_jid","I.01_GENOTYPE_GVCF_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_RECALIBRATOR_SNP.log",\
+		"'$SCRIPT_DIR'""/J.01_VARIANT_RECALIBRATOR_SNP.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,"'$HAPMAP'","'$OMNI_1KG'","'$HI_CONF_1KG_PHASE1_SNP'""\n""sleep 3s"}'
 
-### Run Variant Recalibrator for the INDEL model, this is done in parallel with the SNP model
+	### Run Variant Recalibrator for the INDEL model, this is done in parallel with the SNP model
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","J.02_VARIANT_RECALIBRATOR_INDEL_"$1,\
-"-hold_jid","I.01_GENOTYPE_GVCF_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_RECALIBRATOR_INDEL.log",\
-"'$SCRIPT_DIR'""/J.02_VARIANT_RECALIBRATOR_INDEL.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,"'$MILLS_1KG_GOLD_INDEL'""\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 \
+		| uniq \
+		| awk '{print "qsub","-N","J.02_VARIANT_RECALIBRATOR_INDEL_"$1,\
+		"-hold_jid","I.01_GENOTYPE_GVCF_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_RECALIBRATOR_INDEL.log",\
+		"'$SCRIPT_DIR'""/J.02_VARIANT_RECALIBRATOR_INDEL.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,"'$MILLS_1KG_GOLD_INDEL'""\n""sleep 3s"}'
 
-### Run Apply Recalbration with the SNP model to the VCF file
+	### Run Apply Recalbration with the SNP model to the VCF file
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","K.01_APPLY_RECALIBRATION_SNP_"$1,\
-"-hold_jid","J.01_VARIANT_RECALIBRATOR_SNP_"$1",""J.02_VARIANT_RECALIBRATOR_INDEL_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".APPLY_RECALIBRATION_SNP.log",\
-"'$SCRIPT_DIR'""/K.01_APPLY_RECALIBRATION_SNP.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 \
+		| uniq \
+		| awk '{print "qsub","-N","K.01_APPLY_RECALIBRATION_SNP_"$1,\
+		"-hold_jid","J.01_VARIANT_RECALIBRATOR_SNP_"$1",""J.02_VARIANT_RECALIBRATOR_INDEL_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$1".APPLY_RECALIBRATION_SNP.log",\
+		"'$SCRIPT_DIR'""/K.01_APPLY_RECALIBRATION_SNP.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
-### Run Apply Recalibration with the INDEL model to the VCF file.
+	### Run Apply Recalibration with the INDEL model to the VCF file.
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","L.01_APPLY_RECALIBRATION_INDEL_"$1,\
-"-hold_jid","K.01_APPLY_RECALIBRATION_SNP_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".APPLY_RECALIBRATION_INDEL.log",\
-"'$SCRIPT_DIR'""/L.01_APPLY_RECALIBRATION_INDEL.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 \
+		| uniq \
+		| awk '{print "qsub","-N","L.01_APPLY_RECALIBRATION_INDEL_"$1,\
+		"-hold_jid","K.01_APPLY_RECALIBRATION_SNP_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$1".APPLY_RECALIBRATION_INDEL.log",\
+		"'$SCRIPT_DIR'""/L.01_APPLY_RECALIBRATION_INDEL.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
-### Add all possible GATK annotations to the VCF file.
+	### Add all possible GATK annotations to the VCF file.
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","P.01_VARIANT_ANNOTATOR_"$1,\
-"-hold_jid","L.01_APPLY_RECALIBRATION_INDEL_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_ANNOTATOR.log",\
-"'$SCRIPT_DIR'""/P.01_VARIANT_ANNOTATOR.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$PED_FILE'",$1,$2,"'$PHASE3_1KG_AUTOSOMES'""\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 \
+		| uniq \
+		| awk '{print "qsub","-N","P.01_VARIANT_ANNOTATOR_"$1,\
+		"-hold_jid","L.01_APPLY_RECALIBRATION_INDEL_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_ANNOTATOR.log",\
+		"'$SCRIPT_DIR'""/P.01_VARIANT_ANNOTATOR.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$PED_FILE'",$1,$2,"'$PHASE3_1KG_AUTOSOMES'""\n""sleep 3s"}'
 
 ##### DOING VCF BREAKOUTS #####
 
@@ -246,306 +251,306 @@ awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 
 # FILTER TO JUST VARIANT SITES
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","S.01_FILTER_COHORT_VARIANT_ONLY_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".FILTER_COHORT_VARIANT_ONLY.log",\
-"'$SCRIPT_DIR'""/S.01_FILTER_COHORT_VARIANT_ONLY.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 \
+	| uniq \
+	| awk '{print "qsub","-N","S.01_FILTER_COHORT_VARIANT_ONLY_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$1".FILTER_COHORT_VARIANT_ONLY.log",\
+	"'$SCRIPT_DIR'""/S.01_FILTER_COHORT_VARIANT_ONLY.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
 # FILTER TO JUST PASSING VARIANT SITES
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","S.02_FILTER_COHORT_VARIANT_ONLY_PASS_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".FILTER_COHORT_VARIANT_ONLY_PASS.log",\
-"'$SCRIPT_DIR'""/S.02_FILTER_COHORT_VARIANT_ONLY_PASS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 \
+	| uniq \
+	| awk '{print "qsub","-N","S.02_FILTER_COHORT_VARIANT_ONLY_PASS_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$1".FILTER_COHORT_VARIANT_ONLY_PASS.log",\
+	"'$SCRIPT_DIR'""/S.02_FILTER_COHORT_VARIANT_ONLY_PASS.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
 ### SUBSETTING TO SAMPLE VCFS ###
 
 ## SUBSET TO SAMPLE VCF ALL SITES ##
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.06_FILTER_TO_SAMPLE_ALL_SITES_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_ALL_SITES.log",\
-"'$SCRIPT_DIR'""/S.06_FILTER_TO_SAMPLE_ALL_SITES.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.06_FILTER_TO_SAMPLE_ALL_SITES_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_ALL_SITES.log",\
+	"'$SCRIPT_DIR'""/S.06_FILTER_TO_SAMPLE_ALL_SITES.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
 
 ## SUBSET TO SAMPLE VARIANTS ONLY 
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.07_FILTER_TO_SAMPLE_VARIANTS_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_VARIANTS.log",\
-"'$SCRIPT_DIR'""/S.07_FILTER_TO_SAMPLE_VARIANTS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.07_FILTER_TO_SAMPLE_VARIANTS_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_VARIANTS.log",\
+	"'$SCRIPT_DIR'""/S.07_FILTER_TO_SAMPLE_VARIANTS.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
 
 ## SUBSET TO SAMPLE PASSING VARIANTS
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.08_FILTER_TO_SAMPLE_VARIANTS_PASS_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_VARIANTS_PASS.log",\
-"'$SCRIPT_DIR'""/S.08_FILTER_TO_SAMPLE_VARIANTS_PASS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.08_FILTER_TO_SAMPLE_VARIANTS_PASS_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_VARIANTS_PASS.log",\
+	"'$SCRIPT_DIR'""/S.08_FILTER_TO_SAMPLE_VARIANTS_PASS.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
 
 ## SUBSET TO SAMPLE PASSING SNVS
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_SNV_ONLY_PASS.log",\
-"'$SCRIPT_DIR'""/S.09_FILTER_TO_SAMPLE_SNV_ONLY_PASS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_SNV_ONLY_PASS.log",\
+	"'$SCRIPT_DIR'""/S.09_FILTER_TO_SAMPLE_SNV_ONLY_PASS.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
 
 ## SUBSET TO SAMPLE PASSING INDELS
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.10_FILTER_TO_INDEL_ONLY_PASS_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_INDEL_ONLY_PASS.log",\
-"'$SCRIPT_DIR'""/S.10_FILTER_TO_SAMPLE_INDEL_ONLY_PASS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.10_FILTER_TO_INDEL_ONLY_PASS_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_INDEL_ONLY_PASS.log",\
+	"'$SCRIPT_DIR'""/S.10_FILTER_TO_SAMPLE_INDEL_ONLY_PASS.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
 
 ## SUBSET TO SAMPLE PASSING MIXED
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.11_FILTER_TO_MIXED_ONLY_PASS_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_MIXED_ONLY_PASS.log",\
-"'$SCRIPT_DIR'""/S.11_FILTER_TO_SAMPLE_MIXED_ONLY_PASS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.11_FILTER_TO_MIXED_ONLY_PASS_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_MIXED_ONLY_PASS.log",\
+	"'$SCRIPT_DIR'""/S.11_FILTER_TO_SAMPLE_MIXED_ONLY_PASS.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
 
 ## SUBSET TO TARGET SNV ONLY PASS
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.12_FILTER_TO_SAMPLE_TARGET_SNV_ONLY_PASS_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TARGET_SNV_ONLY_PASS.log",\
-"'$SCRIPT_DIR'""/S.12_FILTER_TO_SAMPLE_TARGET_SNV_ONLY_PASS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.12_FILTER_TO_SAMPLE_TARGET_SNV_ONLY_PASS_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TARGET_SNV_ONLY_PASS.log",\
+	"'$SCRIPT_DIR'""/S.12_FILTER_TO_SAMPLE_TARGET_SNV_ONLY_PASS.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
 
 ## SUBSET TO TARGET INDEL ONLY PASS
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.13_FILTER_TO_SAMPLE_TARGET_INDEL_ONLY_PASS_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TARGET_INDEL_ONLY_PASS.log",\
-"'$SCRIPT_DIR'""/S.13_FILTER_TO_SAMPLE_TARGET_INDEL_ONLY_PASS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.13_FILTER_TO_SAMPLE_TARGET_INDEL_ONLY_PASS_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TARGET_INDEL_ONLY_PASS.log",\
+	"'$SCRIPT_DIR'""/S.13_FILTER_TO_SAMPLE_TARGET_INDEL_ONLY_PASS.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
 
 ## SUBSET TO TARGET MIXED ONLY PASS
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.14_FILTER_TO_SAMPLE_TARGET_MIXED_ONLY_PASS_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TARGET_MIXED_ONLY_PASS.log",\
-"'$SCRIPT_DIR'""/S.14_FILTER_TO_SAMPLE_TARGET_MIXED_ONLY_PASS.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.14_FILTER_TO_SAMPLE_TARGET_MIXED_ONLY_PASS_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TARGET_MIXED_ONLY_PASS.log",\
+	"'$SCRIPT_DIR'""/S.14_FILTER_TO_SAMPLE_TARGET_MIXED_ONLY_PASS.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
 
 ## SUBSET TO SAMPLE VCF ALL SITES ON TARGET##
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.15_FILTER_TO_SAMPLE_ALL_SITES_TARGET_"$2"_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_ALL_SITES_TARGET.log",\
-"'$SCRIPT_DIR'""/S.15_FILTER_TO_SAMPLE_ALL_SITES_TARGET.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$17}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.15_FILTER_TO_SAMPLE_ALL_SITES_TARGET_"$2"_"$1,\
+	"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_ALL_SITES_TARGET.log",\
+	"'$SCRIPT_DIR'""/S.15_FILTER_TO_SAMPLE_ALL_SITES_TARGET.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
 
 
 ########################
 ##### TITV SECTION #####
 ########################
 
-# BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE
+	# BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.09-A.01_FILTER_TO_SAMPLE_TITV_VCF_"$2"_"$1,\
-"-hold_jid","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TITV_VCF.log",\
-"'$SCRIPT_DIR'""/S.09-A.01_FILTER_TO_SAMPLE_TITV_VCF.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 -k 2 \
+		| uniq \
+		| awk '{print "qsub","-N","S.09-A.01_FILTER_TO_SAMPLE_TITV_VCF_"$2"_"$1,\
+		"-hold_jid","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TITV_VCF.log",\
+		"'$SCRIPT_DIR'""/S.09-A.01_FILTER_TO_SAMPLE_TITV_VCF.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4"\n""sleep 3s"}'
 
-# BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE AND OVERLAP WITH DBSNP 129
+	# BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE AND OVERLAP WITH DBSNP 129
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.09-A.02_FILTER_TO_SAMPLE_TITV_VCF_KNOWN_"$2"_"$1,\
-"-hold_jid","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TITV_VCF_KNOWN.log",\
-"'$SCRIPT_DIR'""/S.09-A.02_FILTER_TO_SAMPLE_TITV_VCF_KNOWN.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4,"'$DBSNP_129'""\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 -k 2 \
+		| uniq \
+		| awk '{print "qsub","-N","S.09-A.02_FILTER_TO_SAMPLE_TITV_VCF_KNOWN_"$2"_"$1,\
+		"-hold_jid","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TITV_VCF_KNOWN.log",\
+		"'$SCRIPT_DIR'""/S.09-A.02_FILTER_TO_SAMPLE_TITV_VCF_KNOWN.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4,"'$DBSNP_129'""\n""sleep 3s"}'
 
-# BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE AND DO NOT OVERLAP WITH DBSNP 129
+	# BREAK DOWN TO ALL PASSING SNV THAT FALL IN TITV BED FILE AND DO NOT OVERLAP WITH DBSNP 129
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.09-A.03_FILTER_TO_SAMPLE_TITV_VCF_NOVEL_"$2"_"$1,\
-"-hold_jid","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TITV_VCF_NOVEL.log",\
-"'$SCRIPT_DIR'""/S.09-A.03_FILTER_TO_SAMPLE_TITV_VCF_NOVEL.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4,"'$DBSNP_129'""\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 -k 2 \
+		| uniq \
+		| awk '{print "qsub","-N","S.09-A.03_FILTER_TO_SAMPLE_TITV_VCF_NOVEL_"$2"_"$1,\
+		"-hold_jid","S.09_FILTER_TO_SNV_ONLY_PASS_"$2"_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_TITV_VCF_NOVEL.log",\
+		"'$SCRIPT_DIR'""/S.09-A.03_FILTER_TO_SAMPLE_TITV_VCF_NOVEL.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,$4,"'$DBSNP_129'""\n""sleep 3s"}'
 
-### RUN TITV FOR THE PASSING SNVS THAT FALL IN UCSC CODING REGIONS THAT TOUCH EITHER THE BED OR TARGET FILE
+	### RUN TITV FOR THE PASSING SNVS THAT FALL IN UCSC CODING REGIONS THAT TOUCH EITHER THE BED OR TARGET FILE
 
-## ALL SNVS TITV
+	## ALL SNVS TITV
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.09-A.01-A.01_TITV_ALL_"$2"_"$1,\
-"-hold_jid","S.09-A.01_FILTER_TO_SAMPLE_TITV_VCF_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_TITV_ALL.log",\
-"'$SCRIPT_DIR'""/S.09-A.01-A.01_TITV_ALL.sh",\
-"'$SAMTOOLS_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 -k 2 \
+		| uniq \
+		| awk '{print "qsub","-N","S.09-A.01-A.01_TITV_ALL_"$2"_"$1,\
+		"-hold_jid","S.09-A.01_FILTER_TO_SAMPLE_TITV_VCF_"$2"_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_TITV_ALL.log",\
+		"'$SCRIPT_DIR'""/S.09-A.01-A.01_TITV_ALL.sh",\
+		"'$SAMTOOLS_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
-## ALL KNOWN SNVS TITV
+	## ALL KNOWN SNVS TITV
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.09-A.02-A.01_TITV_KNOWN_"$2"_"$1,\
-"-hold_jid","S.09-A.02_FILTER_TO_SAMPLE_TITV_VCF_KNOWN_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_TITV_KNOWN.log",\
-"'$SCRIPT_DIR'""/S.09-A.02-A.01_TITV_KNOWN.sh",\
-"'$SAMTOOLS_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 -k 2 \
+		| uniq \
+		| awk '{print "qsub","-N","S.09-A.02-A.01_TITV_KNOWN_"$2"_"$1,\
+		"-hold_jid","S.09-A.02_FILTER_TO_SAMPLE_TITV_VCF_KNOWN_"$2"_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_TITV_KNOWN.log",\
+		"'$SCRIPT_DIR'""/S.09-A.02-A.01_TITV_KNOWN.sh",\
+		"'$SAMTOOLS_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
-## ALL NOVEL SNVS TITV
+	## ALL NOVEL SNVS TITV
 
-awk 'BBEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.09-A.03-A.01_TITV_NOVEL_"$2"_"$1,\
-"-hold_jid","S.09-A.03_FILTER_TO_SAMPLE_TITV_VCF_NOVEL_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_TITV_NOVEL.log",\
-"'$SCRIPT_DIR'""/S.09-A.03-A.01_TITV_NOVEL.sh",\
-"'$SAMTOOLS_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+		awk 'BBEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 -k 2 \
+		| uniq \
+		| awk '{print "qsub","-N","S.09-A.03-A.01_TITV_NOVEL_"$2"_"$1,\
+		"-hold_jid","S.09-A.03_FILTER_TO_SAMPLE_TITV_VCF_NOVEL_"$2"_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_TITV_NOVEL.log",\
+		"'$SCRIPT_DIR'""/S.09-A.03-A.01_TITV_NOVEL.sh",\
+		"'$SAMTOOLS_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
 #####################################################################
 ################ CONVERT VCF FILES TO TABLES ########################
 #####################################################################
 
-## CONVERT INITIAL JOINT CALLED VCF TO TABLE##
+	## CONVERT INITIAL JOINT CALLED VCF TO TABLE##
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","S.18_VARIANT_TO_TABLE_COHORT_ALL_SITES_"$1,\
-"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_TO_TABLE_COHORT_ALL_SITES.log",\
-"'$SCRIPT_DIR'""/S.18_VARIANT_TO_TABLE_COHORT_ALL_SITES.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 \
+		| uniq \
+		| awk '{print "qsub","-N","S.18_VARIANT_TO_TABLE_COHORT_ALL_SITES_"$1,\
+		"-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_TO_TABLE_COHORT_ALL_SITES.log",\
+		"'$SCRIPT_DIR'""/S.18_VARIANT_TO_TABLE_COHORT_ALL_SITES.sh",\
+		"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
-## BGZIP INITIAL JOINT CALLED VCF TABLE##
+	## BGZIP INITIAL JOINT CALLED VCF TABLE##
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","S.18-A.01_VARIANT_TO_TABLE_BGZIP_COHORT_ALL_SITES_"$1,\
-"-hold_jid","S.18_VARIANT_TO_TABLE_COHORT_ALL_SITES_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_TO_TABLE_BGZIP_COHORT_ALL_SITES.log",\
-"'$SCRIPT_DIR'""/S.18-A.01_VARIANT_TO_TABLE_BGZIP_COHORT_ALL_SITES.sh",\
-"'$TABIX_DIR'","'$CORE_PATH'",$1"\n""sleep 1s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 \
+		| uniq \
+		| awk '{print "qsub","-N","S.18-A.01_VARIANT_TO_TABLE_BGZIP_COHORT_ALL_SITES_"$1,\
+		"-hold_jid","S.18_VARIANT_TO_TABLE_COHORT_ALL_SITES_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_TO_TABLE_BGZIP_COHORT_ALL_SITES.log",\
+		"'$SCRIPT_DIR'""/S.18-A.01_VARIANT_TO_TABLE_BGZIP_COHORT_ALL_SITES.sh",\
+		"'$TABIX_DIR'","'$CORE_PATH'",$1"\n""sleep 1s"}'
 
-## TABIX INDEX INITIAL JOINT CALLED VCF TABLE##
+	## TABIX INDEX INITIAL JOINT CALLED VCF TABLE##
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk '{print "qsub","-N","S.18-A.01-A.01_VARIANT_TO_TABLE_TABIX_COHORT_ALL_SITES_"$1,\
-"-hold_jid","S.18-A.01_VARIANT_TO_TABLE_BGZIP_COHORT_ALL_SITES_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_TO_TABLE_TABIX_COHORT_ALL_SITES.log",\
-"'$SCRIPT_DIR'""/S.18-A.01-A.01_VARIANT_TO_TABLE_TABIX_COHORT_ALL_SITES.sh",\
-"'$TABIX_DIR'","'$CORE_PATH'",$1"\n""sleep 1s"}'
+		awk 'BEGIN {FS="\t"; OFS="\t"} {print $1}' \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sort -k 1 \
+		| uniq \
+		| awk '{print "qsub","-N","S.18-A.01-A.01_VARIANT_TO_TABLE_TABIX_COHORT_ALL_SITES_"$1,\
+		"-hold_jid","S.18-A.01_VARIANT_TO_TABLE_BGZIP_COHORT_ALL_SITES_"$1,\
+		"-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_TO_TABLE_TABIX_COHORT_ALL_SITES.log",\
+		"'$SCRIPT_DIR'""/S.18-A.01-A.01_VARIANT_TO_TABLE_TABIX_COHORT_ALL_SITES.sh",\
+		"'$TABIX_DIR'","'$CORE_PATH'",$1"\n""sleep 1s"}'
 
 ######### SAMPLE ONLY ALL SITES FILE TO TABLE #################################
 
 ## CONVERT SAMPLE ONLY VCF TO TABLE##
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.06-A.01_VARIANT_TO_TABLE_SAMPLE_ALL_SITES_"$2"_"$1,\
-"-hold_jid","S.06_FILTER_TO_SAMPLE_ALL_SITES_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".VARIANT_TO_TABLE_SAMPLE_ALL_SITES.log",\
-"'$SCRIPT_DIR'""/S.06-A.01_VARIANT_TO_TABLE_SAMPLE_ALL_SITES.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.06-A.01_VARIANT_TO_TABLE_SAMPLE_ALL_SITES_"$2"_"$1,\
+	"-hold_jid","S.06_FILTER_TO_SAMPLE_ALL_SITES_"$2"_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".VARIANT_TO_TABLE_SAMPLE_ALL_SITES.log",\
+	"'$SCRIPT_DIR'""/S.06-A.01_VARIANT_TO_TABLE_SAMPLE_ALL_SITES.sh",\
+	"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
 
 ## BGZIP SAMPLE ONLY VCF TABLE##
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.06-A.01-A.01_VARIANT_TO_TABLE_BGZIP_SAMPLE_ALL_SITES_"$2"_"$1,\
-"-hold_jid","S.06-A.01_VARIANT_TO_TABLE_SAMPLE_ALL_SITES_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".VARIANT_TO_TABLE_BGZIP_SAMPLE_ALL_SITES.log",\
-"'$SCRIPT_DIR'""/S.06-A.01-A.01_VARIANT_TO_TABLE_BGZIP_SAMPLE_ALL_SITES.sh",\
-"'$TABIX_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.06-A.01-A.01_VARIANT_TO_TABLE_BGZIP_SAMPLE_ALL_SITES_"$2"_"$1,\
+	"-hold_jid","S.06-A.01_VARIANT_TO_TABLE_SAMPLE_ALL_SITES_"$2"_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".VARIANT_TO_TABLE_BGZIP_SAMPLE_ALL_SITES.log",\
+	"'$SCRIPT_DIR'""/S.06-A.01-A.01_VARIANT_TO_TABLE_BGZIP_SAMPLE_ALL_SITES.sh",\
+	"'$TABIX_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
 ## TABIX INDEX SAMPLE ONLY VCF TABLE##
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{print "qsub","-N","S.06-A.01-A.01-A.01_VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES_"$2"_"$1,\
-"-hold_jid","S.06-A.01-A.01_VARIANT_TO_TABLE_BGZIP_SAMPLE_ALL_SITES_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES.log",\
-"'$SCRIPT_DIR'""/S.06-A.01-A.01-A.01_VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES.sh",\
-"'$TABIX_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.06-A.01-A.01-A.01_VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES_"$2"_"$1,\
+	"-hold_jid","S.06-A.01-A.01_VARIANT_TO_TABLE_BGZIP_SAMPLE_ALL_SITES_"$2"_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES.log",\
+	"'$SCRIPT_DIR'""/S.06-A.01-A.01-A.01_VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES.sh",\
+	"'$TABIX_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
 ###################
 ##### ANNOVAR #####
@@ -553,58 +558,59 @@ awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
 
 ## RUN ANNOVAR
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1,1 -k 2,2 \
-| uniq \
-| awk '{print "qsub","-N","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
-"-hold_jid","S.07_FILTER_TO_SAMPLE_VARIANTS_"$2"_"$1,\
-"-pe slots 5",\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_ANNOVAR.log",\
-"'$SCRIPT_DIR'""/S.07-A.01_RUN_ANNOVAR.sh",\
-"'$JAVA_1_6'","'$CIDRSEQSUITE_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1,1 -k 2,2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
+	"-hold_jid","S.07_FILTER_TO_SAMPLE_VARIANTS_"$2"_"$1,\
+	"-pe slots 5",\
+	"-R y",\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_ANNOVAR.log",\
+	"'$SCRIPT_DIR'""/S.07-A.01_RUN_ANNOVAR.sh",\
+	"'$JAVA_1_6'","'$CIDRSEQSUITE_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
 ## REFORMAT ANNOVAR
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1,1 -k 2,2 \
-| uniq \
-| awk '{print "qsub","-N","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$2"_"$1,\
-"-hold_jid","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
-"-o","'$CORE_PATH'" "/" $1"/LOGS/"$2"_"$1".REFORMAT_ANNOVAR.log",\
-"'$SCRIPT_DIR'""/S.07-A.01-A.01_REFORMAT_ANNOVAR.sh",\
-"'$ANNOVAR_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1,1 -k 2,2 \
+	| uniq \
+	| awk '{print "qsub","-N","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$2"_"$1,\
+	"-hold_jid","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
+	"-o","'$CORE_PATH'" "/" $1"/LOGS/"$2"_"$1".REFORMAT_ANNOVAR.log",\
+	"'$SCRIPT_DIR'""/S.07-A.01-A.01_REFORMAT_ANNOVAR.sh",\
+	"'$ANNOVAR_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
 ##########################
 ##### QC REPORT PREP #####
 ##########################
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$20,$8,$21,$22,$23,$24}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 -k 3 \
-| uniq \
-| awk 'BEGIN {FS="\t"}
-{print "qsub","-N","X.01-QC_REPORT_PREP_"$1"_"$3,\
-"-hold_jid","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$3"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$3"_"$1".QC_REPORT_PREP.log",\
-"'$SCRIPT_DIR'""/X.01-QC_REPORT_PREP.sh",\
-"'$SAMTOOLS_DIR'","'$CORE_PATH'","'$DATAMASH_DIR'",$1,$2,$3,$4,$5,$6,$7"\n""sleep 30s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$20,$8,$21,$22,$23,$24}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 -k 3 \
+	| uniq \
+	| awk 'BEGIN {FS="\t"}
+	{print "qsub","-N","X.01-QC_REPORT_PREP_"$1"_"$3,\
+	"-hold_jid","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$3"_"$1,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$3"_"$1".QC_REPORT_PREP.log",\
+	"'$SCRIPT_DIR'""/X.01-QC_REPORT_PREP.sh",\
+	"'$SAMTOOLS_DIR'","'$CORE_PATH'","'$DATAMASH_DIR'",$1,$2,$3,$4,$5,$6,$7"\n""sleep 30s"}'
 
 ### END PROJECT TASKS ###
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| $DATAMASH_DIR/datamash -s -g 1 collapse 2 \
-| awk 'BEGIN {FS="\t"}
-gsub (/,/,",X.01-QC_REPORT_PREP_"$1"_",$2) \
-{print "qsub","-N","X.01-X.01-END_PROJECT_TASKS_"$1,\
-"-hold_jid","X.01-QC_REPORT_PREP_"$1"_"$2,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".END_PROJECT_TASKS.log",\
-"'$SCRIPT_DIR'""/X.01-X.01-END_PROJECT_TASKS.sh",\
-"'$CORE_PATH'","'$DATAMASH_DIR'",$1"\n""sleep 3s"}'
+	awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+	~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+	| sort -k 1 -k 2 \
+	| uniq \
+	| $DATAMASH_DIR/datamash -s -g 1 collapse 2 \
+	| awk 'BEGIN {FS="\t"}
+	gsub (/,/,",X.01-QC_REPORT_PREP_"$1"_",$2) \
+	{print "qsub","-N","X.01-X.01-END_PROJECT_TASKS_"$1,\
+	"-hold_jid","X.01-QC_REPORT_PREP_"$1"_"$2,\
+	"-o","'$CORE_PATH'/"$1"/LOGS/"$1".END_PROJECT_TASKS.log",\
+	"'$SCRIPT_DIR'""/X.01-X.01-END_PROJECT_TASKS.sh",\
+	"'$CORE_PATH'","'$DATAMASH_DIR'",$1"\n""sleep 3s"}'
 
 ### kEY FOR BLAH ###
 #

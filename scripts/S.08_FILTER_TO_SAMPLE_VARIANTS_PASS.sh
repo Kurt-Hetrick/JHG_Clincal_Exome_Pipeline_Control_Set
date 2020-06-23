@@ -6,7 +6,7 @@
 
 
 # tell sge to submit any of these queue when available
-#$ -q bigdata.q,lemon.q,prod.q,rnd.q,uhoh.q
+#$ -q bigdata.q,lemon.q,prod.q,rnd.q,uhoh.q,cgc.q
 
 # tell sge that you are in the users current working directory
 #$ -cwd
