@@ -57,6 +57,7 @@ $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -an ReadPosRankSum \
 -an FS \
 -an SOR \
+--maxGaussians 7 \
 -tranche 100.0 \
 -tranche 99.9 \
 -tranche 99.8 \
@@ -100,6 +101,7 @@ echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
 -an ReadPosRankSum \
 -an FS \
 -an SOR \
+--maxGaussians 7 \
 -tranche 100.0 \
 -tranche 99.9 \
 -tranche 99.8 \
