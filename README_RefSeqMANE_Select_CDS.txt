@@ -99,15 +99,6 @@
 ##### There are 63 genes that need to be found by Dbxref=GeneID b/c Entrez does not match HGNC #####
 ####################################################################################################
 
-	# how many genes in omim that are not refseq select cds are in refseq with exon feature and on the primary assembly. THIS IS NOT USEFUL. NEED TO USE Dbxref=GeneID.
-
-		# for gene in $(cut -f 1 mim2gene_200611mbs_uniq_gene_symbols_notinRefSeqSelectCDS.txt) ; do zgrep "gene=$gene;" /mnt/clinical/ddl/NGS/Exome_Resources/BED_FILES_TWIST/GRCh37_latest_genomic.gff.gz | awk 'BEGIN {FS="\t"} $3=="exon"' | awk 'BEGIN {FS="\t"} match($9, /gene=(.*);/, a) {print $1,$4-1,$5,$7,a[1]}' | awk 'BEGIN {OFS="\t"} {split($5,foo,";"); print $1,$2,$3,$4,foo[1]}' | awk 'BEGIN {OFS="\t"} {split($1,chrom,"."); print chrom[1],$2,$3,$5,$10,$4}' | sed 's/^NC_[0]*//g' | grep -v ^N | awk 'BEGIN {FS="\t";OFS="\t"} {if ($1=="23") print "X",$2,$3,$4,$5,$6; else if ($1=="24") print "Y",$2,$3,$4,$5,$6; else print $0}'; done > mim2gene_200611mbs_uniq_gene_symbols_notinRefSeqSelectCDS_ResSeqExon_take2.bed
-
-	# how many genes in omim that are not refseq select cds are in refseq with exon feature and on the primary assembly are in the cidr twist bait bed file. THIS IS NOT USEFUL. NEED TO USE DBKEF:GENEID.
-
-		# sort -k 1,1 -k 2,2n mim2gene_200611mbs_uniq_gene_symbols_notinRefSeqSelectCDS_ResSeqExon_take2.bed | uniq | bedtools intersect -a - -b Baits_BED_File_TwistCUEXmito_20190415.bed | cut -f 4 | uniq | wc -l
-		# 339
-
 	# grab the Dbxref ID for omim genes that are not in refseq select cds.
 
 		for gene in $(cut -f 1 mim2gene_200611mbs_uniq_gene_symbols_notinRefSeqSelectCDS.txt); do grep -w $gene mim2gene_200611mbs.txt | awk 'BEGIN {FS="\t";OFS="\t"} {print $4,$3}' ; done | sort | uniq >| mim2gene_200611mbs_uniq_gene_symbols_Entrez_IDs_notinRefSeqSelectCDS.txt
@@ -115,11 +106,6 @@
 	# grab the entrez gene symbol for omim genes not in refseq select cds by their entrez Dbxref ID
 
 		for gene in $(cut -f 2 mim2gene_200611mbs_uniq_gene_symbols_Entrez_IDs_notinRefSeqSelectCDS.txt) ; do zgrep "Dbxref=GeneID:$gene," /mnt/clinical/ddl/NGS/Exome_Resources/BED_FILES_TWIST/GRCh37_latest_genomic.gff.gz | awk 'BEGIN {FS="\t"} $3=="exon"' | awk 'BEGIN {FS="\t"} match($9, /gene=(.*);/, a) {print $1,$4-1,$5,$7,a[1]}' | awk 'BEGIN {OFS="\t"} {split($5,foo,";"); print $1,$2,$3,$4,foo[1]}' | awk 'BEGIN {OFS="\t"} {split($1,chrom,"."); print chrom[1],$2,$3,$5,$10,$4}' | sed 's/^NC_[0]*//g' | grep -v ^N | awk 'BEGIN {FS="\t";OFS="\t"} {if ($1=="23") print "X",$2,$3,$4,$5,$6; else if ($1=="24") print "Y",$2,$3,$4,$5,$6; else print $0}'; done >| mim2gene_200611mbs_uniq_gene_symbols_notinRefSeqSelectCDS_ResSeqExon_byEntrezID.bed
-
-	# grab the entrez Dbxref ID for omim genes not in refseq select cds by their entrez Dbxref ID
-	# might not need this.
-
-		# for gene in $(cut -f 2 mim2gene_200611mbs_uniq_gene_symbols_Entrez_IDs_notinRefSeqSelectCDS.txt) ; do zgrep "Dbxref=GeneID:$gene," /mnt/clinical/ddl/NGS/Exome_Resources/BED_FILES_TWIST/GRCh37_latest_genomic.gff.gz | awk '$3=="exon"' | awk 'BEGIN {FS="\t"} match($9, /Dbxref=GeneID:(.*),/, a) {print $1,$4-1,$5,$7,a[1]}' | awk 'BEGIN {OFS="\t"} {split($5,foo,";"); print $1,$2,$3,$4,foo[1]}' | awk 'BEGIN {OFS="\t"} {split($1,chrom,"."); print chrom[1],$2,$3,$5,$10,$4}' | sed 's/^NC_[0]*//g' | grep -v ^N | awk 'BEGIN {FS="\t";OFS="\t"} {if ($1=="23") print "X",$2,$3,$4,$5,$6; else if ($1=="24") print "Y",$2,$3,$4,$5,$6; else print $0}'; done
 
 	# How many omim genes not in RefSeq Select CDS are found by their Dbxref ID
 
@@ -139,6 +125,7 @@
 	# grab all the transcripts in refseq that are exon, cds, mrna or transcript features
 	# that are omim genes that do not have a refseq select cds
 	# only keep those that are on the primary assembly
+	# didn't end up using this, but I think it was a good thing to do
 
 		for gene in $(cut -f 2 mim2gene_200611mbs_uniq_gene_symbols_Entrez_IDs_notinRefSeqSelectCDS.txt) ; do zgrep "Dbxref=GeneID:$gene," /mnt/clinical/ddl/NGS/Exome_Resources/BED_FILES_TWIST/GRCh37_latest_genomic.gff.gz | awk 'BEGIN {FS="\t"} $3=="exon"||$3=="CDS"||$3=="mRNA"||$3=="transcript"' | awk 'BEGIN {FS="\t"} match($9, /gene=(.*);/, a) {print $1,$4-1,$5,$7,a[1]}' | awk 'BEGIN {OFS="\t"} {split($5,foo,";"); print $1,$2,$3,$4,foo[1]}' | awk 'BEGIN {OFS="\t"} {split($1,chrom,"."); print chrom[1],$2,$3,$5,$10,$4}' | sed 's/^NC_[0]*//g' | grep -v ^N | awk 'BEGIN {FS="\t";OFS="\t"} {if ($1=="23") print "X",$2,$3,$4,$5,$6; else if ($1=="24") print "Y",$2,$3,$4,$5,$6; else print $0}'; done >| all_the_features.txt
 
@@ -147,7 +134,7 @@
 		sort -k 1,1 -k 2,2n all_the_features.txt | uniq | bedtools intersect -a - -b Baits_BED_File_TwistCUEXmito_20190415.bed | cut -f 4 | sort | uniq | wc -l
 		372
 
-		# the extra one is GGNBP1. truthfully, i don't know why I am missing this one above, but it's being dropped anyway b/c it is a potentital pseudogene, so I'm not going to dig.
+		# the extra one is GGNBP1. truthfully, i don't know why I am missing this one above, but it's being dropped anyway b/c it is a potential pseudogene, so I'm not going to dig.
 
 ############################################################################################################
 ##### molly went through and highlighted those that she wanted to keep #####################################
@@ -171,7 +158,7 @@
 ############ 4, hgnc does not have entrez and no cds #######################################################
 ############ there is one gene (ADSSL1) that does not transcript that ddl wants to keep (299) ##############
 ##### this makes a total of 19,496 genes (19197 refseq select cds transcripts) #############################
-##### removing Y PAR 19447
+##### removing Y PAR leads to 19447 ########################################################################
 ############################################################################################################
 
 ##########################################################################
