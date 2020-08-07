@@ -140,7 +140,7 @@
 ##### molly went through and highlighted those that she wanted to keep #####################################
 ##### I added a field of whether hgnc matched entrez #######################################################
 ##### made two text files. key files. ######################################################################
-########## one for hgnc did not entrez and there was a refseq select transcript (34)########################
+########## one for hgnc did not entrez and there was a refseq select transcript (34) #######################
 ############### this will be used to swap entrez with hgnc symbols at the of this process ##################
 ########## another for hgnc did not match entrez and there was no ref seq select transcript (4) ############
 ############### this will be used to grab genes by exon feature and swap entrez with hgnc at the end #######
@@ -149,12 +149,27 @@
 ##### 3 are being dropped for various reasons (NOTCH2NLC,OFCC1,ATXN8). (332 left) ##########################
 ##### 34 hgnc do not match entrez, but have a refseq select transcript. changed at the end 298 left ########
 ##### 2 are not in the primary assembly for refseq grch37, but were in the old clinical bed file (ucsc) ####
-############ those two (TEX28, KCNJ18) will be added at the end. 296 ################################
-############ PSRR2 is a weird one, will be added. notes later. 295
+##### confirmed that these were also in IGV ################################################################
+############ those two (TEX28, KCNJ18) will be added at the end. 296 #######################################
+############ KCNJ18 only had exon 3 added. #################################################################
+############################################################################################################
+############ PRSS2 is a weird one, will be added at the end. 295 ###########################################
+############ not in refseq until grch38. in igv as two exons. ensemble has 5 exons. ########################
+############ exons are the same prss3p2 exons 2 and 3 in igv. prss3r2 has 5 exons. #########################
+############ when looking at a twist capture sample, the exons are covered as expected for a capture #######
+############ however, none of the bait files have it listed as a target ####################################
+############ added prss3p2 has pssr2. don't know if this is right, so should be treated with caution #######
+############ used the transcript ID of the refseq select transcript in grch38 for prss3p2 ##################
+############################################################################################################
 ##### that means that there are 295 genes to add ###########################################################
-############ 11 have cds, hgnc matches entrez, but no refseq select transcript on the primary assembly #####
-############ 276 do not have cds, hgnc matches entrez, but have exon #######################################
-############ 4 are exon, no cds, no transcript
+############################################################################################################
+##### 12 have cds, hgnc matches entrez, but no refseq select transcript on the primary assembly ############
+##### HCG22 has a refseq select, but on alt hap. primary assembly only has exons. using primary assembly ###
+##### 6 do not have transcript ids, 5 do. Using #N/A for those that don't (11 added) #######################
+############################################################################################################
+############ 277 do not have cds, hgnc matches entrez, but have exon (288 total added) #####################
+############################################################################################################
+############ 4 are exon, no cds, no transcript #############################################################
 ############ 4, hgnc does not have entrez and no cds #######################################################
 ############ there is one gene (ADSSL1) that does not transcript that ddl wants to keep (299) ##############
 ##### this makes a total of 19,496 genes (19197 refseq select cds transcripts) #############################
@@ -395,8 +410,6 @@
 		| cat OMIM_EXON_NOT_REFSEQSELECT_TRANSCRIPTS_FORWARD.txt - \
 		>| OMIM_EXON_NOT_REFSEQSELECT_TRANSCRIPTS_COMPLETE_UNSORTED.txt
 
-			# paste OMIM_EXON_NOT_REFSEQSELECT_GENES.txt OMIM_EXON_NOT_REFSEQSELECT_TRANSCRIPTS.txt | datamash -g 1,5,10,4 first 2 last 3 | awk '{print $0 "\t" $6-$5}' | awk 'BEGIN {OFS="\t"} {if ($7<0) print $1,$2,$3,$4,$5,$6,$7*(-1); else print $0}' | sort -k 2,2 -k 7,7nr -k 3,3r | datamash -g 1,2,4 first 3 | for transcript in $(cut -f 4 -) ; do zgrep "Parent=rna-$transcript;" GRCh37_latest_genomic.gff.gz | awk '$3=="exon"' | awk 'BEGIN {FS="\t";OFS="\t"} match($9, /gene=(.*);/, a) {print $1,$4-1,$5,$7,"'$transcript'",a[1]}' | awk 'BEGIN {OFS="\t"} {split($6,foo,";"); split($1,chrom,"."); print chrom[1],$2,$3,foo[1],$5,$4}' | sed 's/^NC_[0]*//g' | awk 'BEGIN {FS="\t";OFS="\t"} {if ($1=="23") print "X",$2,$3,$4,$5,$6; else if ($1=="24") print "Y",$2,$3,$4,$5,$6; else print $0}' | awk '$6=="-"' | sort -k4,4 -k 5,5 -k 1,1 -k 2,2nr -k 3,3nr | awk '{print $0 "\t" ++count[$5]}' | awk 'BEGIN {OFS="\t"} {print $1,$2,$3,$4,$5,$7,$6}' ; done | cat OMIM_EXON_NOT_REFSEQSELECT_TRANSCRIPTS_FORWARD.txt - > OMIM_EXON_NOT_REFSEQSELECT_TRANSCRIPTS_COMPLETE_UNSORTED.txt
-
 ##########################################################################################################
 ########## ENTREZ MATCHES HGNC. NO REFSEQ SELECT. NO CDS. USE EXON. DOES NOT HAVE TRANSCRIPT ID ##########
 ##########################################################################################################
@@ -558,9 +571,9 @@
 
 # sort this bed file by reference genome order
 
-	(awk '$1~/^[0-9]/' GRCh37_16June2020_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_annotated_transcripts_NoYpar_unsorted.bed | sort -k1,1n -k2,2n ; \
-	awk '$1=="X"' GRCh37_16June2020_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_annotated_transcripts_NoYpar_unsorted.bed | sort -k 2,2n ; \
-	awk '$1=="Y"' GRCh37_16June2020_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_annotated_transcripts_NoYpar_unsorted.bed | sort -k 2,2n) \
+	(awk '$1~/^[0-9]/' 	GRCh37_16June2020_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_annotated_transcripts_NoYpar_unsorted.bed	 | sort -k1,1n -k2,2n ; \
+	awk '$1=="X"' 	GRCh37_16June2020_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_annotated_transcripts_NoYpar_unsorted.bed	 | sort -k 2,2n ; \
+	awk '$1=="Y"' 	GRCh37_16June2020_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_annotated_transcripts_NoYpar_unsorted.bed	 | sort -k 2,2n) \
 	>| GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_annotated.bed
 
 ###########################################
@@ -606,7 +619,7 @@ egrep -w "ADPRHL2|FOPNL|MAATS1|CASC1|FAM92B|FAM49B|WDR63|DUPD1|KIAA1324|KIAA1324
 # target territory
 
 	awk 's+=($3-$2) {print s}' GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_annotated_copy.bed | tail -n 1
-	33755068
+	33817078
 
 
 ################## TO MAKE BAIT BED FILE #########################
@@ -617,7 +630,7 @@ GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_HGNC_annotated.bed
 cut -f 1-3 GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_HGNC_annotated.bed \
 >| GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_HGNC_short.bed
 
-cat Baits_BED_File_TwistCUEXmito_20190415.bed GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_HGNC_short.bed | sort  -k 1,1 -k 2,2n -k 3,3n | bedtools merge -i - >| Baits_BED_File_TwistCUEXmito_20190415_GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_Short_202006730.bed
+cat Baits_BED_File_TwistCUEXmito_20190415.bed GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_HGNC_short.bed | sort  -k 1,1 -k 2,2n -k 3,3n | bedtools merge -i - >| Baits_BED_File_TwistCUEXmito_20190415_GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_Short_20200807.bed
 
 #############################################################################################
 ########################################## FINISHED #########################################
