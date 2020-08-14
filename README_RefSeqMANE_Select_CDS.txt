@@ -276,11 +276,11 @@
 ############################################################################################################
 ############ PRSS2 is a weird one, will be added at the end. 295 ###########################################
 ############ not in refseq until grch38. in igv as two exons. ensemble has 5 exons. ########################
-############ exons are the same prss3p2 exons 2 and 3 in igv. prss3r2 has 5 exons. #########################
+############ exons are the same PRSS3P2 exons 2 and 3 in igv. PRSS3P2 has 5 exons. #########################
 ############ when looking at a twist capture sample, the exons are covered as expected for a capture #######
 ############ however, none of the bait files have it listed as a target ####################################
-############ added prss3p2 has pssr2. don't know if this is right, so should be treated with caution #######
-############ used the transcript ID of the refseq select transcript in grch38 for prss3p2 ##################
+############ added PRSS3P2 as PRSS2. don't know if this is right, so should be treated with caution ########
+############ used the transcript ID of the refseq select transcript in grch38 for PRSS2 ####################
 ############################################################################################################
 ##### that means that there are 295 genes to add ###########################################################
 ############################################################################################################
