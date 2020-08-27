@@ -1,15 +1,53 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-SAMPLE_SHEET=$1
-PED_FILE=$2
+# INPUT VARIABLES
+
+	SAMPLE_SHEET=$1
+	PED_FILE=$2
+	PRIORITY=$3 # optional. if no 2nd argument present then the default is -15
+
+		# if there is no 3rd argument present then use the number for priority
+			if [[ ! $PRIORITY ]]
+				then
+				PRIORITY="-15"
+			fi
 
 # CHANGE SCRIPT DIR TO WHERE YOU HAVE HAVE THE SCRIPTS BEING SUBMITTED
 
-SCRIPT_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/scripts"
-# The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
+	SUBMITTER_SCRIPT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
-CORE_PATH="/mnt/clinical/ddl/NGS/Exome_Data"
-CONTROL_REPO="/mnt/clinical/ddl/NGS/Exome_Resources/CONTROL_REPO"
+	SCRIPT_DIR="$SUBMITTER_SCRIPT_PATH/scripts"
+
+##################
+# CORE VARIABLES #
+##################
+
+	# where the input/output sequencing data will be located.
+		
+		CORE_PATH="/mnt/clinical/ddl/NGS/Exome_Data"
+
+	# this is just for note taking where the control data set will reside. not used in this pipeline.
+
+		CONTROL_REPO="/mnt/clinical/ddl/NGS/Exome_Resources/CONTROL_REPO_TWIST"
+
+	# used for tracking in the read group header of the cram file
+
+		PIPELINE_VERSION=`git --git-dir=$SCRIPT_DIR/../.git --work-tree=$SCRIPT_DIR/.. log --pretty=format:'%h' -n 1`
+
+	# load gcc for programs like verifyBamID
+	## this will get pushed out to all of the compute nodes since I specify env var to pushed out with qsub
+		module load gcc/7.2.0
+
+	# explicitly setting this b/c not everybody has had the $HOME directory transferred and I'm not going to through
+	# and figure out who does and does not have this set correctly
+		umask 0007
+
+	# SUBMIT TIMESTAMP
+
+		SUBMIT_STAMP=`date '+%s'`
+
+	# SUBMITTER_ID
+		SUBMITTER_ID=`whoami`
 
 # PIPELINE PROGRAMS
 JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
@@ -52,80 +90,72 @@ PED_PREFIX=`basename $PED_FILE .ped`
 # I typically comment out the bed file making after I make them the first time.
 
 SETUP_PROJECT ()
-{
-FORMAT_MANIFEST
-MERGE_PED_MANIFEST
-CREATE_SAMPLE_INFO_ARRAY
-MAKE_PROJ_DIR_TREE
-echo "echo Making padded annotated RefSeq coding bed file for $SAMPLE"
-# PAD_REFSEQ
-# echo "echo Making padded target bed file for $SAMPLE"
-# PAD_TARGET
-# echo "echo Making everything merged together bait file for $SAMPLE"
-# MAKE_BAIT
-}
+	{
+		FORMAT_MANIFEST
+		MERGE_PED_MANIFEST
+		CREATE_SAMPLE_INFO_ARRAY
+		MAKE_PROJ_DIR_TREE
+		echo "echo Making padded annotated RefSeq coding bed file for $SAMPLE"
+		# PAD_REFSEQ
+		# echo "echo Making padded target bed file for $SAMPLE"
+		# PAD_TARGET
+		# echo "echo Making everything merged together bait file for $SAMPLE"
+		# MAKE_BAIT
+	}
 
 FORMAT_MANIFEST ()
-{
-sed 's/\r//g' $SAMPLE_SHEET \
-| awk 'NR>1' \
-| sed 's/,/\t/g' \
-| sort -k 8,8 \
->| ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt
-}
+	{
+		sed 's/\r//g' $SAMPLE_SHEET \
+		| awk 'NR>1' \
+		| sed 's/,/\t/g' \
+		| sort -k 8,8 \
+		>| ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt
+	}
 
 MERGE_PED_MANIFEST ()
-{
-awk 1 $PED_FILE \
-| sed 's/\r//g' \
-| sort -k 2,2 \
-| join -1 8 -2 2 -e '-'  -t $'\t' -o '1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19,2.1,2.3,2.4,2.5,2.6' \
-~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
->| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
-}
-
-# MAKE AN ARRAY FOR EACH SAMPLE
-	## SAMPLE_INFO_ARRAY[0] = PROJECT
-	## SAMPLE_INFO_ARRAY[1] = FAMILY
-	## SAMPLE_INFO_ARRAY[2] = SM_TAG
-		## SAMPLE = SM_TAG
-	## SAMPLE_INFO_ARRAY[3] = BAIT BED FILE
-	## SAMPLE_INFO_ARRAY[4] = TARGET_BED_FILE
+	{
+		awk 1 $PED_FILE \
+		| sed 's/\r//g' \
+		| sort -k 2,2 \
+		| join -1 8 -2 2 -e '-'  -t $'\t' -o '1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19,2.1,2.3,2.4,2.5,2.6' \
+		~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
+		>| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
+	}
 
 CREATE_SAMPLE_INFO_ARRAY ()
-{
-SAMPLE_INFO_ARRAY=(`awk 'BEGIN {FS="\t"; OFS="\t"} $8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
-}
+	{
+		SAMPLE_INFO_ARRAY=(`awk 'BEGIN {FS="\t"; OFS="\t"} $8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
+
+		PROJECT=${SAMPLE_INFO_ARRAY[0]}
+		FAMILY=${SAMPLE_INFO_ARRAY[1]}
+		SM_TAG=${SAMPLE_INFO_ARRAY[2]}
+		BAIT_BED_FILE=${SAMPLE_INFO_ARRAY[3]}
+		TARGET_BED_FILE=${SAMPLE_INFO_ARRAY[4]}
+
+	}
 
 # PROJECT DIRECTORY TREE CREATOR
 
 MAKE_PROJ_DIR_TREE ()
-{
-mkdir -p $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/BAM \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/HC_BAM \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/INDEL/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/SNV/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/MIXED/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/VCF/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/GVCF \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BAIT_BIAS/{METRICS,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/PRE_ADAPTER/{METRICS,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASECALL_Q_SCORE_DISTRIBUTION/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASE_DISTRIBUTION_BY_CYCLE/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/CONCORDANCE \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/COUNT_COVARIATES/{GATK_REPORT,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/GC_BIAS/{METRICS,PDF,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/DEPTH_OF_COVERAGE/{TARGET,REFSEQ_CODING_PLUS_10bp} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/HYB_SELECTION/PER_TARGET_COVERAGE \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/INSERT_SIZE/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/LOCAL_REALIGNMENT_INTERVALS \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/MEAN_QUALITY_BY_CYCLE/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/ANEUPLOIDY_CHECK \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/JOINT_VCF/ \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_ANNOVAR \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/{FASTQ,LOGS,COMMAND_LINES}
-}
+	{
+		mkdir -p $CORE_PATH/$PROJECT/{FASTQ,LOGS,COMMAND_LINES,CRAM,HC_CRAM,GVCF,JOINT_VCF} \
+		$CORE_PATH/$PROJECT/INDEL/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/$PROJECT/SNV/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/$PROJECT/MIXED/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/$PROJECT/VCF/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/$PROJECT/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR,ANEUPLOIDY_CHECK} \
+		$CORE_PATH/$PROJECT/REPORTS/BAIT_BIAS/{METRICS,SUMMARY} \
+		$CORE_PATH/$PROJECT/REPORTS/PRE_ADAPTER/{METRICS,SUMMARY} \
+		$CORE_PATH/$PROJECT/REPORTS/BASECALL_Q_SCORE_DISTRIBUTION/{METRICS,PDF} \
+		$CORE_PATH/$PROJECT/REPORTS/BASE_DISTRIBUTION_BY_CYCLE/{METRICS,PDF} \
+		$CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT \
+		$CORE_PATH/$PROJECT/REPORTS/GC_BIAS/{METRICS,PDF,SUMMARY} \
+		$CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/{TARGET,REFSEQ_CODING_PLUS_10bp} \
+		$CORE_PATH/$PROJECT/REPORTS/HYB_SELECTION/PER_TARGET_COVERAGE \
+		$CORE_PATH/$PROJECT/REPORTS/INSERT_SIZE/{METRICS,PDF} \
+		$CORE_PATH/$PROJECT/REPORTS/MEAN_QUALITY_BY_CYCLE/{METRICS,PDF} \
+		$CORE_PATH/$PROJECT/TEMP/$SM_TAG"_ANNOVAR"
+	}
 
 # PAD THE REFSEQ canonical transcript bed file by 10 bases.
 # can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
