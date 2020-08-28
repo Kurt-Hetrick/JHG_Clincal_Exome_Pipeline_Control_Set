@@ -36,10 +36,12 @@
 
 	# load gcc for programs like verifyBamID
 	## this will get pushed out to all of the compute nodes since I specify env var to pushed out with qsub
+		
 		module load gcc/7.2.0
 
 	# explicitly setting this b/c not everybody has had the $HOME directory transferred and I'm not going to through
 	# and figure out who does and does not have this set correctly
+		
 		umask 0007
 
 	# SUBMIT TIMESTAMP
@@ -47,63 +49,52 @@
 		SUBMIT_STAMP=`date '+%s'`
 
 	# SUBMITTER_ID
+		
 		SUBMITTER_ID=`whoami`
 
+	# the sqe queue(s) that you want to submit to
+
+		QUEUE_LIST="cgc.q"
+
 # PIPELINE PROGRAMS
-JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
-JAVA_1_8="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jdk1.8.0_73/bin"
-BWA_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bwa-0.7.8"
-PICARD_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/picard-tools-2.1.1"
-GATK_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/GenomeAnalysisTK-3.7"
-VERIFY_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/verifyBamID_20120620/bin/"
-TABIX_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/tabix-0.2.6"
-SAMTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/samtools-0.1.18"
-DATAMASH_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/datamash-1.0.6"
-BEDTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bedtools-2.22.0/bin"
-VCFTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/vcftools_0.1.12b/bin"
-PLINK2_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/PLINK2"
-KING_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/KING/Linux-king19"
-CIDRSEQSUITE_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
-ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
+
+	JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
+	JAVA_1_8="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jdk1.8.0_73/bin"
+	BWA_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bwa-0.7.8"
+	PICARD_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/picard-tools-2.1.1"
+	GATK_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/GenomeAnalysisTK-3.7"
+	VERIFY_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/verifyBamID_20120620/bin/"
+	TABIX_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/tabix-0.2.6"
+	SAMTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/samtools-0.1.18"
+	DATAMASH_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/datamash-1.0.6"
+	BEDTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bedtools-2.22.0/bin"
+	VCFTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/vcftools_0.1.12b/bin"
+	PLINK2_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/PLINK2"
+	KING_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/KING/Linux-king19"
+	CIDRSEQSUITE_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
+	ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
 
 # PIPELINE FILES
-GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
-VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
-CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.19Feb2018.bed"
-CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
-HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
-OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
-HI_CONF_1KG_PHASE1_SNP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
-MILLS_1KG_GOLD_INDEL="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
-PHASE3_1KG_AUTOSOMES="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz"
-DBSNP_129="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
 
-##### MAKE A DIRECTORY TREE ##### SHOULD BE COMPLETE #####
+	GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
+	VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
+	CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.19Feb2018.bed"
+	CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
+	HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
+	OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
+	HI_CONF_1KG_PHASE1_SNP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
+	MILLS_1KG_GOLD_INDEL="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
+	PHASE3_1KG_AUTOSOMES="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz"
+	DBSNP_129="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
 
-mkdir -p ~/CGC_PIPELINE_TEMP
+##### MAKE A DIRECTORY TREE #####
 
-MANIFEST_PREFIX=`basename $SAMPLE_SHEET .csv`
-PED_PREFIX=`basename $PED_FILE .ped`
+	mkdir -p ~/CGC_PIPELINE_TEMP
 
-##########################################################
+	MANIFEST_PREFIX=`basename $SAMPLE_SHEET .csv`
+	PED_PREFIX=`basename $PED_FILE .ped`
 
-# I typically comment out the bed file making after I make them the first time.
-
-SETUP_PROJECT ()
-	{
-		FORMAT_MANIFEST
-		MERGE_PED_MANIFEST
-		CREATE_SAMPLE_INFO_ARRAY
-		MAKE_PROJ_DIR_TREE
-		echo "echo Making padded annotated RefSeq coding bed file for $SAMPLE"
-		# PAD_REFSEQ
-		# echo "echo Making padded target bed file for $SAMPLE"
-		# PAD_TARGET
-		# echo "echo Making everything merged together bait file for $SAMPLE"
-		# MAKE_BAIT
-	}
-
-FORMAT_MANIFEST ()
+	FORMAT_MANIFEST ()
 	{
 		sed 's/\r//g' $SAMPLE_SHEET \
 		| awk 'NR>1' \
@@ -112,31 +103,32 @@ FORMAT_MANIFEST ()
 		>| ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt
 	}
 
-MERGE_PED_MANIFEST ()
+	MERGE_PED_MANIFEST ()
 	{
 		awk 1 $PED_FILE \
 		| sed 's/\r//g' \
 		| sort -k 2,2 \
-		| join -1 8 -2 2 -e '-'  -t $'\t' -o '1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19,2.1,2.3,2.4,2.5,2.6' \
+		| join -1 8 -2 2 -e '-'  -t $'\t' \
+		-o '1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19,2.1,2.3,2.4,2.5,2.6' \
 		~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
 		>| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
 	}
 
-CREATE_SAMPLE_INFO_ARRAY ()
+	CREATE_SAMPLE_INFO_ARRAY ()
 	{
-		SAMPLE_INFO_ARRAY=(`awk 'BEGIN {FS="\t"; OFS="\t"} $8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
+		SAMPLE_INFO_ARRAY=(`awk 'BEGIN {FS="\t"; OFS="\t"} $8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' \
+			~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
 
 		PROJECT=${SAMPLE_INFO_ARRAY[0]}
 		FAMILY=${SAMPLE_INFO_ARRAY[1]}
 		SM_TAG=${SAMPLE_INFO_ARRAY[2]}
 		BAIT_BED_FILE=${SAMPLE_INFO_ARRAY[3]}
 		TARGET_BED_FILE=${SAMPLE_INFO_ARRAY[4]}
-
 	}
 
 # PROJECT DIRECTORY TREE CREATOR
 
-MAKE_PROJ_DIR_TREE ()
+	MAKE_PROJ_DIR_TREE ()
 	{
 		mkdir -p $CORE_PATH/$PROJECT/{FASTQ,LOGS,COMMAND_LINES,CRAM,HC_CRAM,GVCF,JOINT_VCF} \
 		$CORE_PATH/$PROJECT/INDEL/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
@@ -157,39 +149,19 @@ MAKE_PROJ_DIR_TREE ()
 		$CORE_PATH/$PROJECT/TEMP/$SM_TAG"_ANNOVAR"
 	}
 
-# PAD THE REFSEQ canonical transcript bed file by 10 bases.
+#####################################################################################################
+# PAD THE REFSEQ canonical transcript bed file by 10 bases. #########################################
 # can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
+############# this should be it's own job ###########################################################
+#####################################################################################################
 
-PAD_REFSEQ ()
-{
-awk 1 $CODING_BED \
-| sed 's/\r//g' \
-| sed -r 's/[[:space:]]+/\t/g' \
-| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
->| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_CODING.bed"
-}
-
-# PAD THE TARGET BED FILE BY 10 BP
-
-PAD_TARGET ()
-{
-awk 1 ${SAMPLE_INFO_ARRAY[4]} \
-| sed 's/\r//g' \
-| sed -r 's/[[:space:]]+/\t/g' \
-| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
->| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed"
-}
-
-# MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
-
-MAKE_BAIT ()
-{
-cat $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed" \
-${SAMPLE_INFO_ARRAY[3]} \
-| sort -k 1,1 -k 2,2n -k 3,3n \
-| $BEDTOOLS_DIR/bedtools merge -i - \
->| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_BAIT.bed
-}
+	SETUP_PROJECT ()
+	{
+		FORMAT_MANIFEST
+		MERGE_PED_MANIFEST
+		CREATE_SAMPLE_INFO_ARRAY
+		MAKE_PROJ_DIR_TREE
+	}
 
 for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 do
@@ -198,100 +170,426 @@ done
 
 ############################################################
 
-# to create the qsub cmd line to submit bwa alignments to the cluster
-# handle blank lines
-# handle something else too
+########################################################################################
+# create an array at the platform level so that bwa mem can add metadata to the header #
+########################################################################################
 
-awk 'BEGIN {FS="\t"} {split($19,INDEL,";");split($8,smtag,"[@-]"); \
-print "qsub","-N","A.01_BWA_"$8"_"$2"_"$3"_"$4,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$8"_"$2"_"$3"_"$4".BWA.log",\
-"'$SCRIPT_DIR'""/A.01_BWA.sh",\
-"'$BWA_DIR'","'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$12"\n""sleep 1s"}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
+	CREATE_PLATFORM_UNIT_ARRAY ()
+	{
+		PLATFORM_UNIT_ARRAY=(`awk 1 ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' \
+		| awk 'BEGIN {FS="\t"} $8$2$3$4=="'$PLATFORM_UNIT'" {split($19,INDEL,";"); print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$12,$15,$16,$17,$18,INDEL[1],INDEL[2],$$20,$21,$22,$23,$24}' \
+		| sort \
+		| uniq`)
 
-# create a hold job id qsub command line based on the number of
-# submit merging the bam files created by bwa mem above
-# only launch when every lane for a sample is done being processed by bwa mem
+			#  1  Project=the Seq Proj folder name
+			
+				PROJECT=${PLATFORM_UNIT_ARRAY[0]}
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam"}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| $DATAMASH_DIR/datamash -s -g 1,2 collapse 3 collapse 4 \
-| awk 'BEGIN {FS="\t"} \
-gsub(/,/,",A.01_BWA_"$2"_",$3) \
-gsub(/,/,",INPUT=" "'$CORE_PATH'" "/" $1 "/TEMP/",$4) \
-{print "qsub","-N","B.01_MERGE_BAM_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".MERGE.BAM.FILES.log",\
-"-hold_jid","A.01_BWA_"$2"_"$3, \
-"'$SCRIPT_DIR'""/B.01_MERGE_SORT_AGGRO.sh",\
-"'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'",$1,$2,"INPUT=" "'$CORE_PATH'" "/" $1 "/TEMP/" $4 "\n" "sleep 1s"}'
+			#  2  FCID=flowcell that sample read group was performed on
+			
+				FCID=${PLATFORM_UNIT_ARRAY[1]}
 
-# Mark duplicates on the bam file above. Create a Mark Duplicates report which goes into the QC report
+			#  3  Lane=lane of flowcell that sample read group was performed on
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{split($2,smtag,"[@-]"); \
-print "qsub","-N","C.01_MARK_DUPLICATES_"$2"_"$1,\
-"-hold_jid","B.01_MERGE_BAM_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".MARK_DUPLICATES.log",\
-"'$SCRIPT_DIR'""/C.01_MARK_DUPLICATES.sh",\
-"'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
+				LANE=${PLATFORM_UNIT_ARRAY[2]}
 
-# Generate a list of places that could be potentially realigned.
+			#  4  Index=sample barcode
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$19}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{split($4,INDEL,";"); split($2,smtag,"[@-]"); \
-print "qsub","-N","D.01_REALIGNER_TARGET_CREATOR_"$2"_"$1,\
-"-hold_jid","C.01_MARK_DUPLICATES_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".REALIGNER_TARGET_CREATOR.log",\
-"'$SCRIPT_DIR'""/D.01_REALIGNER_TARGET_CREATOR.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,INDEL[1],INDEL[2]"\n""sleep 1s"}'
+				INDEX=${PLATFORM_UNIT_ARRAY[3]}
 
-# With the list generated above walk through the BAM file and realign where necessary
-# Write out a new bam file
+			#  5  Platform=type of sequencing chemistry matching SAM specification
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$19}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{split($4,INDEL,";"); split($2,smtag,"[@-]"); \
-print "qsub","-N","E.01_INDEL_REALIGNER_"$2"_"$1,\
-"-hold_jid","D.01_REALIGNER_TARGET_CREATOR_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".INDEL_REALIGNER.log",\
-"'$SCRIPT_DIR'""/E.01_INDEL_REALIGNER.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,INDEL[1],INDEL[2]"\n""sleep 1s"}'
+				PLATFORM=${PLATFORM_UNIT_ARRAY[4]}
 
-# Run Base Quality Score Recalibration
+			#  6  Library_Name=library group of the sample read group, 
+				# Used during Marking Duplicates to determine if molecules are to be considered as part of the same library or not
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$19,$18}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{split($4,INDEL,";"); split($2,smtag,"[@-]"); \
-print "qsub","-N","F.01_PERFORM_BQSR_"$2"_"$1,\
-"-hold_jid","E.01_INDEL_REALIGNER_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PERFORM_BQSR.log",\
-"'$SCRIPT_DIR'""/F.01_PERFORM_BQSR.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,INDEL[1],INDEL[2],$5"\n""sleep 1s"}'
+				LIBRARY=${PLATFORM_UNIT_ARRAY[5]}
 
-# write Final Bam file
+			#  7  Date=should be the run set up date, but doesn't have to be
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 -k 2 \
-| uniq \
-| awk '{split($2,smtag,"[@-]"); \
-print "qsub","-N","G.01_FINAL_BAM_"$2"_"$1,\
-"-hold_jid","F.01_PERFORM_BQSR_"$2"_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FINAL_BAM.log",\
-"'$SCRIPT_DIR'""/G.01_FINAL_BAM.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
+				RUN_DATE=${PLATFORM_UNIT_ARRAY[6]}
+
+			#  8  SM_Tag=sample ID
+
+				SM_TAG=${PLATFORM_UNIT_ARRAY[7]}
+					
+					# sge sm tag. If there is an @ in the qsub or holdId name it breaks
+
+						SGE_SM_TAG=$(echo $SM_TAG | sed 's/@/_/g')
+
+			#  9  Center=the center/funding mechanism
+
+				CENTER=${PLATFORM_UNIT_ARRAY[8]}
+
+			# 10  Description=Generally we use to denote the sequencer setting (e.g. rapid run)
+			# “HiSeq-X”, “HiSeq-4000”, “HiSeq-2500”, “HiSeq-2000”, “NextSeq-500”, or “MiSeq”.
+
+				SEQUENCER_MODEL=${PLATFORM_UNIT_ARRAY[9]}
+
+			#############################
+			# 11  Seq_Exp_ID ### SKIP ###
+			#############################
+
+			# 12  Genome_Ref=the reference genome used in the analysis pipeline
+
+				REF_GENOME=${PLATFORM_UNIT_ARRAY[10]}
+
+			###########################
+			# 13  Operator ### SKIP ###
+			##########################################
+			# 14  Extra_VCF_Filter_Params ### SKIP ###
+			##########################################
+
+			# 15  TS_TV_BED_File=refseq (select) cds plus other odds and ends (.e.g. missing omim))
+
+				TITV_BED=${PLATFORM_UNIT_ARRAY[11]}
+
+			# 16  Baits_BED_File=a super bed file incorporating bait, target, padding and overlap with ucsc coding exons.
+			# Used for limited where to run base quality score recalibration on where to create gvcf files.
+			
+				BAIT_BED=${PLATFORM_UNIT_ARRAY[12]}
+
+			# 17  Targets_BED_File=bed file acquired from manufacturer of their targets.
+			
+				TARGET_BED=${PLATFORM_UNIT_ARRAY[13]}
+
+			# 18  KNOWN_SITES_VCF=used to annotate ID field in VCF file. masking in base call quality score recalibration.
+
+				DBSNP=${PLATFORM_UNIT_ARRAY[14]}
+
+			# 19  KNOWN_INDEL_FILES=used for BQSR masking
+
+				KNOWN_INDEL_1=${PLATFORM_UNIT_ARRAY[15]}
+				KNOWN_INDEL_2=${PLATFORM_UNIT_ARRAY[16]}
+
+			# 20 FAMILY
+
+				FAMILY=${PLATFORM_UNIT_ARRAY[17]}
+
+			# 21 MOM
+
+				FAMILY=${PLATFORM_UNIT_ARRAY[17]}
+
+			# 22 DAD
+
+				FAMILY=${PLATFORM_UNIT_ARRAY[17]}
+
+			# 23 GENDER
+
+				FAMILY=${PLATFORM_UNIT_ARRAY[17]}
+
+			# 24 PHENOTYPE
+
+				FAMILY=${PLATFORM_UNIT_ARRAY[17]}
+	}
+
+########################################################################
+### Use bwa mem to do the alignments; ##################################
+### pipe to samblaster to add mate tags; ###############################
+### pipe to picard's AddOrReplaceReadGroups to handle the bam header ###
+########################################################################
+
+
+	RUN_BWA ()
+	{
+		echo \
+		qsub \
+			-S /usr/bin/env bash \
+			-cwd \
+			-V \
+			-q $QUEUE_LIST \
+			-p $PRIORITY \
+		-N A.01-BWA"_"$SGE_SM_TAG"_"$FCID"_"$LANE"_"$INDEX \
+			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"_"$FCID"_"$LANE"_"$INDEX"-BWA.log" \
+			-j y \
+		$SCRIPT_DIR/A.01_BWA.sh \
+			$BWA_DIR \
+			$SAMBLASTER_DIR \
+			$JAVA_1_8 \
+			$PICARD_DIR \
+			$CORE_PATH \
+			$PROJECT \
+			$FCID \
+			$LANE \
+			$INDEX \
+			$PLATFORM \
+			$LIBRARY \
+			$RUN_DATE \
+			$SM_TAG \
+			$CENTER \
+			$SEQUENCER_MODEL \
+			$REF_GENOME \
+			$PIPELINE_VERSION \
+			$BAIT_BED \
+			$TARGET_BED \
+			$TITV_BED \
+			$SAMPLE_SHEET \
+			$SUBMIT_STAMP \
+			$NOVASEQ_REPO
+	}
+
+for PLATFORM_UNIT in $(awk 'BEGIN {FS=","} NR>1 {print $8$2$3$4}' $SAMPLE_SHEET | sort | uniq );
+	do
+		CREATE_PLATFORM_UNIT_ARRAY
+		mkdir -p $CORE_PATH/$PROJECT/LOGS/$SM_TAG
+		RUN_BWA
+		echo sleep 0.1s
+done
+
+###############################################################################
+# create a hold job id qsub command line based on the number of ###############
+# submit merging the bam files created by bwa mem above #######################
+# only launch when every lane for a sample is done being processed by bwa mem #
+# I want to clean this up eventually, but not in the mood for it right now. ###
+###############################################################################
+	#########################################################################################
+	# I am setting the heap space and garbage collector threads now #########################
+	# doing this does drastically decrease the load average ( the gc thread specification ) #
+	#########################################################################################
+
+		awk 1 $SAMPLE_SHEET \
+			| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+			| awk 'BEGIN {FS=","; OFS="\t"} NR>1 {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam",$8,$10}' \
+			| awk 'BEGIN {OFS="\t"} {sub(/@/,"_",$5)} {print $1,$2,$3,$4,$5,$6}' \
+			| sort -k 1,1 -k 2,2 -k 3,3 -k 6,6 \
+			| uniq \
+			| $DATAMASH_DIR/datamash -s -g 1,2 collapse 3 collapse 4 unique 5 unique 6 \
+			| awk 'BEGIN {FS="\t"} \
+				gsub(/,/,",A.01-BWA_"$5"_",$3) \
+				gsub(/,/,",INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/",$4) \
+				{print "qsub",\
+				"-S /bin/bash",\
+				"-cwd",\
+				"-V",\
+				"-q","'$QUEUE_LIST'",\
+				"-p","'$PRIORITY'",\
+				"-N","C.01-MARK_DUPLICATES_"$5"_"$1,\
+				"-o","'$CORE_PATH'/"$1"/LOGS/"$2"/"$2"-MARK_DUPLICATES.log",\
+				"-j y",\
+				"-hold_jid","A.01-BWA_"$5"_"$3, \
+				"'$SCRIPT_DIR'""/C.01_MARK_DUPLICATES.sh",\
+				"'$JAVA_1_8'",\
+				"'$PICARD_DIR'",\
+				"'$SAMBAMBA_DIR'",\
+				"'$CORE_PATH'",\
+				$1,\
+				$2,\
+				"'$SAMPLE_SHEET'",\
+				"'$SUBMIT_STAMP'",\
+				$6,\
+				"INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/"$4"\n""sleep 0.1s"}'
+
+	################################################################################
+	# create an array at the SM tag level to populate aggregated sample variables. #
+	################################################################################
+
+		CREATE_SAMPLE_ARRAY ()
+		{
+			SAMPLE_ARRAY=(`awk 1 $SAMPLE_SHEET \
+				| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' \
+				| awk 'BEGIN {FS=","} $8=="'$SM_TAG'" {split($19,INDEL,";"); print $1,$5,$6,$7,$8,$9,$10,$12,$15,$16,$17,$18,INDEL[1],INDEL[2]}' \
+				| sort \
+				| uniq`)
+
+			#  1  Project=the Seq Proj folder name
+			PROJECT=${SAMPLE_ARRAY[0]}
+
+			###################################################################
+			#  2 SKIP : FCID=flowcell that sample read group was performed on #
+			###################################################################
+
+			############################################################################
+			#  3 SKIP : Lane=lane of flowcell that sample read group was performed on] #
+			############################################################################
+
+			################################
+			#  4 SKIP Index=sample barcode #
+			################################
+
+			#  5  Platform=type of sequencing chemistry matching SAM specification
+			PLATFORM=${SAMPLE_ARRAY[1]}
+
+			#  6  Library_Name=library group of the sample read group, Used during Marking Duplicates to determine if molecules are to be considered as part of the same library or not
+			LIBRARY=${SAMPLE_ARRAY[2]}
+
+			#  7  Date=should be the run set up date to match the seq run folder name, but it has been arbitrarily populated
+			RUN_DATE=${SAMPLE_ARRAY[3]}
+
+			#  8  SM_Tag=sample ID
+			SM_TAG=${SAMPLE_ARRAY[4]}
+			SGE_SM_TAG=$(echo $SM_TAG | sed 's/@/_/g') # If there is an @ in the qsub or holdId name it breaks
+
+			#  9  Center=the center/funding mechanism
+			CENTER=${SAMPLE_ARRAY[5]}
+
+			# 10  Description=Generally we use to denote the sequencer setting (e.g. rapid run)
+			# “HiSeq-X”, “HiSeq-4000”, “HiSeq-2500”, “HiSeq-2000”, “NextSeq-500”, or “MiSeq”.
+			SEQUENCER_MODEL=${SAMPLE_ARRAY[6]}
+
+			#############################
+			# 11  Seq_Exp_ID ### SKIP ###
+			#############################
+
+			# 12  Genome_Ref=the reference genome used in the analysis pipeline
+			REF_GENOME=${SAMPLE_ARRAY[7]}
+
+			###########################
+			# 13  Operator ### SKIP ###
+			##########################################
+			# 14  Extra_VCF_Filter_Params ### SKIP ###
+			##########################################
+
+			# 15  TS_TV_BED_File=where ucsc coding exons overlap with bait and target bed files
+			TITV_BED=${SAMPLE_ARRAY[8]}
+
+			# 16  Baits_BED_File=a super bed file incorporating bait, target, padding and overlap with ucsc coding exons.
+			# Used for limited where to run base quality score recalibration on where to create gvcf files.
+			BAIT_BED=${SAMPLE_ARRAY[9]}
+
+				# since the mendel changes capture products need a way to define a 4th bed file which is the union of the different captures used.
+					if [[ $PROJECT = "M_Valle"* ]];
+						then
+							HC_BAIT_BED=${MERGED_MENDEL_BED_FILE}
+					elif [[ $PROJECT = "H_Cutting"* ]];
+						then
+							HC_BAIT_BED=${MERGED_CUTTING_BED_FILE}
+					else
+						HC_BAIT_BED=${BAIT_BED}
+					fi
+
+			# 17  Targets_BED_File=bed file acquired from manufacturer of their targets.
+			TARGET_BED=${SAMPLE_ARRAY[10]}
+
+			# 18  KNOWN_SITES_VCF=used to annotate ID field in VCF file. masking in base call quality score recalibration.
+			DBSNP=${SAMPLE_ARRAY[11]}
+
+			# 19  KNOWN_INDEL_FILES=used for BQSR masking, sensitivity in local realignment.
+			KNOWN_INDEL_1=${SAMPLE_ARRAY[12]}
+			KNOWN_INDEL_2=${SAMPLE_ARRAY[13]}
+		}
+
+	#############################################
+	## using data only in the baited intervals ##
+	#############################################
+	## REMINDER TO HANDLE THE NEW JAR FILE NAME #
+	#############################################
+
+			PAD_REFSEQ ()
+	{
+		awk 1 $CODING_BED \
+		| sed 's/\r//g' \
+		| sed -r 's/[[:space:]]+/\t/g' \
+		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
+		>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_CODING.bed"
+	}
+
+	# PAD THE TARGET BED FILE BY 10 BP
+
+		PAD_TARGET ()
+		{
+			awk 1 ${SAMPLE_INFO_ARRAY[4]} \
+			| sed 's/\r//g' \
+			| sed -r 's/[[:space:]]+/\t/g' \
+			| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
+			>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed"
+		}
+
+	# MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
+
+		MAKE_BAIT ()
+		{
+			cat $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed" \
+			${SAMPLE_INFO_ARRAY[3]} \
+			| sort -k 1,1 -k 2,2n -k 3,3n \
+			| $BEDTOOLS_DIR/bedtools merge -i - \
+			>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_BAIT.bed
+		}
+
+		FIX_BED_FILES ()
+		{
+			echo \
+			qsub \
+				-S /bin/bash \
+				-cwd \
+				-V \
+				-q $QUEUE_LIST \
+				-p $PRIORITY \
+			-N A.00-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-FIX_BED_FILES.log" \
+				-j y \
+			-hold_jid C.01-MARK_DUPLICATES"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/A.00_FIX_BED.sh \
+				$SAMTOOLS_DIR \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$BAIT_BED \
+				$TARGET_BED \
+				$TITV_BED \
+				$REF_GENOME
+		}
+
+	# run bqsr on the using bait bed file
+
+		RUN_BQSR ()
+		{
+			echo \
+			qsub \
+				-S /bin/bash \
+				-cwd \
+				-V \
+				-q $QUEUE_LIST \
+				-p $PRIORITY \
+			-N D.01-PERFORM_BQSR"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-PERFORM_BQSR.log" \
+				-j y \
+			-hold_jid C.01-MARK_DUPLICATES"_"$SGE_SM_TAG"_"$PROJECT,A.00-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/D.01_PERFORM_BQSR.sh \
+				$JAVA_1_8 \
+				$GATK_DIR_4011 \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$KNOWN_INDEL_1 \
+				$KNOWN_INDEL_2 \
+				$DBSNP \
+				$BAIT_BED \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+	##############################
+	# use a 4 bin q score scheme #
+	# remove indel Q scores ######
+	# retain original Q score  ###
+	##############################
+
+		APPLY_BQSR ()
+		{
+			echo \
+			qsub \
+				-S /bin/bash \
+				-cwd \
+				-V \
+				-q $QUEUE_LIST \
+				-p $PRIORITY \
+			-N E.01-APPLY_BQSR"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-APPLY_BQSR.log" \
+				-j y \
+			-hold_jid D.01-PERFORM_BQSR"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/E.01_APPLY_BQSR.sh \
+				$JAVA_1_8 \
+				$GATK_DIR_4011 \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
 
 ##### ALL H.00X SERIES OF SCRIPTS CAN BE RUN IN PARALLEL SINCE THEY ARE DEPENDENT ON FINAL BAM FILE GENERATION #####
 
