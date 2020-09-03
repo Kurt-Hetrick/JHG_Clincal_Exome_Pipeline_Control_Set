@@ -58,27 +58,37 @@
 
 # PIPELINE PROGRAMS
 
-	JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
-	JAVA_1_8="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jdk1.8.0_73/bin"
-	BWA_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bwa-0.7.8"
-	PICARD_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/picard-tools-2.1.1"
-	GATK_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/GenomeAnalysisTK-3.7"
-	VERIFY_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/verifyBamID_20120620/bin/"
-	TABIX_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/tabix-0.2.6"
-	SAMTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/samtools-0.1.18"
-	DATAMASH_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/datamash-1.0.6"
-	BEDTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bedtools-2.22.0/bin"
-	VCFTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/vcftools_0.1.12b/bin"
-	PLINK2_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/PLINK2"
-	KING_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/KING/Linux-king19"
-	CIDRSEQSUITE_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
-	ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
+	ALIGNMENT_CONTAINER="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
+	# contains the following software and is on Ubuntu 16.04.5 LTS
+		# gatk 4.0.11.0 (base image). also contains the following.
+			# Python 3.6.2 :: Continuum Analytics, Inc.
+				# samtools 0.1.19
+				# bcftools 0.1.19
+				# bedtools v2.25.0
+				# bgzip 1.2.1
+				# tabix 1.2.1
+				# R 3.2.5
+					# dependencies = c("gplots","digest", "gtable", "MASS", "plyr", "reshape2", "scales", "tibble", "lazyeval")    # for ggplot2
+					# getopt_1.20.0.tar.gz
+					# optparse_1.3.2.tar.gz
+					# data.table_1.10.4-2.tar.gz
+					# gsalib_2.1.tar.gz
+					# ggplot2_2.2.1.tar.gz
+				# openjdk version "1.8.0_181"
+				# /gatk/gatk.jar -> /gatk/gatk-package-4.0.11.0-local.jar
+		# added
+			# picard.jar 2.17.0 (as /gatk/picard.jar)
+			# samblaster-v.0.1.24
+			# sambamba-0.6.8
+			# bwa-0.7.15
+			# datamash-1.6
+			# verifyBamID v1.1.3
 
 # PIPELINE FILES
 
 	GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
 	VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
-	CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.19Feb2018.bed"
+	CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINES/TWIST/JHGenomics_CGC_Clinical_Exome_Control_Set/GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_HGNC_annotated.bed"
 	CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
 	HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
 	OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
@@ -149,12 +159,6 @@
 		$CORE_PATH/$PROJECT/TEMP/$SM_TAG"_ANNOVAR"
 	}
 
-#####################################################################################################
-# PAD THE REFSEQ canonical transcript bed file by 10 bases. #########################################
-# can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
-############# this should be it's own job ###########################################################
-#####################################################################################################
-
 	SETUP_PROJECT ()
 	{
 		FORMAT_MANIFEST
@@ -164,11 +168,9 @@
 	}
 
 for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
-do
-SETUP_PROJECT
+	do
+		SETUP_PROJECT
 done
-
-############################################################
 
 ########################################################################################
 # create an array at the platform level so that bwa mem can add metadata to the header #
@@ -305,10 +307,7 @@ done
 			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"_"$FCID"_"$LANE"_"$INDEX"-BWA.log" \
 			-j y \
 		$SCRIPT_DIR/A.01_BWA.sh \
-			$BWA_DIR \
-			$SAMBLASTER_DIR \
-			$JAVA_1_8 \
-			$PICARD_DIR \
+			$ALIGNMENT_CONTAINER \
 			$CORE_PATH \
 			$PROJECT \
 			$FCID \
@@ -475,6 +474,12 @@ done
 	#############################################
 	## REMINDER TO HANDLE THE NEW JAR FILE NAME #
 	#############################################
+
+#####################################################################################################
+# PAD THE REFSEQ canonical transcript bed file by 10 bases. #########################################
+# can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
+############# this should be it's own job ###########################################################
+#####################################################################################################
 
 			PAD_REFSEQ ()
 	{
