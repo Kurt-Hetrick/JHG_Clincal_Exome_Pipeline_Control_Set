@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # INPUT VARIABLES
 
@@ -63,10 +63,9 @@
 
 	# the sqe queue(s) that you want to submit to
 
-		QUEUE_LIST="lemon.q"
+		QUEUE_LIST="cgc.q"
 
-	# bind the host file system /mnt to the singularity container.
-	# this will get transferred over to compute nodes via the qsub -V argument
+	# bind the host file system /mnt to the singularity container. in case I use it in the submitter.
 
 		export SINGULARITY_BINDPATH="/mnt:/mnt"
 
@@ -315,6 +314,7 @@ done
 			-S /bin/bash \
 			-cwd \
 			-V \
+			-v SINGULARITY_BINDPATH=/mnt:/mnt \
 			-q $QUEUE_LIST \
 			-p $PRIORITY \
 		-N A.01-BWA"_"$SGE_SM_TAG"_"$FCID"_"$LANE"_"$INDEX \

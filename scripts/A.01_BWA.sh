@@ -18,8 +18,6 @@
 
 # export all variables, useful to find out what compute node the program was executed on
 
-	export SINGULARITY_BINDPATH="/mnt:/mnt"
-
 	set
 
 	echo
@@ -126,7 +124,7 @@
 		CMD="singularity exec $ALIGNMENT_CONTAINER bwa mem" \
 			CMD=$CMD" -K 100000000" \
 			CMD=$CMD" -Y" \
-			CMD=$CMD" -t 4" \
+			CMD=$CMD" -t 6" \
 			CMD=$CMD" $REF_GENOME" \
 			CMD=$CMD" $FASTQ_1" \
 			CMD=$CMD" $FASTQ_2" \
