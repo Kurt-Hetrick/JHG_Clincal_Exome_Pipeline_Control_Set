@@ -4,9 +4,16 @@
 
 	SAMPLE_SHEET=$1
 	PED_FILE=$2
-	PRIORITY=$3 # optional. if no 2nd argument present then the default is -15
+	QUEUE_LIST=$3 # optional. if no 3rd argument present then the default is cgc.q
 
-		# if there is no 3rd argument present then use the number for priority
+		if [[ ! $QUEUE_LIST ]]
+			then
+			QUEUE_LIST="cgc.q"
+		fi
+
+	PRIORITY=$4 # optional. if no 4th argument present then the default is -15.
+		# if you want to set this then you need to set the 3rd argument as well (even to the default)
+
 			if [[ ! $PRIORITY ]]
 				then
 				PRIORITY="-15"
@@ -61,13 +68,26 @@
 		
 		SUBMITTER_ID=`whoami`
 
-	# the sqe queue(s) that you want to submit to
-
-		QUEUE_LIST="cgc.q"
-
 	# bind the host file system /mnt to the singularity container. in case I use it in the submitter.
 
 		export SINGULARITY_BINDPATH="/mnt:/mnt"
+
+	# QSUB ARGUMENTS LIST
+		# set shell on compute node
+		# start in current working directory
+		# transfer submit node env to compute node
+		# set SINGULARITY BINDPATH
+		# set queues to submit to
+		# set priority
+		# combine stdout and stderr logging to same output file
+
+			QSUB_ARGS="-S /bin/bash" \
+				QSUB_ARGS=$QSUB_ARGS" -cwd" \
+				QSUB_ARGS=$QSUB_ARGS" -V" \
+				QSUB_ARGS=$QSUB_ARGS" -v SINGULARITY_BINDPATH=/mnt:/mnt" \
+				QSUB_ARGS=$QSUB_ARGS" -q $QUEUE_LIST" \
+				QSUB_ARGS=$QSUB_ARGS" -p $PRIORITY" \
+				QSUB_ARGS=$QSUB_ARGS" -j y"
 
 # PIPELINE PROGRAMS
 
@@ -306,20 +326,13 @@ done
 ### pipe to picard's AddOrReplaceReadGroups to handle the bam header ###
 ########################################################################
 
-
 	RUN_BWA ()
 	{
 		echo \
 		qsub \
-			-S /bin/bash \
-			-cwd \
-			-V \
-			-v SINGULARITY_BINDPATH=/mnt:/mnt \
-			-q $QUEUE_LIST \
-			-p $PRIORITY \
+			$QSUB_ARGS \
 		-N A.01-BWA"_"$SGE_SM_TAG"_"$FCID"_"$LANE"_"$INDEX \
 			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"_"$FCID"_"$LANE"_"$INDEX"-BWA.log" \
-			-j y \
 		$SCRIPT_DIR/A.01_BWA.sh \
 			$ALIGNMENT_CONTAINER \
 			$CORE_PATH \
@@ -351,48 +364,55 @@ for PLATFORM_UNIT in $(awk 'BEGIN {FS=","} NR>1 {print $8$2$3$4}' $SAMPLE_SHEET 
 		echo sleep 0.1s
 done
 
-# ###############################################################################
-# # create a hold job id qsub command line based on the number of ###############
-# # submit merging the bam files created by bwa mem above #######################
-# # only launch when every lane for a sample is done being processed by bwa mem #
-# # I want to clean this up eventually, but not in the mood for it right now. ###
-# ###############################################################################
-# 	#########################################################################################
-# 	# I am setting the heap space and garbage collector threads now #########################
-# 	# doing this does drastically decrease the load average ( the gc thread specification ) #
-# 	#########################################################################################
+#########################################################################################
+# Merge files and mark duplicates using picard duplictes with queryname sorting #########
+# do coordinate sorting with sambamba ###################################################
+#########################################################################################
+# I am setting the heap space and garbage collector threads for picard now now ##########
+# doing this does drastically decrease the load average ( the gc thread specification ) #
+#########################################################################################
+# create a hold job id qsub command line based on the number of #########################
+# submit merging the bam files created by bwa mem above #################################
+# only launch when every lane for a sample is done being processed by bwa mem ###########
+# I want to clean this up eventually and get away from using awk to print the qsub line #
+#########################################################################################
 
-# 		awk 1 $SAMPLE_SHEET \
-# 			| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
-# 			| awk 'BEGIN {FS=","; OFS="\t"} NR>1 {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam",$8,$10}' \
-# 			| awk 'BEGIN {OFS="\t"} {sub(/@/,"_",$5)} {print $1,$2,$3,$4,$5,$6}' \
-# 			| sort -k 1,1 -k 2,2 -k 3,3 -k 6,6 \
-# 			| uniq \
-# 			| $DATAMASH_DIR/datamash -s -g 1,2 collapse 3 collapse 4 unique 5 unique 6 \
-# 			| awk 'BEGIN {FS="\t"} \
-# 				gsub(/,/,",A.01-BWA_"$5"_",$3) \
-# 				gsub(/,/,",INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/",$4) \
-# 				{print "qsub",\
-# 				"-S /bin/bash",\
-# 				"-cwd",\
-# 				"-V",\
-# 				"-q","'$QUEUE_LIST'",\
-# 				"-p","'$PRIORITY'",\
-# 				"-N","C.01-MARK_DUPLICATES_"$5"_"$1,\
-# 				"-o","'$CORE_PATH'/"$1"/LOGS/"$2"/"$2"-MARK_DUPLICATES.log",\
-# 				"-j y",\
-# 				"-hold_jid","A.01-BWA_"$5"_"$3, \
-# 				"'$SCRIPT_DIR'""/C.01_MARK_DUPLICATES.sh",\
-# 				"'$JAVA_1_8'",\
-# 				"'$PICARD_DIR'",\
-# 				"'$SAMBAMBA_DIR'",\
-# 				"'$CORE_PATH'",\
-# 				$1,\
-# 				$2,\
-# 				"'$SAMPLE_SHEET'",\
-# 				"'$SUBMIT_STAMP'",\
-# 				$6,\
-# 				"INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/"$4"\n""sleep 0.1s"}'
+		awk 1 $SAMPLE_SHEET \
+			| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+			| awk 'BEGIN {FS=","; OFS="\t"} NR>1 {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam",$8,$10}' \
+			| awk 'BEGIN {OFS="\t"} {sub(/@/,"_",$5)} {print $1,$2,$3,$4,$5,$6}' \
+			| sort -k 1,1 -k 2,2 -k 3,3 -k 6,6 \
+			| uniq \
+			| singularity exec $ALIGNMENT_CONTAINER datamash \
+				-s \
+				-g 1,2 \
+				collapse 3 \
+				collapse 4 \
+				unique 5 \
+				unique 6 \
+			| awk 'BEGIN {FS="\t"} \
+				gsub(/,/,",A.01-BWA_"$5"_",$3) \
+				gsub(/,/,",INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/",$4) \
+				{print "qsub",\
+				"-S /bin/bash",\
+				"-cwd",\
+				"-V",\
+				"-v SINGULARITY_BINDPATH=/mnt:/mnt",\
+				"-q","'$QUEUE_LIST'",\
+				"-p","'$PRIORITY'",\
+				"-j y",\
+				"-N","C.01-MARK_DUPLICATES_"$5"_"$1,\
+				"-o","'$CORE_PATH'/"$1"/LOGS/"$2"/"$2"-MARK_DUPLICATES.log",\
+				"-hold_jid","A.01-BWA_"$5"_"$3, \
+				"'$SCRIPT_DIR'""/B.01_MARK_DUPLICATES.sh",\
+				"'$ALIGNMENT_CONTAINER'",\
+				"'$CORE_PATH'",\
+				$1,\
+				$2,\
+				"'$SAMPLE_SHEET'",\
+				"'$SUBMIT_STAMP'",\
+				$6,\
+				"INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/"$4"\n""sleep 0.1s"}'
 
 # 	################################################################################
 # 	# create an array at the SM tag level to populate aggregated sample variables. #
