@@ -24,35 +24,42 @@
 
 # INPUT VARIABLES
 
-	JAVA_1_8=$1
-	GATK_DIR_4011=$2
-	CORE_PATH=$3
+	ALIGNMENT_CONTAINER=$1
+	CORE_PATH=$2
 
-	PROJECT=$4
-	SM_TAG=$5
-	REF_GENOME=$6
-	SAMPLE_SHEET=$7
+	PROJECT=$3
+	SM_TAG=$4
+	REF_GENOME=$5
+	SAMPLE_SHEET=$6
 		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
-	SUBMIT_STAMP=$8
+	SUBMIT_STAMP=$7
 
 ## --write out bam file with a 4 bin qscore scheme, remove indel Q scores, emit original Q scores
 # have to change the way to specify this jar file eventually. gatk 4 devs are monsters.
 
-START_FINAL_BAM=`date '+%s'`
+START_FINAL_BAM=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-	$JAVA_1_8/java -jar \
-	$GATK_DIR_4011/gatk-package-4.0.1.1-local.jar \
-	ApplyBQSR \
-	--add-output-sam-program-record \
-	--use-original-qualities \
-	--emit-original-quals \
-	--reference $REF_GENOME \
-	--input $CORE_PATH/$PROJECT/TEMP/$SM_TAG".dup.bam" \
-	--bqsr-recal-file $CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT/$SM_TAG"_PERFORM_BQSR.bqsr" \
-	--static-quantized-quals 10 \
-	--static-quantized-quals 20 \
-	--static-quantized-quals 30 \
-	--output $CORE_PATH/$PROJECT/TEMP/$SM_TAG".bam"
+	# construct command line
+
+		CMD="singularity exec $ALIGNMENT_CONTAINER java -jar" \
+		CMD=$CMD" /gatk/gatk.jar" \
+		CMD=$CMD" ApplyBQSR" \
+		CMD=$CMD" --add-output-sam-program-record" \
+		CMD=$CMD" --use-original-qualities" \
+		CMD=$CMD" --emit-original-quals" \
+		CMD=$CMD" --reference $REF_GENOME" \
+		CMD=$CMD" --input $CORE_PATH/$PROJECT/TEMP/$SM_TAG".dup.bam"" \
+		CMD=$CMD" --bqsr-recal-file $CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT/$SM_TAG"_PERFORM_BQSR.bqsr"" \
+		CMD=$CMD" --static-quantized-quals 10" \
+		CMD=$CMD" --static-quantized-quals 20" \
+		CMD=$CMD" --static-quantized-quals 30" \
+		CMD=$CMD" --output $CORE_PATH/$PROJECT/TEMP/$SM_TAG".bam""
+
+	# write command line to file and execute the command line
+
+		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
+		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
+		echo $CMD | bash
 
 	# check the exit signal at this point.
 
@@ -68,27 +75,10 @@ START_FINAL_BAM=`date '+%s'`
 			exit $SCRIPT_STATUS
 		fi
 
-END_FINAL_BAM=`date '+%s'`
+END_FINAL_BAM=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
 echo $SM_TAG"_"$PROJECT",E.01,FINAL_BAM,"$HOSTNAME","$START_FINAL_BAM","$END_FINAL_BAM \
 >> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
-
-echo $JAVA_1_8/java -jar \
-$GATK_DIR_4011/gatk-package-4.0.1.1-local.jar \
-ApplyBQSR \
---add-output-sam-program-record \
---use-original-qualities \
---emit-original-quals \
---reference $REF_GENOME \
---input $CORE_PATH/$PROJECT/TEMP/$SM_TAG".dup.bam" \
---bqsr-recal-file $CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT/$SM_TAG"_PERFORM_BQSR.bqsr" \
---static-quantized-quals 10 \
---static-quantized-quals 20 \
---static-quantized-quals 30 \
---output $CORE_PATH/$PROJECT/TEMP/$SM_TAG".bam" \
->> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
-
-echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
 
 # exit with the signal from the program
 
