@@ -39,11 +39,12 @@
 	TITV_BED=$8
 		TITV_BED_NAME=(`basename $TITV_BED_NAME .bed`)
 
+
+# FIX THE TARGET BED FILE
+	# make sure that there is EOF
+	# remove CARRIAGE RETURNS
+	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
 # PAD THE REFSEQ CODING BED FILE BY 10 BASES. NEED TO CHECK WHAT THIS IS USED FOR LATER.
-	# FIX THE TARGET BED FILE
-		# make sure that there is EOF
-		# remove CARRIAGE RETURNS
-		# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
 
 	awk 1 $CODING_BED \
 		| sed 's/\r//g' \
@@ -51,19 +52,29 @@
 		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
 	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_CODING.bed"
 
-
+# FIX THE TARGET BED FILE
+	# make sure that there is EOF
+	# remove CARRIAGE RETURNS
+	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
 # PAD THE TARGET BED FILE BY X BP (i THINK THIS WILL BE DEFINED BY GUI)
-# THIS IS FOR SLICING
-	# FIX THE TARGET BED FILE
-		# make sure that there is EOF
-		# remove CARRIAGE RETURNS
-		# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+	# THIS IS FOR SLICING
 
 	awk 1 $TARGET_BED \
 		| sed 's/\r//g' \
 		| sed -r 's/[[:space:]]+/\t/g' \
 		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
 	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_TARGET.bed"
+
+# FIX THE BAIT BED FILE
+	# make sure that there is EOF
+	# remove CARRIAGE RETURNS
+	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+# FOR DATA PROCESSING AND METRICS REPORTS
+
+	awk 1 $BAIT_BED \
+		| sed 's/\r//g' \
+		| sed -r 's/[[:space:]]+/\t/g' \
+	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed"
 
 # PAD THE BAIT FILE.
 # THE BAIT FILE IS THE COMBINED MERGING OF THE CIDR TWIST BAIT BED FILE
@@ -72,48 +83,16 @@
 # MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
 
 	cat $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_TARGET.bed" \
-	$BAIT_BED \
-	| sort -k 1,1 -k 2,2n -k 3,3n \
-	| singularity exec $ALIGNMENT_CONTAINER bedtools merge -i - \
-	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_BAIT.bed"
+	$CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"BAIT_BED_NAME".bed" \
+		| sort -k 1,1 -k 2,2n -k 3,3n \
+		| singularity exec $ALIGNMENT_CONTAINER bedtools merge -i - \
+	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_GVCF.bed"
 
 ######################################################################################
 
 # 	REF_GENOME=$8
 # 		REF_DIR=$(dirname $REF_GENOME)
 # 		REF_BASENAME=$(basename $REF_GENOME | sed 's/.fasta//g ; s/.fa//g')
-
-# # FIX BED FILES (FOR GRCH37)
-
-# 	# FIX THE BAIT BED FILE
-
-# 		# make sure that there is EOF
-# 		# remove CARRIAGE RETURNS
-# 		# remove CHR PREFIXES (THIS IS FOR GRCH37)
-# 		# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
-					
-# 			awk 1 $BAIT_BED | sed -r 's/\r//g ; s/chr//g ; s/[[:space:]]+/\t/g' \
-# 			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"BAIT_BED_NAME".bed"
-
-# 	# FIX THE TARGET BED FILE
-
-# 		# make sure that there is EOF
-# 		# remove CARRIAGE RETURNS
-# 		# remove CHR PREFIXES (THIS IS FOR GRCH37)
-# 		# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
-					
-# 			awk 1 $TARGET_BED | sed -r 's/\r//g ; s/chr//g ; s/[[:space:]]+/\t/g' \
-# 			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"TARGET_BED_NAME".bed"
-
-# 	# FIX THE TITV BED FILE
-
-# 		# make sure that there is EOF
-# 		# remove CARRIAGE RETURNS
-# 		# remove CHR PREFIXES (THIS IS FOR GRCH37)
-# 		# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
-					
-# 			awk 1 $TITV_BED | sed -r 's/\r//g ; s/chr//g ; s/[[:space:]]+/\t/g' \
-# 			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"TITV_BED_NAME".bed"
 
 # # MAKE PICARD INTERVAL FILES (1-based start)
 

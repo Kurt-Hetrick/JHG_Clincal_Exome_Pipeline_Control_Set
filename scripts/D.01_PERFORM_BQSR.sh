@@ -24,37 +24,45 @@
 
 # INPUT VARIABLES
 
-	JAVA_1_8=$1
-	GATK_DIR_4011=$2
-	CORE_PATH=$3
+	ALIGNMENT_CONTAINER=$1
 	
-	PROJECT=$4
-	SM_TAG=$5
-	REF_GENOME=$6
-	KNOWN_INDEL_1=$7
-	KNOWN_INDEL_2=$8
-	DBSNP=$9
-	BAIT_BED=${10}
+	CORE_PATH=$2
+
+	PROJECT=$3
+	SM_TAG=$4
+	REF_GENOME=$5
+	KNOWN_INDEL_1=$6
+	KNOWN_INDEL_2=$7
+	DBSNP=$8
+	BAIT_BED=$9
 		BAIT_BED_NAME=(`basename $BAIT_BED .bed`)
-	SAMPLE_SHEET=${11}
+	SAMPLE_SHEET=${10}
 		SAMPLE_SHEET_NAME=(`basename $SAMPLE_SHEET .csv`)
-	SUBMIT_STAMP=${12}
+	SUBMIT_STAMP=${11}
 
 ## --BQSR using data only from the baited intervals
 
-START_PERFORM_BQSR=`date '+%s'`
+START_PERFORM_BQSR=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-	$JAVA_1_8/java -jar \
-	$GATK_DIR_4011/gatk-package-4.0.1.1-local.jar \
-	BaseRecalibrator \
-	--use-original-qualities \
-	--input $CORE_PATH/$PROJECT/TEMP/$SM_TAG".dup.bam" \
-	--reference $REF_GENOME \
-	--known-sites $KNOWN_INDEL_1 \
-	--known-sites $KNOWN_INDEL_2 \
-	--known-sites $DBSNP \
-	--intervals $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"BAIT_BED_NAME".bed" \
-	--output $CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT/$SM_TAG"_PERFORM_BQSR.bqsr"
+	# construct command line
+
+		CMD="singularity exec $ALIGNMENT_CONTAINER java -jar" \
+		CMD=$CMD" /gatk/gatk.jar" \
+		CMD=$CMD" BaseRecalibrator" \
+		CMD=$CMD" --use-original-qualities" \
+		CMD=$CMD" --input $CORE_PATH/$PROJECT/TEMP/$SM_TAG".dup.bam"" \
+		CMD=$CMD" --reference $REF_GENOME" \
+		CMD=$CMD" --known-sites $KNOWN_INDEL_1" \
+		CMD=$CMD" --known-sites $KNOWN_INDEL_2" \
+		CMD=$CMD" --known-sites $DBSNP" \
+		CMD=$CMD" --intervals $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed"" \
+		CMD=$CMD" --output $CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT/$SM_TAG"_PERFORM_BQSR.bqsr""
+
+	# write command line to file and execute the command line
+
+		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
+		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
+		echo $CMD | bash
 
 	# check the exit signal at this point.
 
@@ -70,25 +78,12 @@ START_PERFORM_BQSR=`date '+%s'`
 			exit $SCRIPT_STATUS
 		fi
 
-END_PERFORM_BQSR=`date '+%s'`
+END_PERFORM_BQSR=`date '+%s'` # capture time process stops for wall clock tracking purposes.
 
-echo $SM_TAG"_"$PROJECT",D.01,PERFORM_BQSR,"$HOSTNAME","$START_PERFORM_BQSR","$END_PERFORM_BQSR \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+# write wall clock times to file
 
-echo $JAVA_1_8/java -jar \
-$GATK_DIR_4011/gatk-package-4.0.1.1-local.jar \
-BaseRecalibrator \
---use-original-qualities \
---input $CORE_PATH/$PROJECT/TEMP/$SM_TAG".dup.bam" \
---reference $REF_GENOME \
---known-sites $KNOWN_INDEL_1 \
---known-sites $KNOWN_INDEL_2 \
---known-sites $DBSNP \
---intervals $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"BAIT_BED_NAME".bed" \
---output $CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT/$SM_TAG"_PERFORM_BQSR.bqsr" \
->> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
-
-echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
+	echo $SM_TAG"_"$PROJECT",D.01,PERFORM_BQSR,"$HOSTNAME","$START_PERFORM_BQSR","$END_PERFORM_BQSR \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program
 
