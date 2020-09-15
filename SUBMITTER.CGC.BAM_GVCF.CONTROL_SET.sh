@@ -157,16 +157,106 @@
 		>| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
 	}
 
-	CREATE_SAMPLE_INFO_ARRAY ()
+	CREATE_SAMPLE_ARRAY ()
 	{
-		SAMPLE_INFO_ARRAY=(`awk 'BEGIN {FS="\t"; OFS="\t"} $8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' \
-			~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
+		SAMPLE_INFO_ARRAY=(`awk 'BEGIN {FS="\t"; OFS="\t"} $8=="'$SAMPLE'" \
+			{split($19,INDEL,";"); \
+			print $1,$5,$6,$7,$8,$9,$10,$12,$20,$8,$15,$16,$17,$18,INDEL[1],INDEL[2],$20,$21,$22,$23,$24}' \
+				| sort \
+				| uniq \
+		~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
 
-		PROJECT=${SAMPLE_INFO_ARRAY[0]}
-		FAMILY=${SAMPLE_INFO_ARRAY[1]}
-		SM_TAG=${SAMPLE_INFO_ARRAY[2]}
-		BAIT_BED_FILE=${SAMPLE_INFO_ARRAY[3]}
-		TARGET_BED_FILE=${SAMPLE_INFO_ARRAY[4]}
+		#  1  Project=the Seq Proj folder name
+
+			PROJECT=${SAMPLE_INFO_ARRAY[0]}
+
+		############################################################################
+		#  2 SKIP : FCID=flowcell that sample read group was performed on ##########
+		#  3 SKIP : Lane=lane of flowcell that sample read group was performed on] #
+		#  4 SKIP Index=sample barcode #############################################
+		############################################################################
+
+		#  5  Platform=type of sequencing chemistry matching SAM specification
+
+			PLATFORM=${SAMPLE_ARRAY[1]}
+
+		#  6  Library_Name=library group of the sample read group
+		# Used during Marking Duplicates to determine if molecules are to be considered as part of the same library or not
+
+			LIBRARY=${SAMPLE_ARRAY[2]}
+
+		#  7  Date=should be the run set up date to match the seq run folder name, but it has been arbitrarily populated
+
+			RUN_DATE=${SAMPLE_ARRAY[3]}
+
+		#  8  SM_Tag=sample ID
+
+			SM_TAG=${SAMPLE_ARRAY[4]}
+			SGE_SM_TAG=$(echo $SM_TAG | sed 's/@/_/g') # If there is an @ in the qsub or holdId name it breaks
+
+		#  9  Center=the center/funding mechanism
+
+			CENTER=${SAMPLE_ARRAY[5]}
+
+		# 10  Description=Generally we use to denote the sequencer setting (e.g. rapid run)
+		# “HiSeq-X”, “HiSeq-4000”, “HiSeq-2500”, “HiSeq-2000”, “NextSeq-500”, or “MiSeq”.
+
+			SEQUENCER_MODEL=${SAMPLE_ARRAY[6]}
+
+		########################
+		# 11  Seq_Exp_ID: SKIP #
+		########################
+
+		# 12  Genome_Ref=the reference genome used in the analysis pipeline
+
+			REF_GENOME=${SAMPLE_ARRAY[7]}
+
+		#####################################
+		# 13  Operator: SKIP ################
+		# 14  Extra_VCF_Filter_Params: SKIP #
+		#####################################
+
+		# 15  TS_TV_BED_File=where ucsc coding exons overlap with bait and target bed files
+
+			TITV_BED=${SAMPLE_ARRAY[8]}
+
+		# 16  Baits_BED_File=a super bed file incorporating bait, target, padding and overlap with ucsc coding exons.
+		# Used for limited where to run base quality score recalibration on where to create gvcf files.
+
+			BAIT_BED=${SAMPLE_ARRAY[9]}
+
+		# 17  Targets_BED_File=bed file acquired from manufacturer of their targets.
+
+			TARGET_BED=${SAMPLE_ARRAY[10]}
+
+		# 18  KNOWN_SITES_VCF=used to annotate ID field in VCF file. masking in base call quality score recalibration.
+
+			DBSNP=${SAMPLE_ARRAY[11]}
+
+		# 19  KNOWN_INDEL_FILES=used for BQSR masking, sensitivity in local realignment.
+
+			KNOWN_INDEL_1=${SAMPLE_ARRAY[12]}
+			KNOWN_INDEL_2=${SAMPLE_ARRAY[13]}
+
+		# 20 family that sample belongs to
+
+			FAMILY=${SAMPLE_INFO_ARRAY[14]}
+
+		# 21 MOM
+
+			FAMILY=${PLATFORM_UNIT_ARRAY[17]}
+
+		# 22 DAD
+
+			FAMILY=${PLATFORM_UNIT_ARRAY[17]}
+
+		# 23 GENDER
+
+			FAMILY=${PLATFORM_UNIT_ARRAY[17]}
+
+		# 24 PHENOTYPE
+
+			FAMILY=${PLATFORM_UNIT_ARRAY[17]}
 	}
 
 # PROJECT DIRECTORY TREE CREATOR
@@ -196,14 +286,14 @@
 	{
 		FORMAT_MANIFEST
 		MERGE_PED_MANIFEST
-		CREATE_SAMPLE_INFO_ARRAY
+		CREATE_SAMPLE_ARRAY
 		MAKE_PROJ_DIR_TREE
 	}
 
-for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
-	do
-		SETUP_PROJECT
-done
+	for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
+		do
+			SETUP_PROJECT
+	done
 
 ########################################################################################
 # create an array at the platform level so that bwa mem can add metadata to the header #
@@ -263,19 +353,18 @@ done
 
 				SEQUENCER_MODEL=${PLATFORM_UNIT_ARRAY[9]}
 
-			#############################
-			# 11  Seq_Exp_ID ### SKIP ###
-			#############################
+			########################
+			# 11  Seq_Exp_ID: SKIP #
+			########################
 
 			# 12  Genome_Ref=the reference genome used in the analysis pipeline
 
 				REF_GENOME=${PLATFORM_UNIT_ARRAY[10]}
 
-			###########################
-			# 13  Operator ### SKIP ###
-			##########################################
-			# 14  Extra_VCF_Filter_Params ### SKIP ###
-			##########################################
+			#####################################
+			# 13  Operator: SKIP ################
+			# 14  Extra_VCF_Filter_Params: SKIP #
+			#####################################
 
 			# 15  TS_TV_BED_File=refseq (select) cds plus other odds and ends (.e.g. missing omim))
 
@@ -356,13 +445,13 @@ done
 			$NOVASEQ_REPO
 	}
 
-for PLATFORM_UNIT in $(awk 'BEGIN {FS=","} NR>1 {print $8$2$3$4}' $SAMPLE_SHEET | sort | uniq );
-	do
-		CREATE_PLATFORM_UNIT_ARRAY
-		mkdir -p $CORE_PATH/$PROJECT/LOGS/$SM_TAG
-		RUN_BWA
-		echo sleep 0.1s
-done
+	for PLATFORM_UNIT in $(awk 'BEGIN {FS=","} NR>1 {print $8$2$3$4}' $SAMPLE_SHEET | sort | uniq );
+		do
+			CREATE_PLATFORM_UNIT_ARRAY
+			mkdir -p $CORE_PATH/$PROJECT/LOGS/$SM_TAG
+			RUN_BWA
+			echo sleep 0.1s
+	done
 
 #########################################################################################
 # Merge files and mark duplicates using picard duplictes with queryname sorting #########
@@ -377,198 +466,67 @@ done
 # I want to clean this up eventually and get away from using awk to print the qsub line #
 #########################################################################################
 
-		awk 1 $SAMPLE_SHEET \
-			| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
-			| awk 'BEGIN {FS=","; OFS="\t"} NR>1 {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam",$8,$10}' \
-			| awk 'BEGIN {OFS="\t"} {sub(/@/,"_",$5)} {print $1,$2,$3,$4,$5,$6}' \
-			| sort -k 1,1 -k 2,2 -k 3,3 -k 6,6 \
-			| uniq \
-			| singularity exec $ALIGNMENT_CONTAINER datamash \
-				-s \
-				-g 1,2 \
-				collapse 3 \
-				collapse 4 \
-				unique 5 \
-				unique 6 \
-			| awk 'BEGIN {FS="\t"} \
-				gsub(/,/,",A.01-BWA_"$5"_",$3) \
-				gsub(/,/,",INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/",$4) \
-				{print "qsub",\
-				"-S /bin/bash",\
-				"-cwd",\
-				"-V",\
-				"-v SINGULARITY_BINDPATH=/mnt:/mnt",\
-				"-q","'$QUEUE_LIST'",\
-				"-p","'$PRIORITY'",\
-				"-j y",\
-				"-N","C.01-MARK_DUPLICATES_"$5"_"$1,\
-				"-o","'$CORE_PATH'/"$1"/LOGS/"$2"/"$2"-MARK_DUPLICATES.log",\
-				"-hold_jid","A.01-BWA_"$5"_"$3, \
-				"'$SCRIPT_DIR'""/B.01_MARK_DUPLICATES.sh",\
-				"'$ALIGNMENT_CONTAINER'",\
-				"'$CORE_PATH'",\
-				$1,\
-				$2,\
-				"'$SAMPLE_SHEET'",\
-				"'$SUBMIT_STAMP'",\
-				$6,\
-				"INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/"$4"\n""sleep 0.1s"}'
+	awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+		| awk 'BEGIN {FS=","; OFS="\t"} NR>1 {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam",$8,$10}' \
+		| awk 'BEGIN {OFS="\t"} {sub(/@/,"_",$5)} {print $1,$2,$3,$4,$5,$6}' \
+		| sort -k 1,1 -k 2,2 -k 3,3 -k 6,6 \
+		| uniq \
+		| singularity exec $ALIGNMENT_CONTAINER datamash \
+			-s \
+			-g 1,2 \
+			collapse 3 \
+			collapse 4 \
+			unique 5 \
+			unique 6 \
+		| awk 'BEGIN {FS="\t"} \
+			gsub(/,/,",A.01-BWA_"$5"_",$3) \
+			gsub(/,/,",INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/",$4) \
+			{print "qsub",\
+			"-S /bin/bash",\
+			"-cwd",\
+			"-V",\
+			"-v SINGULARITY_BINDPATH=/mnt:/mnt",\
+			"-q","'$QUEUE_LIST'",\
+			"-p","'$PRIORITY'",\
+			"-j y",\
+			"-N","B.01-MARK_DUPLICATES_"$5"_"$1,\
+			"-o","'$CORE_PATH'/"$1"/LOGS/"$2"/"$2"-MARK_DUPLICATES.log",\
+			"-hold_jid","A.01-BWA_"$5"_"$3, \
+			"'$SCRIPT_DIR'""/B.01_MARK_DUPLICATES.sh",\
+			"'$ALIGNMENT_CONTAINER'",\
+			"'$CORE_PATH'",\
+			$1,\
+			$2,\
+			"'$SAMPLE_SHEET'",\
+			"'$SUBMIT_STAMP'",\
+			$6,\
+			"INPUT=" "'$CORE_PATH'" "/" $1"/TEMP/"$4"\n""sleep 0.1s"}'
 
-# 	################################################################################
-# 	# create an array at the SM tag level to populate aggregated sample variables. #
-# 	################################################################################
+###############################################
+# fix common formatting problems in bed files #
+# merge bait to target for gvcf creation, pad #
+###############################################
 
-# 		CREATE_SAMPLE_ARRAY ()
-# 		{
-# 			SAMPLE_ARRAY=(`awk 1 $SAMPLE_SHEET \
-# 				| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' \
-# 				| awk 'BEGIN {FS=","} $8=="'$SM_TAG'" {split($19,INDEL,";"); print $1,$5,$6,$7,$8,$9,$10,$12,$15,$16,$17,$18,INDEL[1],INDEL[2]}' \
-# 				| sort \
-# 				| uniq`)
-
-# 			#  1  Project=the Seq Proj folder name
-# 			PROJECT=${SAMPLE_ARRAY[0]}
-
-# 			###################################################################
-# 			#  2 SKIP : FCID=flowcell that sample read group was performed on #
-# 			###################################################################
-
-# 			############################################################################
-# 			#  3 SKIP : Lane=lane of flowcell that sample read group was performed on] #
-# 			############################################################################
-
-# 			################################
-# 			#  4 SKIP Index=sample barcode #
-# 			################################
-
-# 			#  5  Platform=type of sequencing chemistry matching SAM specification
-# 			PLATFORM=${SAMPLE_ARRAY[1]}
-
-# 			#  6  Library_Name=library group of the sample read group, Used during Marking Duplicates to determine if molecules are to be considered as part of the same library or not
-# 			LIBRARY=${SAMPLE_ARRAY[2]}
-
-# 			#  7  Date=should be the run set up date to match the seq run folder name, but it has been arbitrarily populated
-# 			RUN_DATE=${SAMPLE_ARRAY[3]}
-
-# 			#  8  SM_Tag=sample ID
-# 			SM_TAG=${SAMPLE_ARRAY[4]}
-# 			SGE_SM_TAG=$(echo $SM_TAG | sed 's/@/_/g') # If there is an @ in the qsub or holdId name it breaks
-
-# 			#  9  Center=the center/funding mechanism
-# 			CENTER=${SAMPLE_ARRAY[5]}
-
-# 			# 10  Description=Generally we use to denote the sequencer setting (e.g. rapid run)
-# 			# “HiSeq-X”, “HiSeq-4000”, “HiSeq-2500”, “HiSeq-2000”, “NextSeq-500”, or “MiSeq”.
-# 			SEQUENCER_MODEL=${SAMPLE_ARRAY[6]}
-
-# 			#############################
-# 			# 11  Seq_Exp_ID ### SKIP ###
-# 			#############################
-
-# 			# 12  Genome_Ref=the reference genome used in the analysis pipeline
-# 			REF_GENOME=${SAMPLE_ARRAY[7]}
-
-# 			###########################
-# 			# 13  Operator ### SKIP ###
-# 			##########################################
-# 			# 14  Extra_VCF_Filter_Params ### SKIP ###
-# 			##########################################
-
-# 			# 15  TS_TV_BED_File=where ucsc coding exons overlap with bait and target bed files
-# 			TITV_BED=${SAMPLE_ARRAY[8]}
-
-# 			# 16  Baits_BED_File=a super bed file incorporating bait, target, padding and overlap with ucsc coding exons.
-# 			# Used for limited where to run base quality score recalibration on where to create gvcf files.
-# 			BAIT_BED=${SAMPLE_ARRAY[9]}
-
-# 				# since the mendel changes capture products need a way to define a 4th bed file which is the union of the different captures used.
-# 					if [[ $PROJECT = "M_Valle"* ]];
-# 						then
-# 							HC_BAIT_BED=${MERGED_MENDEL_BED_FILE}
-# 					elif [[ $PROJECT = "H_Cutting"* ]];
-# 						then
-# 							HC_BAIT_BED=${MERGED_CUTTING_BED_FILE}
-# 					else
-# 						HC_BAIT_BED=${BAIT_BED}
-# 					fi
-
-# 			# 17  Targets_BED_File=bed file acquired from manufacturer of their targets.
-# 			TARGET_BED=${SAMPLE_ARRAY[10]}
-
-# 			# 18  KNOWN_SITES_VCF=used to annotate ID field in VCF file. masking in base call quality score recalibration.
-# 			DBSNP=${SAMPLE_ARRAY[11]}
-
-# 			# 19  KNOWN_INDEL_FILES=used for BQSR masking, sensitivity in local realignment.
-# 			KNOWN_INDEL_1=${SAMPLE_ARRAY[12]}
-# 			KNOWN_INDEL_2=${SAMPLE_ARRAY[13]}
-# 		}
-
-# 	#############################################
-# 	## using data only in the baited intervals ##
-# 	#############################################
-# 	## REMINDER TO HANDLE THE NEW JAR FILE NAME #
-# 	#############################################
-
-# #####################################################################################################
-# # PAD THE REFSEQ canonical transcript bed file by 10 bases. #########################################
-# # can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
-# ############# this should be it's own job ###########################################################
-# #####################################################################################################
-
-# 			PAD_REFSEQ ()
-# 	{
-# 		awk 1 $CODING_BED \
-# 		| sed 's/\r//g' \
-# 		| sed -r 's/[[:space:]]+/\t/g' \
-# 		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
-# 		>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_CODING.bed"
-# 	}
-
-# 	# PAD THE TARGET BED FILE BY 10 BP
-
-# 		PAD_TARGET ()
-# 		{
-# 			awk 1 ${SAMPLE_INFO_ARRAY[4]} \
-# 			| sed 's/\r//g' \
-# 			| sed -r 's/[[:space:]]+/\t/g' \
-# 			| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
-# 			>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed"
-# 		}
-
-# 	# MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
-
-# 		MAKE_BAIT ()
-# 		{
-# 			cat $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed" \
-# 			${SAMPLE_INFO_ARRAY[3]} \
-# 			| sort -k 1,1 -k 2,2n -k 3,3n \
-# 			| $BEDTOOLS_DIR/bedtools merge -i - \
-# 			>| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_BAIT.bed
-# 		}
-
-# 		FIX_BED_FILES ()
-# 		{
-# 			echo \
-# 			qsub \
-# 				-S /bin/bash \
-# 				-cwd \
-# 				-V \
-# 				-q $QUEUE_LIST \
-# 				-p $PRIORITY \
-# 			-N A.00-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
-# 				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-FIX_BED_FILES.log" \
-# 				-j y \
-# 			-hold_jid C.01-MARK_DUPLICATES"_"$SGE_SM_TAG"_"$PROJECT \
-# 			$SCRIPT_DIR/A.00_FIX_BED.sh \
-# 				$SAMTOOLS_DIR \
-# 				$CORE_PATH \
-# 				$PROJECT \
-# 				$SM_TAG \
-# 				$BAIT_BED \
-# 				$TARGET_BED \
-# 				$TITV_BED \
-# 				$REF_GENOME
-# 		}
+	FIX_BED_FILES ()
+	{
+		echo \
+		qsub \
+			$QSUB_ARGS \
+		-N A.00-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
+			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-FIX_BED_FILES.log" \
+		-hold_jid B.01-MARK_DUPLICATES"_"$SGE_SM_TAG"_"$PROJECT \
+		$SCRIPT_DIR/C.01_FIX_BED.sh \
+			$ALIGNMENT_CONTAINER \
+			$CORE_PATH \
+			$PROJECT \
+			$SM_TAG \
+			$CODING_BED \
+			$TARGET_BED \
+			$BAIT_BED \
+			$TITV_BED \
+			$REF_GENOME
+	}
 
 # 	# run bqsr on the using bait bed file
 
