@@ -92,7 +92,7 @@
 #####################
 # PIPELINE PROGRAMS #
 #####################
-	ALIGNMENT_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/ddl_ce_control_align-0.0.1.simg"
+	ALIGNMENT_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/ddl_ce_control_align-0.0.2.simg"
 	# contains the following software and is on Ubuntu 16.04.5 LTS
 		# gatk 4.0.11.0 (base image). also contains the following.
 			# Python 3.6.2 :: Continuum Analytics, Inc.
@@ -580,6 +580,80 @@ done
 				$SUBMIT_STAMP
 		}
 
+	#####################################################
+	# create a lossless cram, although the bam is lossy #
+	#####################################################
+
+		BAM_TO_CRAM ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N F.01-BAM_TO_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-BAM_TO_CRAM.log" \
+			-hold_jid E.01-APPLY_BQSR"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/F.01_BAM_TO_CRAM.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+	# ##########################################################################################
+	# # index the cram file and copy it so that there are both *crai and cram.crai *extensions #
+	# ##########################################################################################
+
+	# 	INDEX_CRAM ()
+	# 	{
+	# 		echo \
+	# 		qsub \
+	# 			-S /bin/bash \
+	# 			-cwd \
+	# 			-V \
+	# 			-q $QUEUE_LIST \
+	# 			-p $PRIORITY \
+	# 		-N G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+	# 			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-INDEX_CRAM.log" \
+	# 			-j y \
+	# 		-hold_jid F.01-BAM_TO_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+	# 		$SCRIPT_DIR/G.01_INDEX_CRAM.sh \
+	# 			$SAMTOOLS_DIR \
+	# 			$CORE_PATH \
+	# 			$PROJECT \
+	# 			$SM_TAG \
+	# 			$REF_GENOME \
+	# 			$SAMPLE_SHEET \
+	# 			$SUBMIT_STAMP
+	# 	}
+
+	# #############################################
+	# # do the md5sum hash value on the cram file #
+	# ##########################################################################################
+	# # also doing it on the *cram.crai file and append to the same output for sra submissions #
+	# ##########################################################################################
+
+	# 	MD5SUM_CRAM ()
+	# 	{
+	# 		echo \
+	# 		qsub \
+	# 			-S /bin/bash \
+	# 			-cwd \
+	# 			-V \
+	# 			-q $QUEUE_LIST \
+	# 			-p $PRIORITY \
+	# 		-N G.02-MD5SUM_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+	# 			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-MD5SUM_CRAM.log" \
+	# 			-j y \
+	# 		-hold_jid G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+	# 		$SCRIPT_DIR/G.02_MD5SUM_CRAM.sh \
+	# 			$CORE_PATH \
+	# 			$PROJECT \
+	# 			$SM_TAG
+	# 	}
+
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
 		CREATE_SAMPLE_ARRAY
@@ -588,6 +662,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		RUN_BQSR
 		echo sleep 0.1s
 		APPLY_BQSR
+		echo sleep 0.1s
+		BAM_TO_CRAM
 		echo sleep 0.1s
 		# SELECT_VERIFYBAMID_VCF
 		# echo sleep 0.1s
