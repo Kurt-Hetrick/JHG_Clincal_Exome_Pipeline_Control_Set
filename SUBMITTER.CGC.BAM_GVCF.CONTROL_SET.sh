@@ -101,6 +101,7 @@
 				# bedtools v2.25.0
 				# bgzip 1.2.1
 				# tabix 1.2.1
+				# samtools, bcftools, bgzip and tabix will be replaced with newer versions.
 				# R 3.2.5
 					# dependencies = c("gplots","digest", "gtable", "MASS", "plyr", "reshape2", "scales", "tibble", "lazyeval")    # for ggplot2
 					# getopt_1.20.0.tar.gz
@@ -117,6 +118,10 @@
 			# bwa-0.7.15
 			# datamash-1.6
 			# verifyBamID v1.1.3
+			# samtools 1.10
+			# bgzip 1.10
+			# tabix 1.10
+			# bcftools 1.10.2
 
 ##################
 # PIPELINE FILES #
@@ -263,7 +268,7 @@
 		$CORE_PATH/$PROJECT/SNV/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
 		$CORE_PATH/$PROJECT/MIXED/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
 		$CORE_PATH/$PROJECT/VCF/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-		$CORE_PATH/$PROJECT/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR,ANEUPLOIDY_CHECK} \
+		$CORE_PATH/$PROJECT/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR,ANEUPLOIDY_CHECK,RG_HEADER} \
 		$CORE_PATH/$PROJECT/REPORTS/BAIT_BIAS/{METRICS,SUMMARY} \
 		$CORE_PATH/$PROJECT/REPORTS/PRE_ADAPTER/{METRICS,SUMMARY} \
 		$CORE_PATH/$PROJECT/REPORTS/BASECALL_Q_SCORE_DISTRIBUTION/{METRICS,PDF} \
