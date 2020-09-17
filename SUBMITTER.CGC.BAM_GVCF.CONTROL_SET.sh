@@ -611,53 +611,23 @@ done
 	# # index the cram file and copy it so that there are both *crai and cram.crai *extensions #
 	# ##########################################################################################
 
-	# 	INDEX_CRAM ()
-	# 	{
-	# 		echo \
-	# 		qsub \
-	# 			-S /bin/bash \
-	# 			-cwd \
-	# 			-V \
-	# 			-q $QUEUE_LIST \
-	# 			-p $PRIORITY \
-	# 		-N G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
-	# 			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-INDEX_CRAM.log" \
-	# 			-j y \
-	# 		-hold_jid F.01-BAM_TO_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
-	# 		$SCRIPT_DIR/G.01_INDEX_CRAM.sh \
-	# 			$SAMTOOLS_DIR \
-	# 			$CORE_PATH \
-	# 			$PROJECT \
-	# 			$SM_TAG \
-	# 			$REF_GENOME \
-	# 			$SAMPLE_SHEET \
-	# 			$SUBMIT_STAMP
-	# 	}
-
-	# #############################################
-	# # do the md5sum hash value on the cram file #
-	# ##########################################################################################
-	# # also doing it on the *cram.crai file and append to the same output for sra submissions #
-	# ##########################################################################################
-
-	# 	MD5SUM_CRAM ()
-	# 	{
-	# 		echo \
-	# 		qsub \
-	# 			-S /bin/bash \
-	# 			-cwd \
-	# 			-V \
-	# 			-q $QUEUE_LIST \
-	# 			-p $PRIORITY \
-	# 		-N G.02-MD5SUM_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
-	# 			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-MD5SUM_CRAM.log" \
-	# 			-j y \
-	# 		-hold_jid G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
-	# 		$SCRIPT_DIR/G.02_MD5SUM_CRAM.sh \
-	# 			$CORE_PATH \
-	# 			$PROJECT \
-	# 			$SM_TAG
-	# 	}
+		INDEX_CRAM ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-INDEX_CRAM.log" \
+			-hold_jid F.01-BAM_TO_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/G.01_INDEX_CRAM.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
 
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
@@ -670,10 +640,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		echo sleep 0.1s
 		BAM_TO_CRAM
 		echo sleep 0.1s
-		# SELECT_VERIFYBAMID_VCF
-		# echo sleep 0.1s
-		# RUN_VERIFYBAMID
-		# echo sleep 0.1s
+		INDEX_CRAM
+		echo sleep 0.1s
 done
 
 # ##### ALL H.00X SERIES OF SCRIPTS CAN BE RUN IN PARALLEL SINCE THEY ARE DEPENDENT ON FINAL BAM FILE GENERATION #####
