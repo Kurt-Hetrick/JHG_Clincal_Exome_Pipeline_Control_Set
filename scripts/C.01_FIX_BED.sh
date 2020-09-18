@@ -38,24 +38,30 @@
 		BAIT_BED_NAME=(`basename $BAIT_BED .bed`)
 	TITV_BED=$8
 		TITV_BED_NAME=(`basename $TITV_BED_NAME .bed`)
+	REF_GENOME=$9
+		REF_DIR=$(dirname $REF_GENOME)
+		REF_BASENAME=$(basename $REF_GENOME | sed 's/.fasta//g ; s/.fa//g')
 
 
 # FIX THE TARGET BED FILE
 	# make sure that there is EOF
 	# remove CARRIAGE RETURNS
 	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+	# remove chr prefix
 # PAD THE REFSEQ CODING BED FILE BY 10 BASES. NEED TO CHECK WHAT THIS IS USED FOR LATER.
 
 	awk 1 $CODING_BED \
 		| sed 's/\r//g' \
 		| sed -r 's/[[:space:]]+/\t/g' \
 		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
+		| sed 's/^chr//g' \
 	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_CODING.bed"
 
 # FIX THE TARGET BED FILE
 	# make sure that there is EOF
 	# remove CARRIAGE RETURNS
 	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+	# remove chr prefix
 # PAD THE TARGET BED FILE BY X BP (i THINK THIS WILL BE DEFINED BY GUI)
 	# THIS IS FOR SLICING
 
@@ -63,17 +69,20 @@
 		| sed 's/\r//g' \
 		| sed -r 's/[[:space:]]+/\t/g' \
 		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
+		| sed 's/^chr//g' \
 	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_TARGET.bed"
 
 # FIX THE BAIT BED FILE
 	# make sure that there is EOF
 	# remove CARRIAGE RETURNS
 	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+	# remove chr prefix
 # FOR DATA PROCESSING AND METRICS REPORTS
 
 	awk 1 $BAIT_BED \
 		| sed 's/\r//g' \
 		| sed -r 's/[[:space:]]+/\t/g' \
+		| sed 's/^chr//g' \
 	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed"
 
 # PAD THE BAIT FILE.
@@ -88,21 +97,17 @@
 		| singularity exec $ALIGNMENT_CONTAINER bedtools merge -i - \
 	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_GVCF.bed"
 
+# MAKE PICARD INTERVAL FILES (1-based start)
+
+	# bait bed
+
+		(grep "^@SQ" $REF_DIR/$REF_BASENAME".dict" \
+			; awk 1 $BAIT_BED \
+				| sed -r 's/\r//g ; s/^chr//g ; s/[[:space:]]+/\t/g' \
+				| awk 'BEGIN {OFS="\t"} {print $1,($2+1),$3,"+",$1"_"($2+1)"_"$3}') \
+		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME"-picard.bed"
+
 ######################################################################################
-
-# 	REF_GENOME=$8
-# 		REF_DIR=$(dirname $REF_GENOME)
-# 		REF_BASENAME=$(basename $REF_GENOME | sed 's/.fasta//g ; s/.fa//g')
-
-# # MAKE PICARD INTERVAL FILES (1-based start)
-
-# 	# bait bed
-
-# 		(grep "^@SQ" $REF_DIR/$REF_BASENAME".dict" \
-# 			; awk 1 $BAIT_BED \
-# 				| sed -r 's/\r//g ; s/chr//g ; s/[[:space:]]+/\t/g' \
-# 				| awk 'BEGIN {OFS="\t"} {print $1,($2+1),$3,"+",$1"_"($2+1)"_"$3}') \
-# 		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG".OnBait.picard.bed"
 
 # 	# target bed
 

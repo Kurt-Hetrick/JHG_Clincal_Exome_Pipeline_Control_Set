@@ -268,7 +268,7 @@
 		$CORE_PATH/$PROJECT/SNV/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
 		$CORE_PATH/$PROJECT/MIXED/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
 		$CORE_PATH/$PROJECT/VCF/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-		$CORE_PATH/$PROJECT/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR,ANEUPLOIDY_CHECK,RG_HEADER} \
+		$CORE_PATH/$PROJECT/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR,ANEUPLOIDY_CHECK,RG_HEADER,QUALITY_YIELD,ERROR_SUMMARY} \
 		$CORE_PATH/$PROJECT/REPORTS/BAIT_BIAS/{METRICS,SUMMARY} \
 		$CORE_PATH/$PROJECT/REPORTS/PRE_ADAPTER/{METRICS,SUMMARY} \
 		$CORE_PATH/$PROJECT/REPORTS/BASECALL_Q_SCORE_DISTRIBUTION/{METRICS,PDF} \
@@ -513,6 +513,7 @@ done
 	###############################################
 	# fix common formatting problems in bed files #
 	# merge bait to target for gvcf creation, pad #
+	# create picard style interval files ##########
 	###############################################
 
 		FIX_BED_FILES ()
@@ -641,7 +642,93 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		BAM_TO_CRAM
 		echo sleep 0.1s
 		INDEX_CRAM
+done
+
+#########################################
+##### BAM/CRAM FILE RELATED METRICS #####
+#########################################
+
+	################################################################################
+	# COLLECT MULTIPLE METRICS  ####################################################
+	# again used bait bed file here instead of target b/c target could be anything #
+	# ti/tv bed is unrelated to the capture really #################################
+	################################################################################
+
+		COLLECT_MULTIPLE_METRICS ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.01-COLLECT_MULTIPLE_METRICS"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-COLLECT_MULTIPLE_METRICS.log" \
+			-hold_jid G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT,C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.01_COLLECT_MULTIPLE_METRICS.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$DBSNP \
+				$BAIT_BED \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
+	do
+		CREATE_SAMPLE_ARRAY
+		COLLECT_MULTIPLE_METRICS
 		echo sleep 0.1s
+done
+
+	#################################################################################################
+	# CREATE VCF FOR VERIFYBAMID METRICS ############################################################
+	# USE THE BAIT BED FILE #########################################################################
+	# THE TARGET BED COULD BE MODIFIED TO BE TOO SMALL TO BE USEFUL HERE ############################
+	# TI/TV BED FILE HAS TOO MUCH UNCERTAINTY SINCE IT DOES NOT HAE ANYTHING TO DO WITH THE CAPTURE #
+	#################################################################################################
+
+
+# # RUN COLLECT MULTIPLE METRICS
+
+# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$18,$15}' \
+# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+# | sort -k 1 -k 2 \
+# | uniq \
+# | awk '{split($2,smtag,"[@-]"); \
+# print "qsub","-N","H.06_COLLECT_MULTIPLE_METRICS_"$2"_"$1,\
+# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
+# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".COLLECT_MULTIPLE_METRICS.log",\
+# "'$SCRIPT_DIR'""/H.06_COLLECT_MULTIPLE_METRICS.sh",\
+# "'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'","'$SAMTOOLS_DIR'",$1,$2,$3,$4,$5"\n""sleep 1s"}'
+
+
+		SELECT_VERIFYBAMID_VCF ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.01-SELECT_VERIFYBAMID_VCF"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-SELECT_VERIFYBAMID_VCF.log" \
+			-hold_jid E.01-APPLY_BQSR"_"$SGE_SM_TAG"_"$PROJECT,\
+				A.00-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.08_SELECT_VERIFYBAMID_VCF.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$VERIFY_VCF \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$BAIT_BED \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
+	do
+		CREATE_SAMPLE_ARRAY
+		# SELECT_VERIFYBAMID_VCF
+		# echo sleep 0.1s
 done
 
 # ##### ALL H.00X SERIES OF SCRIPTS CAN BE RUN IN PARALLEL SINCE THEY ARE DEPENDENT ON FINAL BAM FILE GENERATION #####
@@ -657,32 +744,6 @@ done
 # "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
 # "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".HAPLOTYPE_CALLER.log",\
 # "'$SCRIPT_DIR'""/H.01_HAPLOTYPE_CALLER.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
-
-# # Run POST BQSR TABLE
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$19,$18}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($4,INDEL,";"); split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.02_POST_BQSR_TABLE_"$2"_"$1,\
-# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".POST_BQSR_TABLE.log",\
-# "'$SCRIPT_DIR'""/H.02_POST_BQSR_TABLE.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,INDEL[1],INDEL[2],$5"\n""sleep 1s"}'
-
-# # Run ANALYZE COVARIATES
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($4,INDEL,";"); split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.02-A.01_ANALYZE_COVARIATES_"$2"_"$1,\
-# "-hold_jid","H.02_POST_BQSR_TABLE_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".ANALYZE_COVARIATES.log",\
-# "'$SCRIPT_DIR'""/H.02-A.01_ANALYZE_COVARIATES.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
 
 # # RUN DOC RefSeq CODING PLUS 10 BP FLANKS
@@ -803,18 +864,7 @@ done
 # "'$SCRIPT_DIR'""/H.05_DOC_TARGET_BED.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
 
-# # RUN COLLECT MULTIPLE METRICS
 
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$18,$15}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.06_COLLECT_MULTIPLE_METRICS_"$2"_"$1,\
-# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".COLLECT_MULTIPLE_METRICS.log",\
-# "'$SCRIPT_DIR'""/H.06_COLLECT_MULTIPLE_METRICS.sh",\
-# "'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'","'$SAMTOOLS_DIR'",$1,$2,$3,$4,$5"\n""sleep 1s"}'
 
 # # RUN COLLECT HS METRICS
 
