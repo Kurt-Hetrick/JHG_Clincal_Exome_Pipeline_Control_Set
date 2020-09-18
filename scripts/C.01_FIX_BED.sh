@@ -37,7 +37,7 @@
 	BAIT_BED=$7
 		BAIT_BED_NAME=(`basename $BAIT_BED .bed`)
 	TITV_BED=$8
-		TITV_BED_NAME=(`basename $TITV_BED_NAME .bed`)
+		TITV_BED_NAME=(`basename $TITV_BED .bed`)
 	REF_GENOME=$9
 		REF_DIR=$(dirname $REF_GENOME)
 		REF_BASENAME=$(basename $REF_GENOME | sed 's/.fasta//g ; s/.fa//g')
@@ -107,12 +107,10 @@
 				| awk 'BEGIN {OFS="\t"} {print $1,($2+1),$3,"+",$1"_"($2+1)"_"$3}') \
 		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME"-picard.bed"
 
-######################################################################################
+	# target bed
 
-# 	# target bed
-
-# 		(grep "^@SQ" $REF_DIR/$REF_BASENAME".dict" \
-# 			; awk 1 $TARGET_BED \
-# 				| sed -r 's/\r//g ; s/chr//g ; s/[[:space:]]+/\t/g' \
-# 				| awk 'BEGIN {OFS="\t"} {print $1,($2+1),$3,"+",$1"_"($2+1)"_"$3}') \
-# 		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG".OnTarget.picard.bed"
+		(grep "^@SQ" $REF_DIR/$REF_BASENAME".dict" \
+			; awk 1 $TARGET_BED \
+				| sed -r 's/\r//g ; s/chr//g ; s/[[:space:]]+/\t/g' \
+				| awk 'BEGIN {OFS="\t"} {print $1,($2+1),$3,"+",$1"_"($2+1)"_"$3}') \
+		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$TITV_BED_NAME"-picard.bed"

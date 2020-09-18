@@ -652,6 +652,7 @@ done
 	# COLLECT MULTIPLE METRICS  ####################################################
 	# again used bait bed file here instead of target b/c target could be anything #
 	# ti/tv bed is unrelated to the capture really #################################
+	# uses the CRAM file as the input ##############################################
 	################################################################################
 
 		COLLECT_MULTIPLE_METRICS ()
@@ -674,10 +675,39 @@ done
 				$SUBMIT_STAMP
 		}
 
+	#########################################
+	# COLLECT HS METRICS  ###################
+	# bait bed is the bait bed file #########
+	# titv bed files is the target bed file #
+	# uses the CRAM file as the input #######
+	#########################################
+
+		COLLECT_HS_METRICS ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.02-COLLECT_HS_METRICS"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-COLLECT_HS_METRICS.log" \
+			-hold_jid G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT,C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.02_COLLECT_HS_METRICS.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$BAIT_BED \
+				$TITV_BED \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
 		CREATE_SAMPLE_ARRAY
 		COLLECT_MULTIPLE_METRICS
+		echo sleep 0.1s
+		COLLECT_HS_METRICS
 		echo sleep 0.1s
 done
 
@@ -687,21 +717,6 @@ done
 	# THE TARGET BED COULD BE MODIFIED TO BE TOO SMALL TO BE USEFUL HERE ############################
 	# TI/TV BED FILE HAS TOO MUCH UNCERTAINTY SINCE IT DOES NOT HAE ANYTHING TO DO WITH THE CAPTURE #
 	#################################################################################################
-
-
-# # RUN COLLECT MULTIPLE METRICS
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$18,$15}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.06_COLLECT_MULTIPLE_METRICS_"$2"_"$1,\
-# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".COLLECT_MULTIPLE_METRICS.log",\
-# "'$SCRIPT_DIR'""/H.06_COLLECT_MULTIPLE_METRICS.sh",\
-# "'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'","'$SAMTOOLS_DIR'",$1,$2,$3,$4,$5"\n""sleep 1s"}'
-
 
 		SELECT_VERIFYBAMID_VCF ()
 		{
@@ -863,21 +878,6 @@ done
 # "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".DOC_TARGET_BED.log",\
 # "'$SCRIPT_DIR'""/H.05_DOC_TARGET_BED.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
-
-
-
-# # RUN COLLECT HS METRICS
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.07_COLLECT_HS_METRICS_"$2"_"$1,\
-# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".COLLECT_HS_METRICS.log",\
-# "'$SCRIPT_DIR'""/H.07_COLLECT_HS_METRICS.sh",\
-# "'$JAVA_1_8'","'$PICARD_DIR'","'$CORE_PATH'","'$SAMTOOLS_DIR'",$1,$2,$3"\n""sleep 1s"}'
 
 # # RUN SELECT VERIFYBAM ID VCF
 
