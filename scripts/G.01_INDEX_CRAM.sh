@@ -66,8 +66,10 @@ START_INDEX_CRAM=`date '+%s'` # capture time process starts for wall clock track
 
 END_INDEX_CRAM=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-echo $SM_TAG"_"$PROJECT",G.01,INDEX_CRAM,"$HOSTNAME","$START_INDEX_CRAM","$END_INDEX_CRAM \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+# write out timing metrics to file
+
+	echo $SM_TAG"_"$PROJECT",G.01,INDEX_CRAM,"$HOSTNAME","$START_INDEX_CRAM","$END_INDEX_CRAM \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # make a copy/rename the cram index file since their appears to be two useable standards
 

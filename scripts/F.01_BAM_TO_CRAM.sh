@@ -71,8 +71,10 @@ START_CRAM=`date '+%s'` # capture time process starts for wall clock tracking pu
 
 END_CRAM=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-echo $SM_TAG"_"$PROJECT",F.01,CRAM,"$HOSTNAME","$START_CRAM","$END_CRAM \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+# write out timing metrics to file
+
+	echo $SM_TAG"_"$PROJECT",F.01,CRAM,"$HOSTNAME","$START_CRAM","$END_CRAM \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 ###############################################################################################################
 ## grab the read group header from the cram file and a make stub for the meta data ############################

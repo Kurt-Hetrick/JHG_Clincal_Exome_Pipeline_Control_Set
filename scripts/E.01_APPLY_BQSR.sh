@@ -77,8 +77,10 @@ START_FINAL_BAM=`date '+%s'` # capture time process starts for wall clock tracki
 
 END_FINAL_BAM=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-echo $SM_TAG"_"$PROJECT",E.01,FINAL_BAM,"$HOSTNAME","$START_FINAL_BAM","$END_FINAL_BAM \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+# write out timing metrics to file
+
+	echo $SM_TAG"_"$PROJECT",E.01,FINAL_BAM,"$HOSTNAME","$START_FINAL_BAM","$END_FINAL_BAM \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program
 
