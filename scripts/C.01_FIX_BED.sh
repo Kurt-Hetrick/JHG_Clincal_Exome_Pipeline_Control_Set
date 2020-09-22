@@ -31,86 +31,132 @@
 	SM_TAG=$4
 
 	CODING_BED=$5
-		CODING_BED_NAME=(`basename $CODING_BED .bed`)
+		CODING_BED_NAME=$(basename $CODING_BED .bed)
 	TARGET_BED=$6
-		TARGET_BED_NAME=(`basename $TARGET_BED .bed`)
+		TARGET_BED_NAME=$(basename $TARGET_BED .bed)
 	BAIT_BED=$7
-		BAIT_BED_NAME=(`basename $BAIT_BED .bed`)
+		BAIT_BED_NAME=$(basename $BAIT_BED .bed)
 	TITV_BED=$8
-		TITV_BED_NAME=(`basename $TITV_BED .bed`)
+		TITV_BED_NAME=$(basename $TITV_BED .bed)
 	REF_GENOME=$9
 		REF_DIR=$(dirname $REF_GENOME)
 		REF_BASENAME=$(basename $REF_GENOME | sed 's/.fasta//g ; s/.fa//g')
+	PADDING_LENGTH=${10}
+
+# grab the md5 has for the coding bed file. only use the first 7 characters.
+
+	CODING_MD5=$(md5sum $CODING_BED | cut -c 1-7)
 
 
-# FIX THE TARGET BED FILE
+# FIX AND PAD THE CODING BED FILE
 	# make sure that there is EOF
 	# remove CARRIAGE RETURNS
 	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+	# PAD THE REFSEQ CODING BED FILE BY THE PADDING LENGTH
 	# remove chr prefix
-# PAD THE REFSEQ CODING BED FILE BY 10 BASES. NEED TO CHECK WHAT THIS IS USED FOR LATER.
+	# remove MT genome (done in another pipeline)
 
-	awk 1 $CODING_BED \
-		| sed 's/\r//g' \
-		| sed -r 's/[[:space:]]+/\t/g' \
-		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
-		| sed 's/^chr//g' \
-	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_CODING.bed"
+		awk 1 $CODING_BED \
+			| sed 's/\r//g' \
+			| sed -r 's/[[:space:]]+/\t/g' \
+			| awk 'BEGIN {OFS="\t"} {print $1,$2-"'$PADDING_LENGTH'",$3+"'$PADDING_LENGTH'"}' \
+			| sed 's/^chr//g' \
+			| grep -v "^MT" \
+		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_"$CODING_BED_NAME"-"$CODING_MD5"-"$PADDING_LENGTH"-BP-PAD.bed"
 
-# FIX THE TARGET BED FILE
+# FIX AND PAD THE TARGET BED FILE
 	# make sure that there is EOF
 	# remove CARRIAGE RETURNS
 	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+	# PAD THE TARGET BED FILE BY THE PADDING LENGTH
 	# remove chr prefix
-# PAD THE TARGET BED FILE BY X BP (i THINK THIS WILL BE DEFINED BY GUI)
+	# remove MT genome (done in another pipeline)
 	# THIS IS FOR SLICING
 
-	awk 1 $TARGET_BED \
-		| sed 's/\r//g' \
-		| sed -r 's/[[:space:]]+/\t/g' \
-		| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$3+10}' \
-		| sed 's/^chr//g' \
-	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_TARGET.bed"
+		awk 1 $TARGET_BED \
+			| sed 's/\r//g' \
+			| sed -r 's/[[:space:]]+/\t/g' \
+			| awk 'BEGIN {OFS="\t"} {print $1,$2-"'$PADDING_LENGTH'",$3+"'$PADDING_LENGTH'"}' \
+			| sed 's/^chr//g' \
+			| grep -v "^MT" \
+		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_"$TARGET_BED_NAME"-"$PADDING_LENGTH"-BP-PAD.bed"
 
-# FIX THE BAIT BED FILE
-	# make sure that there is EOF
-	# remove CARRIAGE RETURNS
-	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
-	# remove chr prefix
-# FOR DATA PROCESSING AND METRICS REPORTS
+# FIX THE CODING BED FILE. THIS IS TO BE COMBINED WITH THE CODING BED FILE
+# AND THEN PADDED BY 250 BP AND THEN MERGED (FOR OVERLAPPING INTERVALS) FOR GVCF CREATION.
+	# FOR DATA PROCESSING AND METRICS REPORTS AS WELL.
+		# make sure that there is EOF
+		# remove CARRIAGE RETURNS
+		# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+		# remove chr prefix
+		# remove MT genome (done in another pipeline)
 
-	awk 1 $BAIT_BED \
-		| sed 's/\r//g' \
-		| sed -r 's/[[:space:]]+/\t/g' \
-		| sed 's/^chr//g' \
-	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed"
+			awk 1 $CODING_BED \
+				| sed 's/\r//g' \
+				| sed -r 's/[[:space:]]+/\t/g' \
+				| sed 's/^chr//g' \
+				| grep -v "^MT" \
+			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$CODING_BED_NAME"-"$CODING_MD5".bed"
 
-# PAD THE BAIT FILE.
-# THE BAIT FILE IS THE COMBINED MERGING OF THE CIDR TWIST BAIT BED FILE
+# FIX THE BAIT BED FILE. THIS IS TO BE COMBINED WITH THE BAIT BED FILE AND THEN PADDED BY 250 BP
+# AND THEN MERGED (FOR OVERLAPPING INTERVALS) FOR GVCF CREATION.
+	# FOR DATA PROCESSING AND METRICS REPORTS AS WELL.
+		# make sure that there is EOF
+		# remove CARRIAGE RETURNS
+		# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+		# remove chr prefix
+		# remove MT genome (done in another pipeline)
+
+			awk 1 $BAIT_BED \
+				| sed 's/\r//g' \
+				| sed -r 's/[[:space:]]+/\t/g' \
+				| sed 's/^chr//g' \
+				| grep -v "^MT" \
+			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed"
+
+# FIX THE TITV BED FILE FOR DATA PROCESSING AND METRICS REPORTS.
+		# make sure that there is EOF
+		# remove CARRIAGE RETURNS
+		# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+		# remove chr prefix
+		# remove MT genome (done in another pipeline)
+
+			awk 1 $TITV_BED \
+				| sed 's/\r//g' \
+				| sed -r 's/[[:space:]]+/\t/g' \
+				| sed 's/^chr//g' \
+				| grep -v "^MT" \
+			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$TITV_BED_NAME".bed"
+
+# THE GVCF BED FILE IS THE COMBINED MERGING OF THE CIDR TWIST BAIT BED FILE
 ## AND THE CODING BED FILE WHICH IS REFSEQ SELECT CDS AND MISSING OMIM.
-# THIS WILL BE USED FOR GVCF FILE CREATION SO IT WILL BE SUPER PADDED.
-# MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
+# THIS WILL BE USED FOR GVCF FILE CREATION SO IT WILL BE SUPER PADDED WITH 250 BP.
 
-	cat $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_PADDED_TARGET.bed" \
-	$CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"BAIT_BED_NAME".bed" \
+	cat $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$CODING_BED_NAME"-"$CODING_MD5".bed" \
+	$CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed" \
 		| sort -k 1,1 -k 2,2n -k 3,3n \
+		| awk 'BEGIN {OFS="\t"} {print $1,$2-"'$PADDING_LENGTH'",$3+"'$PADDING_LENGTH'"}' \
 		| singularity exec $ALIGNMENT_CONTAINER bedtools merge -i - \
 	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_GVCF.bed"
 
 # MAKE PICARD INTERVAL FILES (1-based start)
+# ti/tv bed is used as the target since it shouldn't change
+	# GRAB THE SEQUENCING DICTIONARY FORM THE ".dict" file in the directory where the reference genome is located
+	# then concatenate with the fixed bed file.
+	# add 1 to the start
+	# picard interval needs strand information and a locus name
+		# made everything plus stranded b/c i don't think this information is used
+		# constructed locus name with chr name, start+1, stop
 
 	# bait bed
 
 		(grep "^@SQ" $REF_DIR/$REF_BASENAME".dict" \
-			; awk 1 $BAIT_BED \
-				| sed -r 's/\r//g ; s/^chr//g ; s/[[:space:]]+/\t/g' \
-				| awk 'BEGIN {OFS="\t"} {print $1,($2+1),$3,"+",$1"_"($2+1)"_"$3}') \
+			; awk 'BEGIN {OFS="\t"} {print $1,($2+1),$3,"+",$1"_"($2+1)"_"$3}' \
+				$CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed") \
 		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME"-picard.bed"
 
-	# target bed
+	# target-TITV bed
 
 		(grep "^@SQ" $REF_DIR/$REF_BASENAME".dict" \
-			; awk 1 $TARGET_BED \
-				| sed -r 's/\r//g ; s/chr//g ; s/[[:space:]]+/\t/g' \
-				| awk 'BEGIN {OFS="\t"} {print $1,($2+1),$3,"+",$1"_"($2+1)"_"$3}') \
+			; awk 'BEGIN {OFS="\t"} {print $1,($2+1),$3,"+",$1"_"($2+1)"_"$3}' \
+				$CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$TITV_BED_NAME".bed") \
 		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$TITV_BED_NAME"-picard.bed"

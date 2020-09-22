@@ -25,9 +25,6 @@
 
 # INPUT VARIABLES
 
-	# I'M KEEPING TARGET BED AS AN INPUT VARIABLE EVEN THOUGH IT IS NO LONGER USED EXPLICITLY
-	# MORE OF A CUE IN THE WRAPPER SCRIPT AS TO WHAT IS GOING ON
-
 	ALIGNMENT_CONTAINER=$1
 	CORE_PATH=$2
 
@@ -44,6 +41,7 @@
 
 # Run Collect HS metrics which generates hybridization metrics for the qc report
 ## Also generates a per target interval coverage summary
+## TiTv bed is used here as the target as it is static and it is a direct subset of the final bait bed file
 
 START_COLLECT_HS_METRICS=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 

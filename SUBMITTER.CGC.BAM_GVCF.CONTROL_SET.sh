@@ -4,15 +4,23 @@
 
 	SAMPLE_SHEET=$1
 	PED_FILE=$2
-	QUEUE_LIST=$3 # optional. if no 3rd argument present then the default is cgc.q
+	PADDING_LENGTH=$3 # optional. if no 3rd argument present then the default is 10
+
+		if [[ ! $PADDING_LENGTH ]]
+			then
+			PADDING_LENGTH="10"
+		fi
+
+	QUEUE_LIST=$4 # optional. if no 4th argument present then the default is cgc.q
+		# if you want to set this then you need to set the 3rd argument as well (even to the default)
 
 		if [[ ! $QUEUE_LIST ]]
 			then
 			QUEUE_LIST="cgc.q"
 		fi
 
-	PRIORITY=$4 # optional. if no 4th argument present then the default is -15.
-		# if you want to set this then you need to set the 3rd argument as well (even to the default)
+	PRIORITY=$5 # optional. if no 5th argument present then the default is -15.
+		# if you want to set this then you need to set the 3rd and 4th argument as well (even to the default)
 
 			if [[ ! $PRIORITY ]]
 				then
@@ -122,6 +130,13 @@
 			# bgzip 1.10
 			# tabix 1.10
 			# bcftools 1.10.2
+
+	GATK_3_7_0_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/gatk3-3.7-0.simg"
+	# singularity pull docker://broadinstitute/gatk3:3.7-0
+	# used for generating the depth of coverage reports.
+		# comes with R 3.1.1 with appropriate packages needed to create gatk pdf output
+		# also comes with some version of java 1.8
+		# jar file is /usr/GenomeAnalysisTK.jar
 
 ##################
 # PIPELINE FILES #
@@ -533,14 +548,15 @@ done
 				$TARGET_BED \
 				$BAIT_BED \
 				$TITV_BED \
-				$REF_GENOME
+				$REF_GENOME \
+				$PADDING_LENGTH
 		}
 
 	#######################################
 	# run bqsr on the using bait bed file #
 	#######################################
 
-		RUN_BQSR ()
+		PERFORM_BQSR ()
 		{
 			echo \
 			qsub \
@@ -635,7 +651,7 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		CREATE_SAMPLE_ARRAY
 		FIX_BED_FILES
 		echo sleep 0.1s
-		RUN_BQSR
+		PERFORM_BQSR
 		echo sleep 0.1s
 		APPLY_BQSR
 		echo sleep 0.1s
@@ -644,9 +660,11 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		INDEX_CRAM
 done
 
-#########################################
-##### BAM/CRAM FILE RELATED METRICS #####
-#########################################
+########################################################################################
+##### BAM/CRAM FILE RELATED METRICS ####################################################
+##### NOTE: SOME PROGRAMS CAN ONLY BE RAN ON THE BAM FILE AND NOT ON THE CRAM FILE #####
+##### I WILL COMMENT ON WHICH IS WHICH #################################################
+########################################################################################
 
 	################################################################################
 	# COLLECT MULTIPLE METRICS  ####################################################
@@ -701,6 +719,46 @@ done
 				$SAMPLE_SHEET \
 				$SUBMIT_STAMP
 		}
+
+	#############################################
+	# CREATE  DEPTH OF COVERAGE FOR TARGET BED  #
+	# uses a gatk 3.7 container #################
+	# input is the BAM file #################################################################################
+	# Generally this with all RefSeq Select CDS exons + missing OMIM unless it becomes targeted, e.g a zoom #
+	#########################################################################################################
+
+		DOC_TARGET ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.03-DOC_TARGET"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-DOC_TARGET.log" \
+			-hold_jid G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT,C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.03_DOC_TARGET.sh \
+				$GATK_3_7_0_CONTAINER \
+				$CORE_PATH \
+				$TARGET_BED \
+				$GENE_LIST \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+# # RUN DOC TARGET BED (Generally this with all RefGene coding exons unless it becomes targeted)
+
+# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
+# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+# | sort -k 1 -k 2 \
+# | uniq \
+# | awk '{split($2,smtag,"[@-]"); \
+# print "qsub","-N","H.05_DOC_TARGET_BED_"$2"_"$1,\
+# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
+# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".DOC_TARGET_BED.log",\
+# "'$SCRIPT_DIR'""/H.05_DOC_TARGET_BED.sh",\
+# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
 
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
@@ -866,18 +924,7 @@ done
 # "'$SCRIPT_DIR'""/H.03-A.03-A.01_PER_INTERVAL_FILTERED.sh",\
 # "'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
-# # RUN DOC TARGET BED (Generally this with all RefGene coding exons unless it becomes targeted)
 
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.05_DOC_TARGET_BED_"$2"_"$1,\
-# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".DOC_TARGET_BED.log",\
-# "'$SCRIPT_DIR'""/H.05_DOC_TARGET_BED.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
 
 # # RUN SELECT VERIFYBAM ID VCF
 
