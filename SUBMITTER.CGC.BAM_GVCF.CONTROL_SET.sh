@@ -726,6 +726,7 @@ done
 	# uses a gatk 3.7 container #################
 	# input is the BAM file #################################################################################
 	# Generally this with all RefSeq Select CDS exons + missing OMIM unless it becomes targeted, e.g a zoom #
+	# uses the BAM file as the input ########################################################################
 	#########################################################################################################
 
 		DOC_TARGET ()
@@ -749,17 +750,6 @@ done
 				$SUBMIT_STAMP
 		}
 
-for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
-	do
-		CREATE_SAMPLE_ARRAY
-		COLLECT_MULTIPLE_METRICS
-		echo sleep 0.1s
-		COLLECT_HS_METRICS
-		echo sleep 0.1s
-		DOC_TARGET
-		echo sleep 0.1s
-done
-
 	#################################################################################################
 	# CREATE VCF FOR VERIFYBAMID METRICS ############################################################
 	# USE THE BAIT BED FILE #########################################################################
@@ -772,17 +762,16 @@ done
 			echo \
 			qsub \
 				$QSUB_ARGS \
-			-N H.01-SELECT_VERIFYBAMID_VCF"_"$SGE_SM_TAG"_"$PROJECT \
+			-N H.04-SELECT_VERIFYBAMID_VCF"_"$SGE_SM_TAG"_"$PROJECT \
 				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-SELECT_VERIFYBAMID_VCF.log" \
-			-hold_jid E.01-APPLY_BQSR"_"$SGE_SM_TAG"_"$PROJECT,\
-				A.00-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
-			$SCRIPT_DIR/H.08_SELECT_VERIFYBAMID_VCF.sh \
+			-hold_jid C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT,E.01-APPLY_BQSR"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.04_SELECT_VERIFYBAMID_VCF.sh \
 				$ALIGNMENT_CONTAINER \
 				$CORE_PATH \
-				$VERIFY_VCF \
 				$PROJECT \
 				$SM_TAG \
 				$REF_GENOME \
+				$VERIFY_VCF \
 				$BAIT_BED \
 				$SAMPLE_SHEET \
 				$SUBMIT_STAMP
@@ -791,9 +780,16 @@ done
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
 		CREATE_SAMPLE_ARRAY
-		# SELECT_VERIFYBAMID_VCF
-		# echo sleep 0.1s
+		COLLECT_MULTIPLE_METRICS
+		echo sleep 0.1s
+		COLLECT_HS_METRICS
+		echo sleep 0.1s
+		DOC_TARGET
+		echo sleep 0.1s
+		SELECT_VERIFYBAMID_VCF
+		echo sleep 0.1s
 done
+
 
 # ##### ALL H.00X SERIES OF SCRIPTS CAN BE RUN IN PARALLEL SINCE THEY ARE DEPENDENT ON FINAL BAM FILE GENERATION #####
 
@@ -917,18 +913,7 @@ done
 
 
 
-# # RUN SELECT VERIFYBAM ID VCF
 
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12,$15}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.08_SELECT_VERIFYBAMID_VCF_"$2"_"$1,\
-# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".SELECT_VERIFYBAMID_VCF.log",\
-# "'$SCRIPT_DIR'""/H.08_SELECT_VERIFYBAMID_VCF.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$VERIFY_VCF'",$1,$2,$3,$4"\n""sleep 1s"}'
 
 # # RUN VERIFYBAMID ALL
 
