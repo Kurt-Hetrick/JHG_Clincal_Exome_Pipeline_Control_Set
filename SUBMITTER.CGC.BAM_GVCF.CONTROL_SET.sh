@@ -142,7 +142,8 @@
 # PIPELINE FILES #
 ##################
 
-	GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
+	GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.rCRS.MT.bed"
+		# md5 dec069c279625cfb110c2e4c5480e036
 	VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
 	CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINES/TWIST/JHGenomics_CGC_Clinical_Exome_Control_Set/GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_HGNC_annotated.bed"
 	CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
@@ -735,30 +736,18 @@ done
 			-N H.03-DOC_TARGET"_"$SGE_SM_TAG"_"$PROJECT \
 				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-DOC_TARGET.log" \
 			-hold_jid G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT,C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT \
-			$SCRIPT_DIR/H.03_DOC_TARGET.sh \
+			$SCRIPT_DIR/H.03_DOC_TARGET_PADDED_BED.sh \
 				$GATK_3_7_0_CONTAINER \
 				$CORE_PATH \
-				$TARGET_BED \
-				$GENE_LIST \
 				$PROJECT \
 				$SM_TAG \
 				$REF_GENOME \
+				$GENE_LIST \
+				$TARGET_BED \
+				$PADDING_LENGTH \
 				$SAMPLE_SHEET \
 				$SUBMIT_STAMP
 		}
-
-# # RUN DOC TARGET BED (Generally this with all RefGene coding exons unless it becomes targeted)
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.05_DOC_TARGET_BED_"$2"_"$1,\
-# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".DOC_TARGET_BED.log",\
-# "'$SCRIPT_DIR'""/H.05_DOC_TARGET_BED.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
 
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
@@ -766,6 +755,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		COLLECT_MULTIPLE_METRICS
 		echo sleep 0.1s
 		COLLECT_HS_METRICS
+		echo sleep 0.1s
+		DOC_TARGET
 		echo sleep 0.1s
 done
 
