@@ -291,7 +291,7 @@
 		$CORE_PATH/$PROJECT/REPORTS/BASE_DISTRIBUTION_BY_CYCLE/{METRICS,PDF} \
 		$CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT \
 		$CORE_PATH/$PROJECT/REPORTS/GC_BIAS/{METRICS,PDF,SUMMARY} \
-		$CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/{TARGET,REFSEQ_CODING_PLUS_10bp} \
+		$CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/{TARGET_PADDED,CODING_PADDED} \
 		$CORE_PATH/$PROJECT/REPORTS/HYB_SELECTION/PER_TARGET_COVERAGE \
 		$CORE_PATH/$PROJECT/REPORTS/INSERT_SIZE/{METRICS,PDF} \
 		$CORE_PATH/$PROJECT/REPORTS/MEAN_QUALITY_BY_CYCLE/{METRICS,PDF} \
@@ -721,9 +721,9 @@ done
 				$SUBMIT_STAMP
 		}
 
-	#############################################
-	# CREATE  DEPTH OF COVERAGE FOR TARGET BED  #
-	# uses a gatk 3.7 container #################
+	##############################################################################
+	# CREATE DEPTH OF COVERAGE FOR TARGET BED PADDED WITH THE INPUT FROM THE GUI #
+	# uses a gatk 3.7 container ##################################################
 	# input is the BAM file #################################################################################
 	# Generally this with all RefSeq Select CDS exons + missing OMIM unless it becomes targeted, e.g a zoom #
 	# uses the BAM file as the input ########################################################################
@@ -743,9 +743,9 @@ done
 				$PROJECT \
 				$SM_TAG \
 				$REF_GENOME \
-				$GENE_LIST \
 				$TARGET_BED \
 				$PADDING_LENGTH \
+				$GENE_LIST \
 				$SAMPLE_SHEET \
 				$SUBMIT_STAMP
 		}
@@ -799,6 +799,35 @@ done
 				$SUBMIT_STAMP
 		}
 
+	##############################################################################
+	# CREATE DEPTH OF COVERAGE FOR CODING BED PADDED WITH THE INPUT FROM THE GUI #
+	# uses a gatk 3.7 container ##################################################
+	# input is the BAM file ######################################################
+	# This with all RefSeq Select CDS exons + missing OMIM, etc. #################
+	# uses the BAM file as the input #############################################
+	##############################################################################
+
+		DOC_CODING ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.05-DOC_CODING"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-DOC_CODING.log" \
+			-hold_jid C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT,G.01-INDEX_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.05_DOC_CODING_PADDED.sh \
+				$GATK_3_7_0_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$CODING_BED \
+				$PADDING_LENGTH \
+				$GENE_LIST \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
 		CREATE_SAMPLE_ARRAY
@@ -811,6 +840,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		SELECT_VERIFYBAMID_VCF
 		echo sleep 0.1s
 		RUN_VERIFYBAMID
+		echo sleep 0.1s
+		DOC_CODING
 		echo sleep 0.1s
 done
 
@@ -830,19 +861,7 @@ done
 # "'$SCRIPT_DIR'""/H.01_HAPLOTYPE_CALLER.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
 
-# # RUN DOC RefSeq CODING PLUS 10 BP FLANKS
-# # This will specifically be for the RefSeg transcript IDs merged with UCSC canonical transcripts
 
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.03_DOC_CODING_10bpFLANKS_"$2"_"$1,\
-# "-hold_jid","G.01_FINAL_BAM_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".DOC_CODING_10bpFLANKS.log",\
-# "'$SCRIPT_DIR'""/H.03_DOC_CODING_10bpFLANKS.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$GENE_LIST'",$1,$2,$3"\n""sleep 1s"}'
 
 # # RUN ANEUPLOIDY_CHECK AFTER DOC RefSeq CODING PLUS 10 BP FLANKS
 

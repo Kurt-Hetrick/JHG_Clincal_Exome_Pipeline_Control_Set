@@ -32,6 +32,11 @@
 
 	CODING_BED=$5
 		CODING_BED_NAME=$(basename $CODING_BED .bed)
+		CODING_MD5=$(md5sum $CODING_BED | cut -c 1-7)
+	# note: since the coding bed file is supposed to be static.
+	# i'm tracking it by creating a md5 and applying it to the file name
+	# which gets captured by the command line output
+	# i don't care how the bed file is tracked when changes are made, just that it is tracked.
 	TARGET_BED=$6
 		TARGET_BED_NAME=$(basename $TARGET_BED .bed)
 	BAIT_BED=$7
@@ -42,11 +47,6 @@
 		REF_DIR=$(dirname $REF_GENOME)
 		REF_BASENAME=$(basename $REF_GENOME | sed 's/.fasta//g ; s/.fa//g')
 	PADDING_LENGTH=${10}
-
-# grab the md5 has for the coding bed file. only use the first 7 characters.
-
-	CODING_MD5=$(md5sum $CODING_BED | cut -c 1-7)
-
 
 # FIX AND PAD THE CODING BED FILE
 	# make sure that there is EOF
