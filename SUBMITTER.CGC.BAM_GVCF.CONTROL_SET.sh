@@ -100,7 +100,7 @@
 #####################
 # PIPELINE PROGRAMS #
 #####################
-	ALIGNMENT_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/ddl_ce_control_align-0.0.2.simg"
+	ALIGNMENT_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/ddl_ce_control_align-0.0.3.simg"
 	# contains the following software and is on Ubuntu 16.04.5 LTS
 		# gatk 4.0.11.0 (base image). also contains the following.
 			# Python 3.6.2 :: Continuum Analytics, Inc.
@@ -777,6 +777,28 @@ done
 				$SUBMIT_STAMP
 		}
 
+	###############################
+	# RUN VERIFYBAMID #############
+	# THIS RUNS OFF OF A BAM FILE #
+	###############################
+
+		RUN_VERIFYBAMID ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.04-A.01-RUN_VERIFYBAMID"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-VERIFYBAMID.log" \
+			-hold_jid H.04-SELECT_VERIFYBAMID_VCF"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.04-A.01_VERIFYBAMID.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
 		CREATE_SAMPLE_ARRAY
@@ -787,6 +809,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		DOC_TARGET
 		echo sleep 0.1s
 		SELECT_VERIFYBAMID_VCF
+		echo sleep 0.1s
+		RUN_VERIFYBAMID
 		echo sleep 0.1s
 done
 
@@ -911,22 +935,6 @@ done
 # "'$SCRIPT_DIR'""/H.03-A.03-A.01_PER_INTERVAL_FILTERED.sh",\
 # "'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
-
-
-
-
-# # RUN VERIFYBAMID ALL
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.08-A.01_VERIFYBAMID_"$2"_"$1,\
-# "-hold_jid","H.08_SELECT_VERIFYBAMID_VCF_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".VERIFYBAMID.log",\
-# "'$SCRIPT_DIR'""/H.08-A.01_VERIFYBAMID.sh",\
-# "'$CORE_PATH'","'$VERIFY_DIR'",$1,$2"\n""sleep 1s"}'
 
 # ###################################################
 # ### RUN VERIFYBAM ID PER CHROMOSOME - VITO ########

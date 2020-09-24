@@ -30,29 +30,22 @@
 
 	PROJECT=$3
 	SM_TAG=$4
-	REF_GENOME=$5
-	VERIFY_VCF=$6
-	BAIT_BED=$7
-		BAIT_BED_NAME=$(basename $BAIT_BED .bed)
-	SAMPLE_SHEET=$8
-	SUBMIT_STAMP=$9
+	SAMPLE_SHEET=$5
+	SUBMIT_STAMP=$6
 
-## --Creating an on the fly VCF file to be used as the reference for verifyBamID--
-## --remove X and Y data
+## --Running verifyBamID--
 
-START_SELECT_VERIFYBAMID_VCF=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+START_VERIFYBAMID=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
 	# construct command line
 
-		CMD="singularity exec $ALIGNMENT_CONTAINER java -jar" \
-			CMD=$CMD" /gatk/gatk.jar" \
-			CMD=$CMD" SelectVariants" \
-			CMD=$CMD" --reference $REF_GENOME" \
-			CMD=$CMD" --output $CORE_PATH/$PROJECT/TEMP/$SM_TAG".VerifyBamID.vcf"" \
-			CMD=$CMD" --intervals $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed"" \
-			CMD=$CMD" --variant $VERIFY_VCF" \
-			CMD=$CMD" --exclude-intervals X" \
-			CMD=$CMD" --exclude-intervals Y"
+		CMD="singularity exec $ALIGNMENT_CONTAINER verifyBamID" \
+			CMD=$CMD" --bam $CORE_PATH/$PROJECT/TEMP/$SM_TAG".bam"" \
+			CMD=$CMD" --vcf $CORE_PATH/$PROJECT/TEMP/$SM_TAG".VerifyBamID.vcf"" \
+			CMD=$CMD" --out $CORE_PATH/$PROJECT/REPORTS/VERIFYBAMID/$SM_TAG" \
+			CMD=$CMD" --precise" \
+			CMD=$CMD" --verbose" \
+			CMD=$CMD" --maxDepth 2500"
 
 	# write command line to file and execute the command line
 
@@ -74,11 +67,11 @@ START_SELECT_VERIFYBAMID_VCF=`date '+%s'` # capture time process starts for wall
 			exit $SCRIPT_STATUS
 		fi
 
-END_SELECT_VERIFYBAMID_VCF=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+END_VERIFYBAMID=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
 # write out timing metrics to file
 
-	echo $SM_TAG"_"$PROJECT",H.001,SELECT_VERIFYBAMID_VCF,"$HOSTNAME","$START_SELECT_VERIFYBAMID_VCF","$END_SELECT_VERIFYBAMID_VCF \
+	echo $SM_TAG"_"$PROJECT",H.001,VERIFYBAMID,"$HOSTNAME","$START_VERIFYBAMID","$END_VERIFYBAMID \
 	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program
