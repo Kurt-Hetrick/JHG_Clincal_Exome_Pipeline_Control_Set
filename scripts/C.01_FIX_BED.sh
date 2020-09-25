@@ -43,10 +43,11 @@
 		BAIT_BED_NAME=$(basename $BAIT_BED .bed)
 	TITV_BED=$8
 		TITV_BED_NAME=$(basename $TITV_BED .bed)
-	REF_GENOME=$9
+	CYTOBAND_BED=$9
+	REF_GENOME=${10}
 		REF_DIR=$(dirname $REF_GENOME)
 		REF_BASENAME=$(basename $REF_GENOME | sed 's/.fasta//g ; s/.fa//g')
-	PADDING_LENGTH=${10}
+	PADDING_LENGTH=${11}
 
 # FIX AND PAD THE CODING BED FILE
 	# make sure that there is EOF
@@ -137,6 +138,23 @@
 		| awk 'BEGIN {OFS="\t"} {print $1,$2-"'$PADDING_LENGTH'",$3+"'$PADDING_LENGTH'"}' \
 		| singularity exec $ALIGNMENT_CONTAINER bedtools merge -i - \
 	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_GVCF.bed"
+
+# Format the cytoband file.
+# strip out the "chr" prefix from the chromsome name
+# print the chromsome, start, end, the first character of the cytoband (to get the chromosome arm).
+# the file is already sorted correctly so group by chromosome and chromosome arm and print the first start and last end
+	# for the chromosome/arm combination
+# print CHROMOSOME, START, END, ARM (TAB DELIMITED) TO MAKE A BED FILE.
+
+	sed 's/^chr//g' $CYTOBAND_BED \
+		| awk 'BEGIN {OFS="\t"} {print $1,$2,$3,substr($4,0,1)}' \
+		| singularity exec $ALIGNMENT_CONTAINER datamash \
+			-s \
+			-g 1,4 \
+			first 2 \
+			last 3 \
+		| awk 'BEGIN {OFS="\t"} {print $1,$3,$4,$2}' \
+	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG".CHROM_ARM.bed"
 
 # MAKE PICARD INTERVAL FILES (1-based start)
 # ti/tv bed is used as the target since it shouldn't change

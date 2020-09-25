@@ -549,6 +549,7 @@ done
 				$TARGET_BED \
 				$BAIT_BED \
 				$TITV_BED \
+				$CYTOBAND_BED \
 				$REF_GENOME \
 				$PADDING_LENGTH
 		}
@@ -828,6 +829,28 @@ done
 				$SUBMIT_STAMP
 		}
 
+	#########################################################
+	# DO AN ANEUPLOIDY CHECK ON TARGET BED FILE DOC OUTPUT  #
+	#########################################################
+
+		ANEUPLOIDY_CHECK ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.05-A.01_CHROM_DEPTH"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-ANEUPLOIDY_CHECK.log" \
+			-hold_jid C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT,H.05-DOC_CODING"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.05-A.01_CHROM_DEPTH.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$CODING_BED \
+				$PADDING_LENGTH
+		}
+
+
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
 		CREATE_SAMPLE_ARRAY
@@ -842,6 +865,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		RUN_VERIFYBAMID
 		echo sleep 0.1s
 		DOC_CODING
+		echo sleep 0.1s
+		ANEUPLOIDY_CHECK
 		echo sleep 0.1s
 done
 
@@ -861,20 +886,6 @@ done
 # "'$SCRIPT_DIR'""/H.01_HAPLOTYPE_CALLER.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
 
-
-
-# # RUN ANEUPLOIDY_CHECK AFTER DOC RefSeq CODING PLUS 10 BP FLANKS
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@-]"); \
-# print "qsub","-N","H.03-A.01_DOC_CHROM_DEPTH_"$2"_"$1,\
-# "-hold_jid","H.03_DOC_CODING_10bpFLANKS_"$2"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".ANEUPLOIDY_CHECK.log",\
-# "'$SCRIPT_DIR'""/H.03-A.01_CHROM_DEPTH.sh",\
-# "'$CORE_PATH'","'$CYTOBAND_BED'","'$DATAMASH_DIR'","'$BEDTOOLS_DIR'",$1,$2"\n""sleep 1s"}'
 
 # # RUN FORMATTING PER BASE COVERAGE WITH GENE NAME ANNNOTATION
 
