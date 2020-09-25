@@ -850,6 +850,26 @@ done
 				$PADDING_LENGTH
 		}
 
+	########################################################################################
+	# FORMATTING PER BASE COVERAGE AND ADDING GENE NAME, TRANSCRIPT, EXON, ETC ANNNOTATION #
+	########################################################################################
+
+		ANNOTATE_PER_BASE_REPORT ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.05-A.02_CHROM_DEPTH"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-ANNOTATE_PER_BASE.log" \
+			-hold_jid C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT,H.05-DOC_CODING"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.05-A.02_ANNOTATE_PER_BASE.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$CODING_BED \
+				$PADDING_LENGTH
+		}
 
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
@@ -867,6 +887,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		DOC_CODING
 		echo sleep 0.1s
 		ANEUPLOIDY_CHECK
+		echo sleep 0.1s
+		ANNOTATE_PER_BASE_REPORT
 		echo sleep 0.1s
 done
 
@@ -887,18 +909,7 @@ done
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
 
 
-# # RUN FORMATTING PER BASE COVERAGE WITH GENE NAME ANNNOTATION
 
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1,1 -k 2,2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@]"); \
-# print "qsub", "-N", "H.03-A.02_PER_BASE_" smtag[1] "_" smtag[2] "_" $1,\
-# "-hold_jid", "H.03_DOC_CODING_10bpFLANKS_" $2 "_" $1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_BASE.log",\
-# "'$SCRIPT_DIR'""/H.03-A.02_PER_BASE.sh",\
-# "'$CORE_PATH'","'$BEDTOOLS_DIR'","'$CODING_BED'",$1,$2"\n""sleep 1s"}'
 
 # # RUN FILTERING PER BASE COVERAGE WITH GENE NAME ANNNOTATION WITH LESS THAN 30x
 

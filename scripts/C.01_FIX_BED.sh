@@ -56,6 +56,7 @@
 	# PAD THE REFSEQ CODING BED FILE BY THE PADDING LENGTH
 	# remove chr prefix
 	# remove MT genome (done in another pipeline)
+	# remove annotation fields
 
 		awk 1 $CODING_BED \
 			| sed 's/\r//g' \
@@ -97,6 +98,21 @@
 				| sed 's/^chr//g' \
 				| grep -v "^MT" \
 			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$CODING_BED_NAME"-"$CODING_MD5".bed"
+
+# FIX AND PAD THE ANNOTATED CODING BED FILE
+	# make sure that there is EOF
+	# remove CARRIAGE RETURNS
+	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+	# remove chr prefix
+	# remove MT genome (done in another pipeline)
+
+		awk 1 $CODING_BED \
+			| sed 's/\r//g' \
+			| sed -r 's/[[:space:]]+/\t/g' \
+			| sed 's/^chr//g' \
+			| grep -v "^MT" \
+			| awk 'BEGIN {OFS="\t"} {print $1,$2-"'$PADDING_LENGTH'",$3+"'$PADDING_LENGTH'",$4,$5,$6,$7}' \
+			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_"$CODING_BED_NAME"-"$CODING_MD5"-"$PADDING_LENGTH"-BP-PAD-ANNOTATED.bed"
 
 # FIX THE BAIT BED FILE. THIS IS TO BE COMBINED WITH THE BAIT BED FILE AND THEN PADDED BY 250 BP
 # AND THEN MERGED (FOR OVERLAPPING INTERVALS) FOR GVCF CREATION.
