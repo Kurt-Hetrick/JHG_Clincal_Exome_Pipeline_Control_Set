@@ -859,7 +859,7 @@ done
 			echo \
 			qsub \
 				$QSUB_ARGS \
-			-N H.05-A.02_CHROM_DEPTH"_"$SGE_SM_TAG"_"$PROJECT \
+			-N H.05-A.02_ANNOTATE_PER_BASE"_"$SGE_SM_TAG"_"$PROJECT \
 				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-ANNOTATE_PER_BASE.log" \
 			-hold_jid C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT,H.05-DOC_CODING"_"$SGE_SM_TAG"_"$PROJECT \
 			$SCRIPT_DIR/H.05-A.02_ANNOTATE_PER_BASE.sh \
@@ -870,6 +870,37 @@ done
 				$CODING_BED \
 				$PADDING_LENGTH
 		}
+
+	##########################################################################
+	# FILTER PER BASE COVERAGE WITH GENE NAME ANNNOTATION WITH LESS THAN 30x #
+	##########################################################################
+
+		FILTER_ANNOTATED_PER_BASE_REPORT ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.05-A.02-A.01_FILTER_ANNOTATED_PER_BASE"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-FILTER_ANNOTATED_PER_BASE.log" \
+			-hold_jid H.05-A.02_ANNOTATE_PER_BASE"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.05-A.02-A.01_ANNOTATE_PER_BASE_FILTERED.sh \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$CODING_BED \
+				$PADDING_LENGTH
+		}
+
+# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+# | sort -k 1,1 -k 2,2 \
+# | uniq \
+# | awk '{split($2,smtag,"[@]"); \
+# print "qsub","-N","H.03-A.02-A.01_PER_BASE_FILTER_"smtag[1]"_"smtag[2]"_"$1,\
+# "-hold_jid","H.03-A.02_PER_BASE_"smtag[1]"_"smtag[2]"_"$1,\
+# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_BASE_FILTER.log",\
+# "'$SCRIPT_DIR'""/H.03-A.02-A.01_PER_BASE_FILTERED.sh",\
+# "'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
@@ -889,6 +920,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		ANEUPLOIDY_CHECK
 		echo sleep 0.1s
 		ANNOTATE_PER_BASE_REPORT
+		echo sleep 0.1s
+		FILTER_ANNOTATED_PER_BASE_REPORT
 		echo sleep 0.1s
 done
 
@@ -911,18 +944,7 @@ done
 
 
 
-# # RUN FILTERING PER BASE COVERAGE WITH GENE NAME ANNNOTATION WITH LESS THAN 30x
 
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1,1 -k 2,2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@]"); \
-# print "qsub","-N","H.03-A.02-A.01_PER_BASE_FILTER_"smtag[1]"_"smtag[2]"_"$1,\
-# "-hold_jid","H.03-A.02_PER_BASE_"smtag[1]"_"smtag[2]"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_BASE_FILTER.log",\
-# "'$SCRIPT_DIR'""/H.03-A.02-A.01_PER_BASE_FILTERED.sh",\
-# "'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
 # # BGZIP PER BASE COVERAGE WITH GENE NAME ANNNOTATION
 
