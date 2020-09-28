@@ -891,16 +891,28 @@ done
 				$PADDING_LENGTH
 		}
 
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1,1 -k 2,2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@]"); \
-# print "qsub","-N","H.03-A.02-A.01_PER_BASE_FILTER_"smtag[1]"_"smtag[2]"_"$1,\
-# "-hold_jid","H.03-A.02_PER_BASE_"smtag[1]"_"smtag[2]"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_BASE_FILTER.log",\
-# "'$SCRIPT_DIR'""/H.03-A.02-A.01_PER_BASE_FILTERED.sh",\
-# "'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
+	##############################################################
+	# BGZIP PER BASE COVERAGE WITH GENE NAME ANNNOTATION, BGZIP  #
+	##############################################################
+
+		BGZIP_ANNOTATED_PER_BASE_REPORT ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.05-A.02-A.02_BGZIP_ANNOTATED_PER_BASE"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-BGZIP_ANNOTATED_PER_BASE.log" \
+			-hold_jid H.05-A.02_ANNOTATE_PER_BASE"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.05-A.02-A.02_ANNOTATE_PER_BASE_BGZIP.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$CODING_BED \
+				$PADDING_LENGTH \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
 
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
@@ -923,6 +935,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		echo sleep 0.1s
 		FILTER_ANNOTATED_PER_BASE_REPORT
 		echo sleep 0.1s
+		BGZIP_ANNOTATED_PER_BASE_REPORT
+		echo sleep 0.1s
 done
 
 
@@ -940,24 +954,6 @@ done
 # "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".HAPLOTYPE_CALLER.log",\
 # "'$SCRIPT_DIR'""/H.01_HAPLOTYPE_CALLER.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
-
-
-
-
-
-
-# # BGZIP PER BASE COVERAGE WITH GENE NAME ANNNOTATION
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1,1 -k 2,2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@]"); \
-# print "qsub","-N","H.03-A.02-A.02_PER_BASE_BGZIP_"smtag[1]"_"smtag[2]"_"$1,\
-# "-hold_jid","H.03-A.02_PER_BASE_"smtag[1]"_"smtag[2]"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_BASE_BGZIP.log",\
-# "'$SCRIPT_DIR'""/H.03-A.02-A.02_PER_BASE_BGZIP.sh",\
-# "'$CORE_PATH'","'$TABIX_DIR'",$1,$2"\n""sleep 1s"}'
 
 # # TABIX PER BASE COVERAGE WITH GENE NAME ANNNOTATION
 
