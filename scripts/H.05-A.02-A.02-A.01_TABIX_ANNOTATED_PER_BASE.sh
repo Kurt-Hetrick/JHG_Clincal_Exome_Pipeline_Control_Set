@@ -27,6 +27,7 @@
 
 	ALIGNMENT_CONTAINER=$1
 	CORE_PATH=$2
+
 	PROJECT=$3
 	SM_TAG=$4
 	CODING_BED=$5
@@ -36,16 +37,22 @@
 	SAMPLE_SHEET=$7
 	SUBMIT_STAMP=$8
 
-# Use bgzip to compress the padded and annotated refseq select cds + omim per base depth report
+# Use TABIX to index padded and annotated per base refseq select cds plus omim
+	# index the per base report
+	# header is prefixed with #
+	# sequence name is column 1
+	# start and end is column 2
 
-START_PER_BASE_BGZIP=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+START_PER_BASE_TABIX=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
 	# construct command line
 
-		CMD="singularity exec $ALIGNMENT_CONTAINER bgzip" \
-			CMD=$CMD" -c" \
-			CMD=$CMD" $CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/CODING_PADDED/$SM_TAG"_"$CODING_BED_NAME"-"$CODING_MD5"-"$PADDING_LENGTH"-BP-PAD.PER.BASE.REPORT.txt"" \
-			CMD=$CMD" >| $CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/CODING_PADDED/$SM_TAG"_"$CODING_BED_NAME"-"$CODING_MD5"-"$PADDING_LENGTH"-BP-PAD.PER.BASE.REPORT.txt.gz"" \
+		CMD="singularity exec $ALIGNMENT_CONTAINER tabix" \
+			CMD=$CMD" -c \#" \
+			CMD=$CMD" -s 1" \
+			CMD=$CMD" -b 2" \
+			CMD=$CMD" -e 2" \
+			CMD=$CMD" $CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/CODING_PADDED/$SM_TAG"_"$CODING_BED_NAME"-"$CODING_MD5"-"$PADDING_LENGTH"-BP-PAD.PER.BASE.REPORT.txt.gz""
 
 	# write command line to file and execute the command line
 
@@ -67,11 +74,11 @@ START_PER_BASE_BGZIP=`date '+%s'` # capture time process starts for wall clock t
 			exit $SCRIPT_STATUS
 		fi
 
-END_PER_BASE_BGZIP=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+END_PER_BASE_TABIX=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
 # write out timing metrics to file
 
-	echo $SM_TAG"_"$PROJECT",H.001,REFSEQ_PER_BASE_BGZIP,"$HOSTNAME","$START_PER_BASE_BGZIP","$END_PER_BASE_BGZIP \
+	echo $SM_TAG"_"$PROJECT",H.001,REFSEQ_PER_BASE_TABIX,"$HOSTNAME","$START_PER_BASE_TABIX","$END_PER_BASE_TABIX \
 	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program
