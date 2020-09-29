@@ -958,6 +958,26 @@ done
 				$PADDING_LENGTH
 		}
 
+	##################################################################################################
+	# FILTER ANNOTATED PER CODING INTERVAL COVERAGE TO INTERVALS WHERE LESS 100% OF BASES ARE AT 30X #
+	##################################################################################################
+
+		FILTER_ANNOTATED_PER_INTERVAL_REPORT ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.05-A.03-A.01_FILTER_ANNOTATED_PER_INTERVAL"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-FILTER_ANNOTATED_PER_INTERVAL.log" \
+			-hold_jid H.05-A.03_ANNOTATE_PER_INTERVAL"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.05-A.03-A.01_FILTER_ANNOTATED_PER_INTERVAL.sh \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$CODING_BED \
+				$PADDING_LENGTH
+		}
+
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
 		CREATE_SAMPLE_ARRAY
@@ -984,6 +1004,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		TABIX_ANNOTATED_PER_BASE_REPORT
 		echo sleep 0.1s
 		ANNOTATE_PER_INTERVAL_REPORT
+		echo sleep 0.1s
+		FILTER_ANNOTATED_PER_INTERVAL_REPORT
 		echo sleep 0.1s
 done
 
