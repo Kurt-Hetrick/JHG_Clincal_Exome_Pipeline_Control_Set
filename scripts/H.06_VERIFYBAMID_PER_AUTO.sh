@@ -56,9 +56,9 @@ START_SELECT_VERIFYBAMID_VCF=`date '+%s'` # capture time process starts for wall
 			CMD=$CMD" /usr/GenomeAnalysisTK.jar" \
 			CMD=$CMD" -T SelectVariants" \
 			CMD=$CMD" --reference_sequence $REF_GENOME" \
-			CMD=$CMD" -o $CORE_PATH/$PROJECT/TEMP/$SM_TAG".VerifyBamID."$CHROMOSOME".vcf"" \
+			CMD=$CMD" -o $CORE_PATH/$PROJECT/TEMP/$SM_TAG".VerifyBamID."$AUTOSOME".vcf"" \
 			CMD=$CMD" -L $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed"" \
-			CMD=$CMD" -L $CHROMOSOME" \
+			CMD=$CMD" -L $AUTOSOME" \
 			CMD=$CMD" --variant $VERIFY_VCF" \
 			CMD=$CMD" -XL X" \
 			CMD=$CMD" -XL Y" \
@@ -77,8 +77,8 @@ START_SELECT_VERIFYBAMID_VCF=`date '+%s'` # capture time process starts for wall
 
 			CMD="singularity exec $ALIGNMENT_CONTAINER verifyBamID" \
 				CMD=$CMD" --bam $CORE_PATH/$PROJECT/TEMP/$SM_TAG".bam"" \
-				CMD=$CMD" --vcf $CORE_PATH/$PROJECT/TEMP/$SM_TAG".VerifyBamID."$CHROMOSOME".vcf"" \
-				CMD=$CMD" --out $CORE_PATH/$PROJECT/TEMP/$SM_TAG"."$CHROMOSOME" \
+				CMD=$CMD" --vcf $CORE_PATH/$PROJECT/TEMP/$SM_TAG".VerifyBamID."$AUTOSOME".vcf"" \
+				CMD=$CMD" --out $CORE_PATH/$PROJECT/TEMP/$SM_TAG"."$AUTOSOME" \
 				CMD=$CMD" --precise" \
 				CMD=$CMD" --verbose" \
 				CMD=$CMD" --maxDepth 2500"
@@ -94,7 +94,7 @@ START_SELECT_VERIFYBAMID_VCF=`date '+%s'` # capture time process starts for wall
 # exclude chromosomes X,Y and MT
 # run select verifybamid vcf and verifybamid for each chromosome separately
 
-	for CHROMOSOME in $(sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' \
+	for AUTOSOME in $(sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' \
 		$CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed" \
 			| sed -r 's/[[:space:]]+/\t/g' \
 			| cut -f 1 \
@@ -128,7 +128,7 @@ END_SELECT_VERIFYBAMID_VCF=`date '+%s'` # capture time process starts for wall c
 
 # write out timing metrics to file
 
-	echo $SM_TAG"_"$PROJECT"_BAM_REPORTS,Z.09,SELECT_VERIFYBAMID_"$CHROMOSOME","$HOSTNAME","$START_SELECT_VERIFYBAMID_VCF","$END_SELECT_VERIFYBAMID_VCF \
+	echo $SM_TAG"_"$PROJECT"_BAM_REPORTS,Z.09,SELECT_VERIFYBAMID_"$AUTOSOME","$HOSTNAME","$START_SELECT_VERIFYBAMID_VCF","$END_SELECT_VERIFYBAMID_VCF \
 	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program
