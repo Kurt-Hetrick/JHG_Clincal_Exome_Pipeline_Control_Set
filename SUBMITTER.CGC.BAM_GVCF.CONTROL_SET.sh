@@ -978,6 +978,36 @@ done
 				$PADDING_LENGTH
 		}
 
+	#################################################################################################
+	# CREATE VCF PER CHROMOSOME AND RUN VERIFYBAMID ON THEM ######################################
+	# USE THE BAIT BED FILE #########################################################################
+	# THE TARGET BED COULD BE MODIFIED TO BE TOO SMALL TO BE USEFUL HERE ############################
+	# TI/TV BED FILE HAS TOO MUCH UNCERTAINTY SINCE IT DOES NOT HAE ANYTHING TO DO WITH THE CAPTURE #
+	# SCRIPT READS BAIT BED FILE, GRABS THE CHROMOSOMES AND RUNS A FOR LOOP FOR BOTH THINGS #########
+	# USES BAM FILE AS THE INPUT ####################################################################
+	#################################################################################################
+
+		VERIFYBAMID_PER_AUTOSOME ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N H.06-SELECT_VERIFYBAMID_PER_AUTOSOME"_"$SGE_SM_TAG"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-SELECT_VERIFYBAMID_PER_AUTOSOME.log" \
+			-hold_jid C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT,E.01-APPLY_BQSR"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.06_VERIFYBAMID_PER_AUTO.sh \
+				$ALIGNMENT_CONTAINER \
+				$GATK_3_7_0_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$SM_TAG \
+				$REF_GENOME \
+				$VERIFY_VCF \
+				$BAIT_BED \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
 		CREATE_SAMPLE_ARRAY
@@ -1007,6 +1037,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		echo sleep 0.1s
 		FILTER_ANNOTATED_PER_INTERVAL_REPORT
 		echo sleep 0.1s
+		VERIFYBAMID_PER_AUTOSOME
+		echo sleep 0.1s
 done
 
 
@@ -1024,21 +1056,6 @@ done
 # "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".HAPLOTYPE_CALLER.log",\
 # "'$SCRIPT_DIR'""/H.01_HAPLOTYPE_CALLER.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 1s"}'
-
-
-
-# # RUN FILTERING PER CODING INTERVAL COVERAGE WITH GENE NAME ANNNOTATION WITH LESS THAN 30x
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1,1 -k 2,2 \
-# | uniq \
-# | awk '{split($2,smtag,"[@]"); \
-# print "qsub","-N","H.03-A.03_PER_INTERVAL_FILTER_"smtag[1]"_"smtag[2]"_"$1,\
-# "-hold_jid","H.03-A.03_PER_INTERVAL_"smtag[1]"_"smtag[2]"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".PER_INTERVAL_FILTER.log",\
-# "'$SCRIPT_DIR'""/H.03-A.03-A.01_PER_INTERVAL_FILTERED.sh",\
-# "'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
 
 
 # ###################################################
