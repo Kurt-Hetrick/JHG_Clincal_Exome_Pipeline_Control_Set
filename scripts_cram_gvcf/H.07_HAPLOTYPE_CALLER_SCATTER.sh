@@ -38,6 +38,7 @@
 	CHROMOSOME=$8
 	GVCF_PAD=$9
 	SAMPLE_SHEET=${10}
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=${11}
 
 ## -----Haplotype Caller BY CHROMOSOME -----

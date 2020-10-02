@@ -32,7 +32,7 @@
 
 	SUBMITTER_SCRIPT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
-	SCRIPT_DIR="$SUBMITTER_SCRIPT_PATH/scripts"
+	SCRIPT_DIR="$SUBMITTER_SCRIPT_PATH/scripts_cram_gvcf"
 
 ##################
 # CORE VARIABLES #
@@ -1127,6 +1127,86 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 				echo sleep 0.1s
 		done
 done
+
+###########################
+# HAPLOTYPE CALLER GATHER #
+################################################################################
+# GATHER UP THE PER SAMPLE PER CHROMOSOME GVCF FILES INTO A SINGLE SAMPLE GVCF #
+################################################################################
+
+	BUILD_HOLD_ID_PATH ()
+	{
+		HOLD_ID_PATH="-hold_jid "
+
+		for CHROMOSOME in $(sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $BAIT_BED \
+								| sed -r 's/[[:space:]]+/\t/g' \
+								| cut -f 1 \
+								| sed 's/chr//g' \
+								| grep -v "MT" \
+								| sort \
+								| uniq \
+								| singularity exec $ALIGNMENT_CONTAINER datamash \
+									collapse 1 \
+								| sed 's/,/ /g');
+			do
+				HOLD_ID_PATH=$HOLD_ID_PATH"H.07-HAPLOTYPE_CALLER_"$SM_TAG"_"$PROJECT"_chr"$CHROMOSOME","
+				HOLD_ID_PATH=`echo $HOLD_ID_PATH | sed 's/@/_/g'`
+		done
+	}
+
+	CALL_HAPLOTYPE_CALLER_GVCF_GATHER ()
+	{
+		echo \
+		qsub \
+			$QSUB_ARGS \
+		-N H.01-A.01_HAPLOTYPE_CALLER_GVCF_GATHER"_"$SGE_SM_TAG"_"$PROJECT \
+			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG-HAPLOTYPE_CALLER_GVCF_GATHER.log \
+		${HOLD_ID_PATH} \
+		$SCRIPT_DIR/H.07-A.01_HAPLOTYPE_CALLER_GVCF_GATHER.sh \
+			$GATK_3_7_0_CONTAINER \
+			$CORE_PATH \
+			$PROJECT \
+			$SM_TAG \
+			$REF_GENOME \
+			$BAIT_BED \
+			$SAMPLE_SHEET \
+			$SUBMIT_STAMP
+	}
+
+	# CALL_HAPLOTYPE_CALLER_BAM_GATHER ()
+	# {
+	# 	echo \
+	# 	qsub \
+	# 		-S /bin/bash \
+	# 		-cwd \
+	# 		-V \
+	# 		-q $QUEUE_LIST \
+	# 		-p $PRIORITY \
+	# 	-N H.01-A.02_HAPLOTYPE_CALLER_BAM_GATHER"_"$SGE_SM_TAG"_"$PROJECT \
+	# 		-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG-HAPLOTYPE_CALLER_BAM_GATHER.log \
+	# 		-j y \
+	# 	${HOLD_ID_PATH} \
+	# 	$SCRIPT_DIR/H.01-A.02_HAPLOTYPE_CALLER_BAM_GATHER.sh \
+	# 		$JAVA_1_8 \
+	# 		$PICARD_DIR \
+	# 		$CORE_PATH \
+	# 		$PROJECT \
+	# 		$SM_TAG \
+	# 		$HC_BAIT_BED \
+	# 		$SAMPLE_SHEET \
+	# 		$SUBMIT_STAMP
+	# }
+
+for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
+	do
+		CREATE_SAMPLE_ARRAY
+		BUILD_HOLD_ID_PATH
+		CALL_HAPLOTYPE_CALLER_GVCF_GATHER
+		echo sleep 0.1s
+		# CALL_HAPLOTYPE_CALLER_BAM_GATHER
+		# echo sleep 0.1s
+done
+
 
 # ##### ALL H.00X SERIES OF SCRIPTS CAN BE RUN IN PARALLEL SINCE THEY ARE DEPENDENT ON FINAL BAM FILE GENERATION #####
 

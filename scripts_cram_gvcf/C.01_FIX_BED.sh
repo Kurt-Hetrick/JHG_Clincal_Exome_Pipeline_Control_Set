@@ -152,7 +152,7 @@
 	cat $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$CODING_BED_NAME"-"$CODING_MD5".bed" \
 	$CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed" \
 		| sort -k 1,1 -k 2,2n -k 3,3n \
-		| awk 'BEGIN {OFS="\t"} {print $1,$2-"'$PADDING_LENGTH'",$3+"'$PADDING_LENGTH'"}' \
+		| awk 'BEGIN {OFS="\t"} {print $1,$2-"'$GVCF_PAD'",$3+"'$GVCF_PAD'"}' \
 		| singularity exec $ALIGNMENT_CONTAINER bedtools merge -i - \
 	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME"-"$CODING_BED_NAME"-"$CODING_MD5"-"$GVCF_PAD"-BP-PAD-GVCF.bed"
 
