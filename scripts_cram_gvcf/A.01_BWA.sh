@@ -49,6 +49,7 @@
 	SAMPLE_SHEET=${18}
 		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=${19}
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	NOVASEQ_REPO=${20}
 
 # Need to convert data in sample manifest to Iso 8601 date since we are not using bwa mem to populate this.

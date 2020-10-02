@@ -35,6 +35,7 @@
 		CODING_MD5=$(md5sum $CODING_BED | cut -c 1-7)
 	PADDING_LENGTH=$6
 	SAMPLE_SHEET=$7
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=$8
 
 # Use TABIX to index padded and annotated per base refseq select cds plus omim

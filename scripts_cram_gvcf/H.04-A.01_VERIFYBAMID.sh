@@ -31,6 +31,7 @@
 	PROJECT=$3
 	SM_TAG=$4
 	SAMPLE_SHEET=$5
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=$6
 
 ## --Running verifyBamID--

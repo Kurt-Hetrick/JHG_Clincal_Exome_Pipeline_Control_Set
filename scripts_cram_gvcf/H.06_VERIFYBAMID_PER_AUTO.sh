@@ -37,6 +37,7 @@
 		BAIT_BED_NAME=$(basename $BAIT_BED .bed)
 
 	SAMPLE_SHEET=$9
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=${10}
 
 # create loop, for now doing this serially as I don't want to play with bandwith issues by doing it in parallel

@@ -36,6 +36,7 @@
 	PADDING_LENGTH=$7
 	GENE_LIST=$8
 	SAMPLE_SHEET=$9
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=${10}
 
 ### --Depth of Coverage On Target WITH PAD--

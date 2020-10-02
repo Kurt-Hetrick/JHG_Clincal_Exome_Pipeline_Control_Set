@@ -35,6 +35,7 @@
 	BAIT_BED=$7
 		BAIT_BED_NAME=$(basename $BAIT_BED .bed)
 	SAMPLE_SHEET=$8
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=$9
 
 ## --Creating an on the fly VCF file to be used as the reference for verifyBamID--
