@@ -48,6 +48,7 @@
 		REF_DIR=$(dirname $REF_GENOME)
 		REF_BASENAME=$(basename $REF_GENOME | sed 's/.fasta//g ; s/.fa//g')
 	PADDING_LENGTH=${11}
+	GVCF_PAD=${12}
 
 # FIX AND PAD THE CODING BED FILE
 	# make sure that there is EOF
@@ -131,29 +132,29 @@
 			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed"
 
 # FIX THE TITV BED FILE FOR DATA PROCESSING AND METRICS REPORTS.
-		# make sure that there is EOF
-		# remove CARRIAGE RETURNS
-		# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
-		# remove chr prefix
-		# remove MT genome (done in another pipeline)
+	# make sure that there is EOF
+	# remove CARRIAGE RETURNS
+	# CONVERT VARIABLE LENGTH WHITESPACE FIELD DELIMETERS TO SINGLE TAB.
+	# remove chr prefix
+	# remove MT genome (done in another pipeline)
 
-			awk 1 $TITV_BED \
-				| sed 's/\r//g' \
-				| sed -r 's/[[:space:]]+/\t/g' \
-				| sed 's/^chr//g' \
-				| grep -v "^MT" \
-			>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$TITV_BED_NAME".bed"
+		awk 1 $TITV_BED \
+			| sed 's/\r//g' \
+			| sed -r 's/[[:space:]]+/\t/g' \
+			| sed 's/^chr//g' \
+			| grep -v "^MT" \
+		>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$TITV_BED_NAME".bed"
 
-# THE GVCF BED FILE IS THE COMBINED MERGING OF THE CIDR TWIST BAIT BED FILE
+# THE GVCF BED FILE IS THE CONCATENATION OF THE CIDR TWIST BAIT BED FILE
 ## AND THE CODING BED FILE WHICH IS REFSEQ SELECT CDS AND MISSING OMIM.
-# THIS WILL BE USED FOR GVCF FILE CREATION SO IT WILL BE SUPER PADDED WITH 250 BP.
+# THIS IS PADDED WITH 250 BP AND THEN MERGED FOR OVERLAPPING REGIONS.
 
 	cat $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$CODING_BED_NAME"-"$CODING_MD5".bed" \
 	$CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed" \
 		| sort -k 1,1 -k 2,2n -k 3,3n \
 		| awk 'BEGIN {OFS="\t"} {print $1,$2-"'$PADDING_LENGTH'",$3+"'$PADDING_LENGTH'"}' \
 		| singularity exec $ALIGNMENT_CONTAINER bedtools merge -i - \
-	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"_GVCF.bed"
+	>| $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME"-"$CODING_BED_NAME"-"$CODING_MD5"-"$GVCF_PAD"-BP-PAD-GVCF.bed"
 
 # Format the cytoband file.
 # strip out the "chr" prefix from the chromsome name

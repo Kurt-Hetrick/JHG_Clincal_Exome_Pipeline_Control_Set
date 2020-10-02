@@ -5,6 +5,7 @@
 	SAMPLE_SHEET=$1
 	PED_FILE=$2
 	PADDING_LENGTH=$3 # optional. if no 3rd argument present then the default is 10
+	# THIS PAD IS FOR SLICING
 
 		if [[ ! $PADDING_LENGTH ]]
 			then
@@ -36,6 +37,10 @@
 ##################
 # CORE VARIABLES #
 ##################
+
+	# GVCF PAD. CURRENTLY KEEPING THIS AS A STATIC VARIABLE
+
+		GVCF_PAD="250"
 
 	## This will always put the current working directory in front of any directory for PATH
 	## added /bin for RHEL6
@@ -100,6 +105,7 @@
 #####################
 # PIPELINE PROGRAMS #
 #####################
+
 	ALIGNMENT_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/ddl_ce_control_align-0.0.3.simg"
 	# contains the following software and is on Ubuntu 16.04.5 LTS
 		# gatk 4.0.11.0 (base image). also contains the following.
@@ -156,6 +162,7 @@
 
 #################################
 ##### MAKE A DIRECTORY TREE #####
+#################################
 
 	mkdir -p ~/CGC_PIPELINE_TEMP
 
@@ -551,7 +558,8 @@ done
 				$TITV_BED \
 				$CYTOBAND_BED \
 				$REF_GENOME \
-				$PADDING_LENGTH
+				$PADDING_LENGTH \
+				$GVCF_PAD
 		}
 
 	#######################################
@@ -1068,6 +1076,57 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		echo sleep 0.1s
 done
 
+#####################################################################
+# HAPLOTYPE CALLER SCATTER ##########################################
+#####################################################################
+# INPUT IS THE BAM FILE #############################################
+# THE BED FILE FOR THE GVCF INTERVALS IS ############################
+# THE BAIT BED PLUS THE CODING BED FILE CONCATENTATED TOGETHER ######
+# THEN A 250 BP PAD ADDED AND THEN MERGED FOR OVERLAPPING INTERVALS #
+#####################################################################
+
+	CALL_HAPLOTYPE_CALLER ()
+	{
+		echo \
+		qsub \
+			$QSUB_ARGS \
+		-N H.07-HAPLOTYPE_CALLER"_"$SGE_SM_TAG"_"$PROJECT"_chr"$CHROMOSOME \
+			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-HAPLOTYPE_CALLER_chr"$CHROMOSOME".log" \
+		-hold_jid C.01-FIX_BED_FILES"_"$SGE_SM_TAG"_"$PROJECT,E.01-APPLY_BQSR"_"$SGE_SM_TAG"_"$PROJECT \
+		$SCRIPT_DIR/H.07_HAPLOTYPE_CALLER_SCATTER.sh \
+			$GATK_3_7_0_CONTAINER \
+			$CORE_PATH \
+			$PROJECT \
+			$SM_TAG \
+			$REF_GENOME \
+			$CODING_BED \
+			$BAIT_BED \
+			$CHROMOSOME \
+			$GVCF_PAD \
+			$SAMPLE_SHEET \
+			$SUBMIT_STAMP
+	}
+
+# Take the samples bait bed file, create a list of unique chromosome to use as a scatter for haplotype_caller_scatter
+
+for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
+	do
+	CREATE_SAMPLE_ARRAY
+		for CHROMOSOME in $(sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $BAIT_BED \
+			| sed -r 's/[[:space:]]+/\t/g' \
+			| sed 's/chr//g' \
+			| grep -v "MT" \
+			| cut -f 1 \
+			| sort \
+			| uniq \
+			| singularity exec $ALIGNMENT_CONTAINER datamash \
+				collapse 1 \
+			| sed 's/,/ /g');
+			do
+				CALL_HAPLOTYPE_CALLER
+				echo sleep 0.1s
+		done
+done
 
 # ##### ALL H.00X SERIES OF SCRIPTS CAN BE RUN IN PARALLEL SINCE THEY ARE DEPENDENT ON FINAL BAM FILE GENERATION #####
 

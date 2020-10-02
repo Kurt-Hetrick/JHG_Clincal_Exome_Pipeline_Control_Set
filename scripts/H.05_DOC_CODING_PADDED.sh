@@ -92,7 +92,9 @@ END_DOC_CODING=`date '+%s'` # capture time process starts for wall clock trackin
 
 ##### MOVE AND RENAME OUTPUTS
 
-	# FIX DELIMETER IN THE HEADER AND ONLY KEEP THE FIRST 2 COLUMNS. DELETE SOURCE FILE
+	# FIX DELIMETER IN THE HEADER AND ONLY KEEP THE FIRST 2 COLUMNS for the every base report.
+	# this report is fed into the annotate per base reports (filtered and unfiltered)
+	# DELETE SOURCE FILE
 
 		sed 's/\t/,/g' $CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/CODING_PADDED/$SM_TAG"_"$CODING_BED_NAME"-"$CODING_MD5"-"$PADDING_LENGTH"-BP-PAD" \
 		| cut -d "," -f 1,2 \
