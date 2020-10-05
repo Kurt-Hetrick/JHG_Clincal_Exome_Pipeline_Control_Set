@@ -24,17 +24,16 @@
 
 # INPUT VARIABLES
 
-	JAVA_1_8=$1
-	PICARD_DIR=$2
-	CORE_PATH=$3
+	ALIGNMENT_CONTAINER=$1
+	CORE_PATH=$2
 	
-	PROJECT=$4
-	SM_TAG=$5
-	BAIT_BED=$6
+	PROJECT=$3
+	SM_TAG=$4
+	BAIT_BED=$5
 		BAIT_BED_NAME=(`basename $BAIT_BED .bed`)
-	SAMPLE_SHEET=$7
+	SAMPLE_SHEET=$6
 		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
-	SUBMIT_STAMP=$8
+	SUBMIT_STAMP=$7
 
 ## -----Cat Variants-----
 
@@ -43,7 +42,7 @@
 
 	# Put the autosome into a file, sort numerically
 	
-		sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"BAIT_BED_NAME".bed" \
+		sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed" \
 			| sed -r 's/[[:space:]]+/\t/g' \
 			| cut -f 1 \
 			| sort \
@@ -55,7 +54,7 @@
 	
 	# Append X if present
 	
-		sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"BAIT_BED_NAME".bed" \
+		sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed" \
 			| sed -r 's/[[:space:]]+/\t/g' \
 			| cut -f 1 \
 			| sort \
@@ -66,7 +65,7 @@
 	
 	# Append Y if present
 	
-		sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"BAIT_BED_NAME".bed" \
+		sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"$BAIT_BED_NAME".bed" \
 			| sed -r 's/[[:space:]]+/\t/g' \
 			| cut -f 1 \
 			| sort \
@@ -74,33 +73,26 @@
 			| awk '$1=="Y"' \
 			| awk '{print "'$CORE_PATH'" "/" "'$PROJECT'" "/TEMP/" "'$SM_TAG'" ".HC."$1".bam"}' \
 		>> $CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC_BAM.txt"
-	
-	# Append MT if present unless the project name starts with M_Valle
-	
-		# if [[ $PROJECT = "M_Valle"* ]];
-		# then
-		# 	:
-		# else
-		# 	sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $CORE_PATH/$PROJECT/TEMP/$SM_TAG"-"BAIT_BED_NAME".bed" \
-		# 		| sed -r 's/[[:space:]]+/\t/g' \
-		# 		| cut -f 1 \
-		# 		| sort \
-		# 		| uniq \
-		# 		| awk '$1=="MT"' \
-		# 		| awk '{print "'$CORE_PATH'" "/" "'$PROJECT'" "/TEMP/" "'$SM_TAG'" ".HC."$1".bam"}' \
-		# 	>> $CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC_BAM.txt"
-		# fi
 
 ## --Merge and Sort Bam files--
 
-START_HC_BAM_GATHER=`date '+%s'`
+START_HC_BAM_GATHER=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-	$JAVA_1_8/java -jar $PICARD_DIR/picard.jar \
-	GatherBamFiles \
-	INPUT=$CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC_BAM.txt" \
-	OUTPUT=$CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC.bam" \
-	VALIDATION_STRINGENCY=SILENT \
-	CREATE_INDEX=true
+	# construct command line
+
+		CMD="singularity exec $ALIGNMENT_CONTAINER java -jar" \
+			CMD=$CMD" /gatk/picard.jar" \
+		CMD=$CMD" GatherBamFiles" \
+			CMD=$CMD" INPUT=$CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC_BAM.txt"" \
+			CMD=$CMD" OUTPUT=$CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC.bam"" \
+			CMD=$CMD" VALIDATION_STRINGENCY=SILENT" \
+			CMD=$CMD" CREATE_INDEX=true"
+
+	# write command line to file and execute the command line
+
+		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
+		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
+		echo $CMD | bash
 
 	# check the exit signal at this point.
 
@@ -116,20 +108,12 @@ START_HC_BAM_GATHER=`date '+%s'`
 			exit $SCRIPT_STATUS
 		fi
 
-END_HC_BAM_GATHER=`date '+%s'`
+END_HC_BAM_GATHER=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-echo $SM_TAG"_"$PROJECT",H.01-A.01,MERGE_HC_BAM,"$HOSTNAME","$START_HC_BAM_GATHER","$END_HC_BAM_GATHER \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+# write out timing metrics to file
 
-echo $JAVA_1_8/java -jar $PICARD_DIR/picard.jar \
-GatherBamFiles \
-INPUT=$CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC_BAM.txt" \
-OUTPUT=$CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC.bam" \
-VALIDATION_STRINGENCY=SILENT \
-CREATE_INDEX=true \
->> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
-
-echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
+	echo $SM_TAG"_"$PROJECT",H.01-A.01,MERGE_HC_BAM,"$HOSTNAME","$START_HC_BAM_GATHER","$END_HC_BAM_GATHER \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program
 

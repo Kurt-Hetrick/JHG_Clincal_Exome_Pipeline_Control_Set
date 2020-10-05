@@ -1173,29 +1173,23 @@ done
 			$SUBMIT_STAMP
 	}
 
-	# CALL_HAPLOTYPE_CALLER_BAM_GATHER ()
-	# {
-	# 	echo \
-	# 	qsub \
-	# 		-S /bin/bash \
-	# 		-cwd \
-	# 		-V \
-	# 		-q $QUEUE_LIST \
-	# 		-p $PRIORITY \
-	# 	-N H.01-A.02_HAPLOTYPE_CALLER_BAM_GATHER"_"$SGE_SM_TAG"_"$PROJECT \
-	# 		-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG-HAPLOTYPE_CALLER_BAM_GATHER.log \
-	# 		-j y \
-	# 	${HOLD_ID_PATH} \
-	# 	$SCRIPT_DIR/H.01-A.02_HAPLOTYPE_CALLER_BAM_GATHER.sh \
-	# 		$JAVA_1_8 \
-	# 		$PICARD_DIR \
-	# 		$CORE_PATH \
-	# 		$PROJECT \
-	# 		$SM_TAG \
-	# 		$HC_BAIT_BED \
-	# 		$SAMPLE_SHEET \
-	# 		$SUBMIT_STAMP
-	# }
+	CALL_HAPLOTYPE_CALLER_BAM_GATHER ()
+	{
+		echo \
+		qsub \
+			$QSUB_ARGS \
+		-N H.07-A.02_HAPLOTYPE_CALLER_BAM_GATHER"_"$SGE_SM_TAG"_"$PROJECT \
+			-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG-HAPLOTYPE_CALLER_BAM_GATHER.log \
+		${HOLD_ID_PATH} \
+		$SCRIPT_DIR/H.07-A.02_HAPLOTYPE_CALLER_BAM_GATHER.sh \
+			$ALIGNMENT_CONTAINER \
+			$CORE_PATH \
+			$PROJECT \
+			$SM_TAG \
+			$BAIT_BED \
+			$SAMPLE_SHEET \
+			$SUBMIT_STAMP
+	}
 
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
 	do
@@ -1203,8 +1197,8 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		BUILD_HOLD_ID_PATH
 		CALL_HAPLOTYPE_CALLER_GVCF_GATHER
 		echo sleep 0.1s
-		# CALL_HAPLOTYPE_CALLER_BAM_GATHER
-		# echo sleep 0.1s
+		CALL_HAPLOTYPE_CALLER_BAM_GATHER
+		echo sleep 0.1s
 done
 
 
