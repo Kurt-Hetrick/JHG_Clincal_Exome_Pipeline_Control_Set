@@ -24,7 +24,7 @@
 
 # INPUT VARIABLES
 
-	SAMTOOLS_DIR=$1
+	ALIGNMENT_CONTAINER=$1
 	CORE_PATH=$2
 
 	PROJECT=$3
@@ -36,14 +36,23 @@
 
 ## --write lossless cram file.
 
-START_HC_CRAM=`date '+%s'`
+START_HC_CRAM=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-	$SAMTOOLS_DIR/samtools \
-	view \
-	-C $CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC.bam" \
-	-T $REF_GENOME \
-	-@ 4 \
-	-o $CORE_PATH/$PROJECT/HC_CRAM/$SM_TAG".HC.cram"
+	# construct command line
+
+		CMD="singularity exec $ALIGNMENT_CONTAINER samtools" \
+			CMD=$CMD" view" \
+				CMD=$CMD" -C $CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC.bam"" \
+				CMD=$CMD" -T $REF_GENOME" \
+				CMD=$CMD" -@ 6" \
+				CMD=$CMD" -O CRAM" \
+				CMD=$CMD" -o $CORE_PATH/$PROJECT/HC_CRAM/$SM_TAG".HC.cram""
+
+	# write command line to file and execute the command line
+
+		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
+		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
+		echo $CMD | bash
 
 	# check the exit signal at this point.
 
@@ -59,20 +68,12 @@ START_HC_CRAM=`date '+%s'`
 			exit $SCRIPT_STATUS
 		fi
 
-END_HC_CRAM=`date '+%s'`
+END_HC_CRAM=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-echo $SM_TAG"_"$PROJECT",H.01-A.01-A.01,HC_CRAM,"$HOSTNAME","$START_HC_CRAM","$END_HC_CRAM \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+# write out timing metrics to file
 
-echo $SAMTOOLS_DIR/samtools \
-view \
--C $CORE_PATH/$PROJECT/TEMP/$SM_TAG".HC.bam" \
--T $REF_GENOME \
--@ 4 \
--o $CORE_PATH/$PROJECT/HC_CRAM/$SM_TAG".HC.cram" \
->> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
-
-echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG".COMMAND.LINES.txt"
+	echo $SM_TAG"_"$PROJECT",H.01-A.01-A.01,HC_CRAM,"$HOSTNAME","$START_HC_CRAM","$END_HC_CRAM \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program
 
