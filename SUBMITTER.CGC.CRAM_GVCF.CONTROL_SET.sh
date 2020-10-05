@@ -1217,25 +1217,22 @@ done
 	# index the cram file and copy it so that there are both *crai and cram.crai *extensions #
 	##########################################################################################
 
-		HC_INDEX_CRAM ()
+		INDEX_HC_CRAM ()
 		{
 			echo \
 			qsub \
-				-S /bin/bash \
-				-cwd \
-				-V \
-				-q $QUEUE_LIST \
-				-p $PRIORITY \
-			-N H.01-A.02-A.01-A.01_INDEX_HAPLOTYPE_CALLER_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+				$QSUB_ARGS \
+			-N H.07-A.02-A.01-A.01_INDEX_HAPLOTYPE_CALLER_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
 				-o $CORE_PATH/$PROJECT/LOGS/$SM_TAG/$SM_TAG"-HC_INDEX_CRAM.log" \
-				-j y \
-			-hold_jid H.01-A.02-A.01_HAPLOTYPE_CALLER_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
-			$SCRIPT_DIR/H.01-A.02-A.01-A.01_INDEX_HAPLOTYPE_CALLER_CRAM.sh \
-				$SAMTOOLS_DIR \
+			-hold_jid H.07-A.02-A.01_HAPLOTYPE_CALLER_CRAM"_"$SGE_SM_TAG"_"$PROJECT \
+			$SCRIPT_DIR/H.07-A.02-A.01-A.01_INDEX_HAPLOTYPE_CALLER_CRAM.sh \
+				$ALIGNMENT_CONTAINER \
 				$CORE_PATH \
 				$PROJECT \
 				$SM_TAG \
-				$REF_GENOME
+				$REF_GENOME \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
 		}
 
 for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
@@ -1247,5 +1244,7 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		CALL_HAPLOTYPE_CALLER_BAM_GATHER
 		echo sleep 0.1s
 		HC_BAM_TO_CRAM
+		echo sleep 0.1s
+		INDEX_HC_CRAM
 		echo sleep 0.1s
 done
