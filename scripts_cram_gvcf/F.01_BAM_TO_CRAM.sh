@@ -47,6 +47,7 @@ START_CRAM=`date '+%s'` # capture time process starts for wall clock tracking pu
 		CMD=$CMD" -C $CORE_PATH/$PROJECT/TEMP/$SM_TAG".bam"" \
 		CMD=$CMD" -T $REF_GENOME" \
 		CMD=$CMD" -@ 6" \
+		CMD=$CMD" -O CRAM" \
 		CMD=$CMD" -o $CORE_PATH/$PROJECT/CRAM/$SM_TAG".cram""
 
 	# write command line to file and execute the command line
