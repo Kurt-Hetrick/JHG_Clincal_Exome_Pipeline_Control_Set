@@ -171,7 +171,8 @@
 
 	FORMAT_MANIFEST ()
 	{
-		sed 's/\r//g' $SAMPLE_SHEET \
+		awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
 		| awk 'NR>1' \
 		| sed 's/,/\t/g' \
 		| sort -k 8,8 \
@@ -313,9 +314,13 @@
 		MAKE_PROJ_DIR_TREE
 	}
 
-for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
-		do
-			SETUP_PROJECT
+for SAMPLE in $(awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+		| awk 'BEGIN {FS=","} NR>1 {print $8}' \
+		| sort \
+		| uniq );
+	do
+		SETUP_PROJECT
 done
 
 ################################
@@ -475,13 +480,17 @@ done
 				$NOVASEQ_REPO
 		}
 
-		for PLATFORM_UNIT in $(awk 'BEGIN {FS=","} NR>1 {print $8$2$3$4}' $SAMPLE_SHEET | sort | uniq );
-			do
-				CREATE_PLATFORM_UNIT_ARRAY
-				mkdir -p $CORE_PATH/$PROJECT/LOGS/$SM_TAG
-				RUN_BWA
-				echo sleep 0.1s
-		done
+	for PLATFORM_UNIT in $(awk 1 $SAMPLE_SHEET \
+			| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+			| awk 'BEGIN {FS=","} NR>1 {print $8$2$3$4}' \
+			| sort \
+			| uniq );
+		do
+			CREATE_PLATFORM_UNIT_ARRAY
+			mkdir -p $CORE_PATH/$PROJECT/LOGS/$SM_TAG
+			RUN_BWA
+			echo sleep 0.1s
+	done
 
 	#########################################################################################
 	# Merge files and mark duplicates using picard duplictes with queryname sorting #########
@@ -656,7 +665,11 @@ done
 				$SUBMIT_STAMP
 		}
 
-for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
+for SAMPLE in $(awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+		| awk 'BEGIN {FS=","} NR>1 {print $8}' \
+		| sort \
+		| uniq );
 	do
 		CREATE_SAMPLE_ARRAY
 		FIX_BED_FILES
@@ -1041,7 +1054,11 @@ done
 				$BAIT_BED
 		}
 
-for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
+for SAMPLE in $(awk 1 $SAMPLE_SHEET \
+			| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+			| awk 'BEGIN {FS=","} NR>1 {print $8}' \
+			| sort \
+			| uniq );
 	do
 		CREATE_SAMPLE_ARRAY
 		COLLECT_MULTIPLE_METRICS
@@ -1109,7 +1126,11 @@ done
 
 # Take the samples bait bed file, create a list of unique chromosome to use as a scatter for haplotype_caller_scatter
 
-for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
+for SAMPLE in $(awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+		|awk 'BEGIN {FS=","} NR>1 {print $8}' \
+		| sort \
+		| uniq );
 	do
 	CREATE_SAMPLE_ARRAY
 		for CHROMOSOME in $(sed 's/\r//g; /^$/d; /^[[:space:]]*$/d' $BAIT_BED \
@@ -1130,9 +1151,9 @@ done
 
 ###########################
 # HAPLOTYPE CALLER GATHER #
-################################################################################
-# GATHER UP THE PER SAMPLE PER CHROMOSOME GVCF FILES INTO A SINGLE SAMPLE GVCF #
-################################################################################
+###################################################################################################
+# GATHER UP THE PER SAMPLE PER CHROMOSOME GVCF FILES AND GVCF BAM FILES INTO A SINGLE SAMPLE GVCF #
+###################################################################################################
 
 	BUILD_HOLD_ID_PATH ()
 	{
@@ -1235,7 +1256,11 @@ done
 				$SUBMIT_STAMP
 		}
 
-for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
+for SAMPLE in $(awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+		| awk 'BEGIN {FS=","} NR>1 {print $8}' \
+		| sort \
+		| uniq );
 	do
 		CREATE_SAMPLE_ARRAY
 		BUILD_HOLD_ID_PATH
@@ -1248,3 +1273,17 @@ for SM_TAG in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq
 		INDEX_HC_CRAM
 		echo sleep 0.1s
 done
+
+# grab email addy
+
+	SEND_TO=`cat $SCRIPT_DIR/../email_lists.txt`
+
+# grab submitter's name
+
+	PERSON_NAME=`getent passwd | awk 'BEGIN {FS=":"} $1=="'$SUBMITTER_ID'" {print $5}'`
+
+# EMAIL WHEN DONE SUBMITTING
+
+printf "$SAMPLE_SHEET\nhas finished submitting at\n`date`\nby `whoami`" \
+	| mail -s "$PERSON_NAME has submitted CIDR.WES.QC.SUBMITTER.sh" \
+		$SEND_TO
