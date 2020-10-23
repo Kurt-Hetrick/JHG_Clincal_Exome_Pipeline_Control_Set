@@ -1,86 +1,178 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-SAMPLE_SHEET=$1
-PED_FILE=$2
+# INPUT VARIABLES
+
+	SAMPLE_SHEET=$1
+	PED_FILE=$2
+	PADDING_LENGTH=$3 # optional. if no 3rd argument present then the default is 10
+	# THIS PAD IS FOR SLICING
+
+		if [[ ! $PADDING_LENGTH ]]
+			then
+			PADDING_LENGTH="10"
+		fi
+
+	QUEUE_LIST=$4 # optional. if no 4th argument present then the default is cgc.q
+		# if you want to set this then you need to set the 3rd argument as well (even to the default)
+
+		if [[ ! $QUEUE_LIST ]]
+			then
+			QUEUE_LIST="cgc.q"
+		fi
+
+	PRIORITY=$5 # optional. if no 5th argument present then the default is -15.
+		# if you want to set this then you need to set the 3rd and 4th argument as well (even to the default)
+
+			if [[ ! $PRIORITY ]]
+				then
+				PRIORITY="-15"
+			fi
 
 # CHANGE SCRIPT DIR TO WHERE YOU HAVE HAVE THE SCRIPTS BEING SUBMITTED
 
-SCRIPT_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINES/JHGenomics_CGC_Clinical_Exome_Control_Set/scripts"
-# The above hash value is the corresponding commit at https://github.com/Kurt-Hetrick/JHGenomics_CGC_Clinical_Exome_Control_Set
+	SUBMITTER_SCRIPT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
-CORE_PATH="/mnt/clinical/ddl/NGS/Exome_Data"
-CONTROL_REPO="/mnt/clinical/ddl/NGS/Exome_Resources/CONTROL_REPO"
+	SCRIPT_DIR="$SUBMITTER_SCRIPT_PATH/scripts_jointcalling"
 
-# PIPELINE PROGRAMS
-JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
-JAVA_1_8="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jdk1.8.0_73/bin"
-BWA_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bwa-0.7.8"
-PICARD_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/picard-tools-2.1.1"
-GATK_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/GenomeAnalysisTK-3.7"
-VERIFY_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/verifyBamID_20120620/bin/"
-TABIX_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/tabix-0.2.6"
-SAMTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/samtools-0.1.18"
-DATAMASH_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/datamash-1.0.6"
-BEDTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/bedtools-2.22.0/bin"
-VCFTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/vcftools_0.1.12b/bin"
-PLINK2_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/PLINK2"
-KING_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/KING/Linux-king19"
-CIDRSEQSUITE_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
-ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
+##################
+# CORE VARIABLES #
+##################
 
-# PIPELINE FILES
-GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.Ready.txt"
-VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
-CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeq.Unique.GRCh37.FINAL.19Feb2018.bed"
-CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
-HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
-OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
-HI_CONF_1KG_PHASE1_SNP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
-MILLS_1KG_GOLD_INDEL="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
-PHASE3_1KG_AUTOSOMES="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz"
-DBSNP_129="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
+	## This will always put the current working directory in front of any directory for PATH
+	## added /bin for RHEL6
 
-##### MAKE A DIRECTORY TREE ##### SHOULD BE COMPLETE #####
+		export PATH=".:$PATH:/bin"
 
-mkdir -p ~/CGC_PIPELINE_TEMP
+	# where the input/output sequencing data will be located.
 
-MANIFEST_PREFIX=`basename $SAMPLE_SHEET .csv`
-PED_PREFIX=`basename $PED_FILE .ped`
+		CORE_PATH="/mnt/clinical/ddl/NGS/Exome_Data"
 
-##########################################################
+	# WHERE THE CONTROL DATA SET RESIDES
 
-SETUP_PROJECT ()
-{
-FORMAT_MANIFEST
-MERGE_PED_MANIFEST
-CREATE_SAMPLE_INFO_ARRAY
-MAKE_PROJ_DIR_TREE
-# echo "echo Making padded annotated RefSeq coding bed file for $SAMPLE"
-# PAD_REFSEQ
-# echo "echo Making padded target bed file for $SAMPLE"
-# PAD_TARGET
-# echo "echo Making everything merged together bait file for $SAMPLE"
-# MAKE_BAIT
-}
+		CONTROL_REPO="/mnt/clinical/ddl/NGS/Exome_Resources/TWIST_CONTROL_SET1.200601_PIPELINE_2_0_0"
 
-FORMAT_MANIFEST ()
-{
-sed 's/\r//g' $SAMPLE_SHEET \
-| awk 'NR>1' \
-| sed 's/,/\t/g' \
-| sort -k 8,8 \
->| ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt
-}
+	# used for tracking in the read group header of the cram file
 
-MERGE_PED_MANIFEST ()
-{
-awk 1 $PED_FILE \
-| sed 's/\r//g' \
-| sort -k 2 \
-| join -1 8 -2 2 ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
-| awk 'BEGIN {FS=" "; OFS="\t"} {print $2,$3,$4,$5,$6,$7,$8,$1,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24}' \
->| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
-}
+		PIPELINE_VERSION=`git --git-dir=$SCRIPT_DIR/../.git --work-tree=$SCRIPT_DIR/.. log --pretty=format:'%h' -n 1`
+	# bind the host file system /mnt to the singularity container. in case I use it in the submitter.
+
+		export SINGULARITY_BINDPATH="/mnt:/mnt"
+
+	# QSUB ARGUMENTS LIST
+		# set shell on compute node
+		# start in current working directory
+		# transfer submit node env to compute node
+		# set SINGULARITY BINDPATH
+		# set queues to submit to
+		# set priority
+		# combine stdout and stderr logging to same output file
+
+			QSUB_ARGS="-S /bin/bash" \
+				QSUB_ARGS=$QSUB_ARGS" -cwd" \
+				QSUB_ARGS=$QSUB_ARGS" -V" \
+				QSUB_ARGS=$QSUB_ARGS" -v SINGULARITY_BINDPATH=/mnt:/mnt" \
+				QSUB_ARGS=$QSUB_ARGS" -q $QUEUE_LIST" \
+				QSUB_ARGS=$QSUB_ARGS" -p $PRIORITY" \
+				QSUB_ARGS=$QSUB_ARGS" -j y"
+
+#####################
+# PIPELINE PROGRAMS #
+#####################
+
+	ALIGNMENT_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/ddl_ce_control_align-0.0.3.simg"
+	# contains the following software and is on Ubuntu 16.04.5 LTS
+		# gatk 4.0.11.0 (base image). also contains the following.
+			# Python 3.6.2 :: Continuum Analytics, Inc.
+				# samtools 0.1.19
+				# bcftools 0.1.19
+				# bedtools v2.25.0
+				# bgzip 1.2.1
+				# tabix 1.2.1
+				# samtools, bcftools, bgzip and tabix will be replaced with newer versions.
+				# R 3.2.5
+					# dependencies = c("gplots","digest", "gtable", "MASS", "plyr", "reshape2", "scales", "tibble", "lazyeval")    # for ggplot2
+					# getopt_1.20.0.tar.gz
+					# optparse_1.3.2.tar.gz
+					# data.table_1.10.4-2.tar.gz
+					# gsalib_2.1.tar.gz
+					# ggplot2_2.2.1.tar.gz
+				# openjdk version "1.8.0_181"
+				# /gatk/gatk.jar -> /gatk/gatk-package-4.0.11.0-local.jar
+		# added
+			# picard.jar 2.17.0 (as /gatk/picard.jar)
+			# samblaster-v.0.1.24
+			# sambamba-0.6.8
+			# bwa-0.7.15
+			# datamash-1.6
+			# verifyBamID v1.1.3
+			# samtools 1.10
+			# bgzip 1.10
+			# tabix 1.10
+			# bcftools 1.10.2
+
+	GATK_3_7_0_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/gatk3-3.7-0.simg"
+	# singularity pull docker://broadinstitute/gatk3:3.7-0
+	# used for generating the depth of coverage reports.
+		# comes with R 3.1.1 with appropriate packages needed to create gatk pdf output
+		# also comes with some version of java 1.8
+		# jar file is /usr/GenomeAnalysisTK.jar
+
+	# PIPELINE PROGRAMS
+
+		SAMTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/samtools-0.1.18"
+		VCFTOOLS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/vcftools_0.1.12b/bin"
+		PLINK2_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/PLINK2"
+		KING_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/KING/Linux-king19"
+
+		JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
+		CIDRSEQSUITE_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
+		ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
+
+##################
+# PIPELINE FILES #
+##################
+
+	GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.rCRS.MT.bed"
+		# md5 dec069c279625cfb110c2e4c5480e036
+	VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
+	CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINES/TWIST/JHGenomics_CGC_Clinical_Exome_Control_Set/GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_HGNC_annotated.bed"
+	CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
+	HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
+	OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
+	HI_CONF_1KG_PHASE1_SNP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_phase1.snps.high_confidence.b37.vcf"
+	MILLS_1KG_GOLD_INDEL="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
+	PHASE3_1KG_AUTOSOMES="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz"
+	DBSNP_129="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
+
+#################################
+##### MAKE A DIRECTORY TREE #####
+#################################
+
+	mkdir -p ~/CGC_PIPELINE_TEMP
+
+	MANIFEST_PREFIX=`basename $SAMPLE_SHEET .csv`
+	PED_PREFIX=`basename $PED_FILE .ped`
+
+	FORMAT_MANIFEST ()
+	{
+		awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+		| awk 'NR>1' \
+		| sed 's/,/\t/g' \
+		| sort -k 8,8 \
+		>| ~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt
+	}
+
+	MERGE_PED_MANIFEST ()
+	{
+		awk 1 $PED_FILE \
+		| sed 's/\r//g' \
+		| sort -k 2,2 \
+		| join -1 8 -2 2 -e '-'  -t $'\t' \
+		-o '1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,1.10,1.11,1.12,1.13,1.14,1.15,1.16,1.17,1.18,1.19,2.1,2.3,2.4,2.5,2.6' \
+		~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
+		>| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
+	}
 
 # MAKE AN ARRAY FOR EACH SAMPLE
 	## SAMPLE_INFO_ARRAY[0] = PROJECT
@@ -90,95 +182,160 @@ awk 1 $PED_FILE \
 	## SAMPLE_INFO_ARRAY[3] = BAIT BED FILE
 	## SAMPLE_INFO_ARRAY[4] = TARGET_BED_FILE
 
-CREATE_SAMPLE_INFO_ARRAY ()
-{
-SAMPLE_INFO_ARRAY=(`awk '$8=="'$SAMPLE'" {print $1,$20,$8,$15,$16}' ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt`)
-}
+	CREATE_SAMPLE_ARRAY ()
+	{
+			SAMPLE_ARRAY=(`awk 'BEGIN {FS="\t"; OFS="\t"} $8=="'$SAMPLE'" \
+				{split($19,INDEL,";"); \
+				print $1,$8,$9,$10,$12,$15,$16,$17,$18,INDEL[1],INDEL[2],$20,$21,$22,$23,$24}' \
+					~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+					| sort \
+					| uniq`)
+
+			#  1  Project=the Seq Proj folder name
+
+				PROJECT=${SAMPLE_ARRAY[0]}
+
+			################################################################################
+			# 2 SKIP : FCID=flowcell that sample read group was performed on ###############
+			# 3 SKIP : Lane=lane of flowcell that sample read group was performed on] ######
+			# 4 SKIP : Index=sample barcode ################################################
+			# 5 SKIP : Platform=type of sequencing chemistry matching SAM specification ####
+			# 6 SKIP : Library_Name=library group of the sample read group #################
+			# 7 SKIP : Date=should be the run set up date to match the seq run folder name #
+			################################################################################
+
+			#  8  SM_Tag=sample ID
+
+				SM_TAG=${SAMPLE_ARRAY[1]}
+					SGE_SM_TAG=$(echo $SM_TAG | sed 's/@/_/g') # If there is an @ in the qsub or holdId name it breaks
+
+			#  9  Center=the center/funding mechanism
+
+				CENTER=${SAMPLE_ARRAY[2]}
+
+			# 10  Description=Generally we use to denote the sequencer setting (e.g. rapid run)
+			# “HiSeq-X”, “HiSeq-4000”, “HiSeq-2500”, “HiSeq-2000”, “NextSeq-500”, or “MiSeq”.
+
+				SEQUENCER_MODEL=${SAMPLE_ARRAY[3]}
+
+			#########################
+			# 11  SKIP : Seq_Exp_ID #
+			#########################
+
+			# 12  Genome_Ref=the reference genome used in the analysis pipeline
+
+				REF_GENOME=${SAMPLE_ARRAY[4]}
+
+			#####################################
+			# 13  Operator: SKIP ################
+			# 14  Extra_VCF_Filter_Params: SKIP #
+			#####################################
+
+			# 15  TS_TV_BED_File=where ucsc coding exons overlap with bait and target bed files
+
+				TITV_BED=${SAMPLE_ARRAY[5]}
+
+			# 16  Baits_BED_File=a super bed file incorporating bait, target, padding and overlap with ucsc coding exons.
+			# Used for limited where to run base quality score recalibration on where to create gvcf files.
+
+				BAIT_BED=${SAMPLE_ARRAY[6]}
+
+			# 17  Targets_BED_File=bed file acquired from manufacturer of their targets.
+
+				TARGET_BED=${SAMPLE_ARRAY[7]}
+
+			# 18  KNOWN_SITES_VCF=used to annotate ID field in VCF file. masking in base call quality score recalibration.
+
+				DBSNP=${SAMPLE_ARRAY[8]}
+
+			# 19  KNOWN_INDEL_FILES=used for BQSR masking, sensitivity in local realignment.
+
+				KNOWN_INDEL_1=${SAMPLE_ARRAY[9]}
+				KNOWN_INDEL_2=${SAMPLE_ARRAY[10]}
+
+			# 20 family that sample belongs to
+
+				FAMILY=${SAMPLE_ARRAY[11]}
+
+			# 21 MOM
+
+				MOM=${SAMPLE_ARRAY[12]}
+
+			# 22 DAD
+
+				DAD=${SAMPLE_ARRAY[13]}
+
+			# 23 GENDER
+
+				GENDER=${SAMPLE_ARRAY[14]}
+
+			# 24 PHENOTYPE
+
+				PHENOTYPE=${SAMPLE_ARRAY[15]}
+	}
 
 # PROJECT DIRECTORY TREE CREATOR
 
-MAKE_PROJ_DIR_TREE ()
-{
-mkdir -p $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/BAM \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/HC_BAM \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/INDEL/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/SNV/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/MIXED/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/VCF/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/GVCF \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_CHR} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BAIT_BIAS/{METRICS,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/PRE_ADAPTER/{METRICS,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASECALL_Q_SCORE_DISTRIBUTION/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/BASE_DISTRIBUTION_BY_CYCLE/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/CONCORDANCE \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/COUNT_COVARIATES/{GATK_REPORT,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/GC_BIAS/{METRICS,PDF,SUMMARY} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/DEPTH_OF_COVERAGE/{TARGET,REFSEQ_CODING_PLUS_10bp} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/HYB_SELECTION/PER_TARGET_COVERAGE \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/INSERT_SIZE/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/LOCAL_REALIGNMENT_INTERVALS \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/MEAN_QUALITY_BY_CYCLE/{METRICS,PDF} \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/REPORTS/ANEUPLOIDY_CHECK \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/JOINT_VCF/ \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_ANNOVAR \
-$CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/{FASTQ,LOGS,COMMAND_LINES}
-}
+	MAKE_PROJ_DIR_TREE ()
+	{
+		mkdir -p $CORE_PATH/$PROJECT/{FASTQ,LOGS,COMMAND_LINES,CRAM,HC_CRAM,GVCF,JOINT_VCF} \
+		$CORE_PATH/$PROJECT/INDEL/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/$PROJECT/SNV/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/$PROJECT/MIXED/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/$PROJECT/VCF/{FILTERED_ON_BAIT,FILTERED_ON_TARGET} \
+		$CORE_PATH/$PROJECT/REPORTS/{ALIGNMENT_SUMMARY,ANNOVAR,PICARD_DUPLICATES,TI_TV,VERIFYBAMID,VERIFYBAMID_AUTO,ANEUPLOIDY_CHECK,RG_HEADER,QUALITY_YIELD,ERROR_SUMMARY} \
+		$CORE_PATH/$PROJECT/REPORTS/BAIT_BIAS/{METRICS,SUMMARY} \
+		$CORE_PATH/$PROJECT/REPORTS/PRE_ADAPTER/{METRICS,SUMMARY} \
+		$CORE_PATH/$PROJECT/REPORTS/BASECALL_Q_SCORE_DISTRIBUTION/{METRICS,PDF} \
+		$CORE_PATH/$PROJECT/REPORTS/BASE_DISTRIBUTION_BY_CYCLE/{METRICS,PDF} \
+		$CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT \
+		$CORE_PATH/$PROJECT/REPORTS/GC_BIAS/{METRICS,PDF,SUMMARY} \
+		$CORE_PATH/$PROJECT/REPORTS/DEPTH_OF_COVERAGE/{TARGET_PADDED,CODING_PADDED} \
+		$CORE_PATH/$PROJECT/REPORTS/HYB_SELECTION/PER_TARGET_COVERAGE \
+		$CORE_PATH/$PROJECT/REPORTS/INSERT_SIZE/{METRICS,PDF} \
+		$CORE_PATH/$PROJECT/REPORTS/MEAN_QUALITY_BY_CYCLE/{METRICS,PDF} \
+		$CORE_PATH/$PROJECT/TEMP/$SM_TAG"_ANNOVAR"
+	}
 
-# PAD THE REFSEQ canonical transcript bed file by 10 bases.
-# can make this as an input variable with a default value 10 if i have to ever give more than 0 effs.
+	SETUP_PROJECT ()
+	{
+		FORMAT_MANIFEST
+		MERGE_PED_MANIFEST
+		CREATE_SAMPLE_ARRAY
+		MAKE_PROJ_DIR_TREE
+	}
 
-PAD_REFSEQ ()
-{
-awk 1 $CODING_BED \
-| sed 's/\r//g' \
-| sed -r 's/[[:space:]]+/\t/g' \
-| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$2+10}' \
->| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_CODING.bed"
-}
-
-# PAD THE TARGET BED FILE BY 10 BP
-
-PAD_TARGET ()
-{
-awk 1 ${SAMPLE_INFO_ARRAY[4]} \
-| sed 's/\r//g' \
-| sed -r 's/[[:space:]]+/\t/g' \
-| awk 'BEGIN {OFS="\t"} {print $1,$2-10,$2+10}' \
->| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed"
-}
-
-# MERGE THE PADDED THE TARGET BED WITH THE BAIT BED FILE
-
-MAKE_BAIT ()
-{
-cat $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}"_PADDED_TARGET.bed" \
-${SAMPLE_INFO_ARRAY[3]} \
-| sort -k 1,1 -k 2,2n -k 3,3n \
-| $BEDTOOLS_DIR/bedtools merge -i - \
->| $CORE_PATH/${SAMPLE_INFO_ARRAY[0]}/TEMP/${SAMPLE_INFO_ARRAY[2]}_BAIT.bed
-}
-
-for SAMPLE in $(awk 'BEGIN {FS=","} NR>1 {print $8}' $SAMPLE_SHEET | sort | uniq );
-do
-SETUP_PROJECT
+for SAMPLE in $(awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+		| awk 'BEGIN {FS=","} NR>1 {print $8}' \
+		| sort \
+		| uniq );
+	do
+		SETUP_PROJECT
 done
 
-############################################################
-
+################################
 #### JOINT CALLING AND VQSR ####
+################################
 
 ### Run GenotypeGVCF per Family
 
-awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12,$18}' \
-~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-| sort -k 1 \
-| uniq \
-| awk 'BEGIN {FS="\t"} \
-{print "qsub","-N","I.01_GENOTYPE_GVCF_"$1,\
-"-o","'$CORE_PATH'/"$1"/LOGS/"$1".GENOTYPE_GVCF.log",\
-"'$SCRIPT_DIR'""/I.01_GENOTYPE_GVCF.sh",\
-"'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,"'$CONTROL_REPO'""\n""sleep 3s"}'
+	GENOTYPE_GVCF_ALL_CONTROLS ()
+	{
+		echo \
+		qsub \
+			$QSUB_ARGS \
+		-N I.01_GENOTYPE_GVCF"_"$PROJECT \
+			-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".GENOTYPE_GVCF.log" \
+		$SCRIPT_DIR/I.01_GENOTYPE_GVCF.sh \
+			$GATK_3_7_0_CONTAINER \
+			$CORE_PATH \
+			$PROJECT \
+			$SM_TAG \
+			$BAIT_BED \
+			$SAMPLE_SHEET \
+			$SUBMIT_STAMP
+	}
 
 ### Run Variant Recalibrator for the SNP model, this is done in parallel with the INDEL model
 

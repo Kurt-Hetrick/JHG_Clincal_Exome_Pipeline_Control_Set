@@ -4,10 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
-# tell sge to submit any of these queue when available
-#$ -q bigdata.q,lemon.q,prod.q,rnd.q,uhoh.q
-
 # tell sge that you are in the users current working directory
 #$ -cwd
 
@@ -21,18 +17,20 @@
 #$ -j y
 
 # export all variables, useful to find out what compute node the program was executed on
-# redirecting stderr/stdout to file as a log.
 
-set
+	set
 
-JAVA_1_8=$1
-GATK_DIR=$2
-CORE_PATH=$3
+	echo
 
-PROJECT=$4
-REF_GENOME=$5
-DBSNP=$6
-CONTROL_REPO=$7
+# INPUT VARIABLES
+
+	GATK_3_7_0_CONTAINER=$1
+	CORE_PATH=$2
+
+	PROJECT=$3
+	REF_GENOME=$4
+	DBSNP=$5
+	CONTROL_REPO=$6
 
 START_GENOTYPE_GVCF=`date '+%s'`
 
