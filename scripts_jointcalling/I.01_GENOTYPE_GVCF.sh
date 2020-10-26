@@ -31,46 +31,59 @@
 	REF_GENOME=$4
 	DBSNP=$5
 	CONTROL_REPO=$6
+	SAMPLE_SHEET=$7
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
+	SUBMIT_STAMP=$8
 
-START_GENOTYPE_GVCF=`date '+%s'`
+START_GENOTYPE_GVCF=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-$JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
--T GenotypeGVCFs \
---logging_level ERROR \
--R $REF_GENOME \
---dbsnp $DBSNP \
---annotateNDA \
---includeNonVariantSites \
---disable_auto_index_creation_and_locking_when_reading_rods \
---annotation FractionInformativeReads \
---annotation StrandBiasBySample \
---annotation StrandAlleleCountsBySample \
---variant $CONTROL_REPO/Control_GVCF.list \
--o $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf
+	# construct command line
 
-# --excludeIntervals 1:145017822-145017822 \
-# removing this for the moment b/c I want to see how the June 26th nightly handles it.
+		CMD="singularity exec $GATK_3_7_0_CONTAINER java -jar" \
+			CMD=$CMD" /usr/GenomeAnalysisTK.jar" \
+		CMD=$CMD" -T GenotypeGVCFs" \
+			CMD=$CMD" -R $REF_GENOME" \
+			CMD=$CMD" --variant $CONTROL_REPO/Control_GVCF.list" \
+			CMD=$CMD" -o $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf" \
+			CMD=$CMD" --disable_auto_index_creation_and_locking_when_reading_rods" \
+			CMD=$CMD" --logging_level ERROR" \
+			CMD=$CMD" --dbsnp $DBSNP" \
+			CMD=$CMD" --includeNonVariantSites" \
+			CMD=$CMD" --annotateNDA" \
+			CMD=$CMD" --annotation FractionInformativeReads" \
+			CMD=$CMD" --annotation StrandBiasBySample" \
+			CMD=$CMD" --annotation StrandAlleleCountsBySample"
 
-END_GENOTYPE_GVCF=`date '+%s'`
+		# --excludeIntervals 1:145017822-145017822 \
+		# removing this for the moment b/c I want to see how the June 26th nightly handles it.
 
-HOSTNAME=`hostname`
+	# write command line to file and execute the command line
 
-echo $PROJECT",I.001,GENOTYPE_GVCF,"$HOSTNAME","$START_GENOTYPE_GVCF","$END_GENOTYPE_GVCF \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
+		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
+		echo $CMD | bash
 
-echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
--T GenotypeGVCFs \
---logging_level ERROR \
--R $REF_GENOME \
---dbsnp $DBSNP \
---annotateNDA \
---includeNonVariantSites \
---disable_auto_index_creation_and_locking_when_reading_rods \
---annotation FractionInformativeReads \
---annotation StrandBiasBySample \
---annotation StrandAlleleCountsBySample \
---variant $CONTROL_REPO/Control_GVCF.list \
--o $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf \
->> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
+	# check the exit signal at this point.
 
-echo >> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
+		SCRIPT_STATUS=`echo $?`
+
+	# if exit does not equal 0 then exit with whatever the exit signal is at the end.
+	# also write to file that this job failed
+
+		if [ "$SCRIPT_STATUS" -ne 0 ]
+		 then
+			echo $SM_TAG $HOSTNAME $JOB_NAME $USER $SCRIPT_STATUS $SGE_STDERR_PATH \
+			>> $CORE_PATH/$PROJECT/TEMP/$SAMPLE_SHEET_NAME"_"$SUBMIT_STAMP"_ERRORS.txt"
+			exit $SCRIPT_STATUS
+		fi
+
+END_GENOTYPE_GVCF=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+
+# write out timing metrics to file
+
+	echo $PROJECT",I.001,GENOTYPE_GVCF,"$HOSTNAME","$START_GENOTYPE_GVCF","$END_GENOTYPE_GVCF \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+
+# exit with the signal from the program
+
+	exit $SCRIPT_STATUS
