@@ -4,10 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
-# tell sge to submit any of these queue when available
-#$ -q bigdata.q,lemon.q,prod.q,rnd.q,uhoh.q
-
 # tell sge that you are in the users current working directory
 #$ -cwd
 
@@ -21,111 +17,87 @@
 #$ -j y
 
 # export all variables, useful to find out what compute node the program was executed on
-# redirecting stderr/stdout to file as a log.
 
+	set
 
-# This would be a good candidate to write a bright module to load this.
-source /isilon/cgc/PROGRAMS/change_R_version
+	echo
 
-set
+# INPUT VARIABLES
 
-JAVA_1_8=$1
-GATK_DIR=$2
-CORE_PATH=$3
+	GATK_3_7_0_CONTAINER=$1
+	CORE_PATH=$2
 
-PROJECT=$4
-REF_GENOME=$5
-MILLS_1KG_GOLD_INDEL=$6
+	PROJECT=$3
+	REF_GENOME=$4
+	MILLS_1KG_GOLD_INDEL=$5
+	$SAMPLE_SHEET=$6
+	$SUBMIT_STAMP=$7
 
-START_VARIANT_RECALIBRATOR_INDEL=`date '+%s'`
+START_VARIANT_RECALIBRATOR_INDEL=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-$JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
--T VariantRecalibrator \
--R $REF_GENOME \
---input:VCF $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf \
--resource:mills,known=true,training=true,truth=true,prior=12.0 $MILLS_1KG_GOLD_INDEL \
---maxGaussians 4 \
---disable_auto_index_creation_and_locking_when_reading_rods \
--an QD \
--an FS \
--an SOR \
--an ReadPosRankSum \
--an MQRankSum \
--mode INDEL \
--tranche 100.0 \
--tranche 99.9 \
--tranche 99.8 \
--tranche 99.7 \
--tranche 99.6 \
--tranche 99.5 \
--tranche 99.4 \
--tranche 99.3 \
--tranche 99.2 \
--tranche 99.1 \
--tranche 99.0 \
--tranche 98.0 \
--tranche 97.0 \
--tranche 96.0 \
--tranche 95.0 \
--tranche 90.0 \
--recalFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.recal \
--tranchesFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.tranches \
--rscriptFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.R
+	# construct command line
 
-END_VARIANT_RECALIBRATOR_INDEL=`date '+%s'`
+		CMD="singularity exec $GATK_3_7_0_CONTAINER java -jar" \
+			CMD=$CMD" /usr/GenomeAnalysisTK.jar" \
+		CMD=$CMD" -T VariantRecalibrator" \
+			CMD=$CMD" -R $REF_GENOME" \
+			CMD=$CMD" --input:VCF $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf" \
+			CMD=$CMD" -recalFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.recal" \
+			CMD=$CMD" -tranchesFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.tranches" \
+			CMD=$CMD" -rscriptFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.R" \
+			CMD=$CMD" -resource:mills,known=true,training=true,truth=true,prior=12.0 $MILLS_1KG_GOLD_INDEL" \
+			CMD=$CMD" -mode INDEL" \
+			CMD=$CMD" --maxGaussians 4" \
+			CMD=$CMD" --disable_auto_index_creation_and_locking_when_reading_rods" \
+			CMD=$CMD" -an QD" \
+			CMD=$CMD" -an MQRankSum" \
+			CMD=$CMD" -an ReadPosRankSum" \
+			CMD=$CMD" -an FS" \
+			CMD=$CMD" -an SOR" \
+			CMD=$CMD" -tranche 100.0" \
+			CMD=$CMD" -tranche 99.9" \
+			CMD=$CMD" -tranche 99.8" \
+			CMD=$CMD" -tranche 99.7" \
+			CMD=$CMD" -tranche 99.6" \
+			CMD=$CMD" -tranche 99.5" \
+			CMD=$CMD" -tranche 99.4" \
+			CMD=$CMD" -tranche 99.3" \
+			CMD=$CMD" -tranche 99.2" \
+			CMD=$CMD" -tranche 99.1" \
+			CMD=$CMD" -tranche 99.0" \
+			CMD=$CMD" -tranche 98.0" \
+			CMD=$CMD" -tranche 97.0" \
+			CMD=$CMD" -tranche 96.0" \
+			CMD=$CMD" -tranche 95.0" \
+			CMD=$CMD" -tranche 90.0"
 
-HOSTNAME=`hostname`
+	# write command line to file and execute the command line
 
-echo $PROJECT",J.001,VARIANT_RECALIBRATOR_INDEL,"$HOSTNAME","$START_VARIANT_RECALIBRATOR_INDEL","$END_VARIANT_RECALIBRATOR_INDEL \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
+		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
+		echo $CMD | bash
 
-echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
--T VariantRecalibrator \
--R $REF_GENOME \
---input:VCF $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf \
--resource:mills,known=true,training=true,truth=true,prior=12.0 $MILLS_1KG_GOLD_INDEL \
---maxGaussians 4 \
---disable_auto_index_creation_and_locking_when_reading_rods \
--an QD \
--an FS \
--an SOR \
--an ReadPosRankSum \
--an MQRankSum \
--mode INDEL \
--tranche 100.0 \
--tranche 99.9 \
--tranche 99.8 \
--tranche 99.7 \
--tranche 99.6 \
--tranche 99.5 \
--tranche 99.4 \
--tranche 99.3 \
--tranche 99.2 \
--tranche 99.1 \
--tranche 99.0 \
--tranche 98.0 \
--tranche 97.0 \
--tranche 96.0 \
--tranche 95.0 \
--tranche 90.0 \
--recalFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.recal \
--tranchesFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.tranches \
--rscriptFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.R \
->> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
+	# check the exit signal at this point.
 
-echo >> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
+		SCRIPT_STATUS=`echo $?`
 
-md5sum $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.recal \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
+	# if exit does not equal 0 then exit with whatever the exit signal is at the end.
+	# also write to file that this job failed
 
-md5sum $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.recal.idx \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
+		if [ "$SCRIPT_STATUS" -ne 0 ]
+		 then
+			echo $SM_TAG $HOSTNAME $JOB_NAME $USER $SCRIPT_STATUS $SGE_STDERR_PATH \
+			>> $CORE_PATH/$PROJECT/TEMP/$SAMPLE_SHEET_NAME"_"$SUBMIT_STAMP"_ERRORS.txt"
+			exit $SCRIPT_STATUS
+		fi
 
-md5sum $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.tranches \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
+END_VARIANT_RECALIBRATOR_INDEL=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-md5sum $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.R \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
+# write out timing metrics to file
 
-md5sum $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.R.pdf \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
+	echo $PROJECT",J.001,VARIANT_RECALIBRATOR_INDEL,"$HOSTNAME","$START_VARIANT_RECALIBRATOR_INDEL","$END_VARIANT_RECALIBRATOR_INDEL \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+
+# exit with the signal from the program
+
+	exit $SCRIPT_STATUS

@@ -79,6 +79,10 @@
 
 		SUBMIT_STAMP=`date '+%s'`
 
+	# grab email addy
+
+		SEND_TO=`cat $SCRIPT_DIR/../email_lists.txt`
+
 #####################
 # PIPELINE PROGRAMS #
 #####################
@@ -177,14 +181,6 @@
 		~/CGC_PIPELINE_TEMP/SORTED.$MANIFEST_PREFIX.txt /dev/stdin \
 		>| ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt
 	}
-
-# MAKE AN ARRAY FOR EACH SAMPLE
-	## SAMPLE_INFO_ARRAY[0] = PROJECT
-	## SAMPLE_INFO_ARRAY[1] = FAMILY
-	## SAMPLE_INFO_ARRAY[2] = SM_TAG
-		## SAMPLE = SM_TAG
-	## SAMPLE_INFO_ARRAY[3] = BAIT BED FILE
-	## SAMPLE_INFO_ARRAY[4] = TARGET_BED_FILE
 
 	CREATE_SAMPLE_ARRAY ()
 	{
@@ -322,53 +318,136 @@ done
 #### JOINT CALLING AND VQSR ####
 ################################
 
-### Run GenotypeGVCF per Family
-
-	GENOTYPE_GVCF_ALL_CONTROLS ()
+	CREATE_PROJECT_ARRAY ()
 	{
-		echo \
-		qsub \
-			$QSUB_ARGS \
-		-N I.01_GENOTYPE_GVCF"_"$PROJECT \
-			-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".GENOTYPE_GVCF.log" \
-		$SCRIPT_DIR/I.01_GENOTYPE_GVCF.sh \
-			$GATK_3_7_0_CONTAINER \
-			$CORE_PATH \
-			$PROJECT \
-			$REF_GENOME \
-			$DBSNP \
-			$CONTROL_REPO \
-			$SAMPLE_SHEET \
-			$SUBMIT_STAMP
+			SAMPLE_ARRAY=(`awk 'BEGIN {FS="\t"; OFS="\t"} $1=="'$PROJECT'" \
+				{print $1,$12,$18}' \
+					~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+					| sort \
+					| uniq`)
+
+			#  1  Project=the Seq Proj folder name
+
+				PROJECT=${SAMPLE_ARRAY[0]}
+
+			#############################################################################################
+			#  2 SKIP : FCID=flowcell that sample read group was performed on ###########################
+			#  3 SKIP : Lane=lane of flowcell that sample read group was performed on] ##################
+			#  4 SKIP : Index=sample barcode ############################################################
+			#  5 SKIP : Platform=type of sequencing chemistry matching SAM specification ################
+			#  6 SKIP : Library_Name=library group of the sample read group #############################
+			#  7 SKIP : Date=should be the run set up date to match the seq run folder name #############
+			#  8 SKIP : SM_TAG=sample ID ################################################################
+			#  9 SKIP : Center=the center/funding mechanism #############################################
+			# 10 SKIP : Description=Generally we use to denote the sequencer setting (e.g. rapid run) ###
+			# ######### “HiSeq-X”, “HiSeq-4000”, “HiSeq-2500”, “HiSeq-2000”, “NextSeq-500”, or “MiSeq”. #
+			# 11 SKIP : Seq_Exp_ID ######################################################################
+			#############################################################################################
+
+			# 12  Genome_Ref=the reference genome used in the analysis pipeline
+
+				REF_GENOME=${SAMPLE_ARRAY[4]}
+
+			#####################################
+			# 13 SKIP : Operator ################
+			# 14 SKIP : Extra_VCF_Filter_Params #
+			# 15 SKIP : TS_TV_BED_File=
+			# 16 SKIP : Baits_BED_File=RefSeq Select CDS exons plus missing OMIM, plus Twist baits 
+			# 17 SKIP : Targets_BED_File=Whatever the user wants it to be
+			#############################################################
+
+			# 18  KNOWN_SITES_VCF=used to annotate ID field in VCF file. used for VQSR plots
+
+				DBSNP=${SAMPLE_ARRAY[8]}
+
+			##########################################################
+			# 19 SKIP :  19  KNOWN_INDEL_FILES=used for BQSR masking #
+			# 20 SKIP : family that sample belongs to ################
+			# 21 SKIP : MOM ##########################################
+			# 22 SKIP : DAD ##########################################
+			# 23 SKIP : GENDER #######################################
+			# 24 SKIP : PHENOTYPE ####################################
+			##########################################################
 	}
+
+	### Run GenotypeGVCF for all of the controls
+
+		GENOTYPE_GVCF_ALL_CONTROLS ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N I.01_GENOTYPE_GVCF"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".GENOTYPE_GVCF.log" \
+			$SCRIPT_DIR/I.01_GENOTYPE_GVCF.sh \
+				$GATK_3_7_0_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_GENOME \
+				$DBSNP \
+				$CONTROL_REPO \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+	# run the vqsr snp model
+
+		RUN_VQSR_SNP ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N J.01_VARIANT_RECALIBRATOR_SNP"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".VARIANT_RECALIBRATOR_SNP.log" \
+			-hold_jid I.01_GENOTYPE_GVCF"_"$PROJECT \
+			$SCRIPT_DIR/J.01_VARIANT_RECALIBRATOR_SNP.sh \
+				$GATK_3_7_0_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_GENOME \
+				$DBSNP \
+				$HAPMAP \
+				$OMNI_1KG \
+				$HI_CONF_1KG_PHASE1_SNP \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+	# run the vqsr indel model
+
+		RUN_VQSR_INDEL ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N J.02_VARIANT_RECALIBRATOR_INDEL"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".VARIANT_RECALIBRATOR_INDEL.log" \
+			-hold_jid I.01_GENOTYPE_GVCF"_"$PROJECT \
+			$SCRIPT_DIR/J.02_VARIANT_RECALIBRATOR_INDEL.sh \
+				$GATK_3_7_0_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_GENOME \
+				$MILLS_1KG_GOLD_INDEL \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
 
 # RUN STEPS
 
-	GENOTYPE_GVCF_ALL_CONTROLS
-
-# ### Run Variant Recalibrator for the SNP model, this is done in parallel with the INDEL model
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12,$18}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 \
-# | uniq \
-# | awk '{print "qsub","-N","J.01_VARIANT_RECALIBRATOR_SNP_"$1,\
-# "-hold_jid","I.01_GENOTYPE_GVCF_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_RECALIBRATOR_SNP.log",\
-# "'$SCRIPT_DIR'""/J.01_VARIANT_RECALIBRATOR_SNP.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3,"'$HAPMAP'","'$OMNI_1KG'","'$HI_CONF_1KG_PHASE1_SNP'""\n""sleep 3s"}'
-
-# ### Run Variant Recalibrator for the INDEL model, this is done in parallel with the SNP model
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 \
-# | uniq \
-# | awk '{print "qsub","-N","J.02_VARIANT_RECALIBRATOR_INDEL_"$1,\
-# "-hold_jid","I.01_GENOTYPE_GVCF_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_RECALIBRATOR_INDEL.log",\
-# "'$SCRIPT_DIR'""/J.02_VARIANT_RECALIBRATOR_INDEL.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,"'$MILLS_1KG_GOLD_INDEL'""\n""sleep 3s"}'
+for PROJECT in $(awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+		| awk 'BEGIN {FS=","} NR>1 {print $1}' \
+		| sort \
+		| uniq );
+	do
+		GENOTYPE_GVCF_ALL_CONTROLS
+		echo sleep 0.1s
+		RUN_VQSR_SNP
+		echo sleep 0.1s
+		RUN_VQSR_INDEL
+		echo sleep 0.1s
+done
 
 # ### Run Apply Recalbration with the SNP model to the VCF file
 
