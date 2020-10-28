@@ -142,7 +142,7 @@ START_VARIANT_RECALIBRATOR_SNP=`date '+%s'` # capture time process starts for wa
 			exit $SCRIPT_STATUS
 		fi
 
-END_VARIANT_RECALIBRATOR_SNP=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+END_VARIANT_RECALIBRATOR_SNP=`date '+%s'` # capture time process ends for wall clock tracking purposes.
 
 # write out timing metrics to file
 

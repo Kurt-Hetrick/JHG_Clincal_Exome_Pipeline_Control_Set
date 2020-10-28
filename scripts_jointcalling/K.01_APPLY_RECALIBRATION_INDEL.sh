@@ -29,47 +29,25 @@
 
 	PROJECT=$3
 	REF_GENOME=$4
-	MILLS_1KG_GOLD_INDEL=$5
-	$SAMPLE_SHEET=$6
-	$SUBMIT_STAMP=$7
+	SAMPLE_SHEET=$5
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
+	SUBMIT_STAMP=$6
 
-START_VARIANT_RECALIBRATOR_INDEL=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+START_APPLY_RECALIBRATION_INDEL=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
 	# construct command line
 
 		CMD="singularity exec $GATK_3_7_0_CONTAINER java -jar" \
 			CMD=$CMD" /usr/GenomeAnalysisTK.jar" \
-		CMD=$CMD" -T VariantRecalibrator" \
+		CMD=$CMD" -T ApplyRecalibration" \
 			CMD=$CMD" -R $REF_GENOME" \
 			CMD=$CMD" --input:VCF $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.RAW.vcf" \
 			CMD=$CMD" -recalFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.recal" \
 			CMD=$CMD" -tranchesFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.tranches" \
-			CMD=$CMD" -rscriptFile $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.HC.INDEL.R" \
-			CMD=$CMD" -resource:mills,known=true,training=true,truth=true,prior=12.0 $MILLS_1KG_GOLD_INDEL" \
 			CMD=$CMD" -mode INDEL" \
-			CMD=$CMD" --maxGaussians 4" \
-			CMD=$CMD" --disable_auto_index_creation_and_locking_when_reading_rods" \
-			CMD=$CMD" -an QD" \
-			CMD=$CMD" -an MQRankSum" \
-			CMD=$CMD" -an ReadPosRankSum" \
-			CMD=$CMD" -an FS" \
-			CMD=$CMD" -an SOR" \
-			CMD=$CMD" -tranche 100.0" \
-			CMD=$CMD" -tranche 99.9" \
-			CMD=$CMD" -tranche 99.8" \
-			CMD=$CMD" -tranche 99.7" \
-			CMD=$CMD" -tranche 99.6" \
-			CMD=$CMD" -tranche 99.5" \
-			CMD=$CMD" -tranche 99.4" \
-			CMD=$CMD" -tranche 99.3" \
-			CMD=$CMD" -tranche 99.2" \
-			CMD=$CMD" -tranche 99.1" \
-			CMD=$CMD" -tranche 99.0" \
-			CMD=$CMD" -tranche 98.0" \
-			CMD=$CMD" -tranche 97.0" \
-			CMD=$CMD" -tranche 96.0" \
-			CMD=$CMD" -tranche 95.0" \
-			CMD=$CMD" -tranche 90.0"
+			CMD=$CMD" --ts_filter_level 99.9" \
+			CMD=$CMD" -o $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.INDEL.vcf" \
+			CMD=$CMD" --disable_auto_index_creation_and_locking_when_reading_rods"
 
 	# write command line to file and execute the command line
 
@@ -91,11 +69,11 @@ START_VARIANT_RECALIBRATOR_INDEL=`date '+%s'` # capture time process starts for 
 			exit $SCRIPT_STATUS
 		fi
 
-END_VARIANT_RECALIBRATOR_INDEL=`date '+%s'` # capture time process ends for wall clock tracking purposes.
+END_APPLY_RECALIBRATION_INDEL=`date '+%s'` # capture time process ends for wall clock tracking purposes.
 
 # write out timing metrics to file
 
-	echo $PROJECT",J.001,VARIANT_RECALIBRATOR_INDEL,"$HOSTNAME","$START_VARIANT_RECALIBRATOR_INDEL","$END_VARIANT_RECALIBRATOR_INDEL \
+	echo $PROJECT",L.001,APPLY_RECALIBRATION_INDEL,"$HOSTNAME","$START_APPLY_RECALIBRATION_INDEL","$END_APPLY_RECALIBRATION_INDEL \
 	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program

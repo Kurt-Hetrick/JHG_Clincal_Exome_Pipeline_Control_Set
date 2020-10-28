@@ -433,6 +433,44 @@ done
 				$SUBMIT_STAMP
 		}
 
+	# apply the vqsr snp model
+
+		APPLY_VQSR_INDEL ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N K.01_APPLY_RECALIBRATION_INDEL"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".APPLY_RECALIBRATION_INDEL.log" \
+			-hold_jid J.02_VARIANT_RECALIBRATOR_INDEL"_"$PROJECT \
+			$SCRIPT_DIR/K.01_APPLY_RECALIBRATION_INDEL.sh \
+				$GATK_3_7_0_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_GENOME \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+	# apply the vqsr snp model
+
+		APPLY_VQSR_SNP ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N L.01_APPLY_RECALIBRATION_SNP"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".APPLY_RECALIBRATION_SNP.log" \
+			-hold_jid J.01_VARIANT_RECALIBRATOR_SNP"_"$PROJECT,K.01_APPLY_RECALIBRATION_INDEL"_"$PROJECT \
+			$SCRIPT_DIR/L.01_APPLY_RECALIBRATION_SNP.sh \
+				$GATK_3_7_0_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_GENOME \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
 # RUN STEPS
 
 for PROJECT in $(awk 1 $SAMPLE_SHEET \
@@ -447,31 +485,11 @@ for PROJECT in $(awk 1 $SAMPLE_SHEET \
 		echo sleep 0.1s
 		RUN_VQSR_INDEL
 		echo sleep 0.1s
+		APPLY_VQSR_INDEL
+		echo sleep 0.1s
+		APPLY_VQSR_SNP
+		echo sleep 0.1s
 done
-
-# ### Run Apply Recalbration with the SNP model to the VCF file
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 \
-# | uniq \
-# | awk '{print "qsub","-N","K.01_APPLY_RECALIBRATION_SNP_"$1,\
-# "-hold_jid","J.01_VARIANT_RECALIBRATOR_SNP_"$1",""J.02_VARIANT_RECALIBRATOR_INDEL_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$1".APPLY_RECALIBRATION_SNP.log",\
-# "'$SCRIPT_DIR'""/K.01_APPLY_RECALIBRATION_SNP.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
-
-# ### Run Apply Recalibration with the INDEL model to the VCF file.
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 \
-# | uniq \
-# | awk '{print "qsub","-N","L.01_APPLY_RECALIBRATION_INDEL_"$1,\
-# "-hold_jid","K.01_APPLY_RECALIBRATION_SNP_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$1".APPLY_RECALIBRATION_INDEL.log",\
-# "'$SCRIPT_DIR'""/L.01_APPLY_RECALIBRATION_INDEL.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
 # ### Add all possible GATK annotations to the VCF file.
 
