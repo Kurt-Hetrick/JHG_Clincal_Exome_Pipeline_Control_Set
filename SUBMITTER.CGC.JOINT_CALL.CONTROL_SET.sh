@@ -474,6 +474,26 @@ done
 
 	# annotate VCF with 1kg freqs, expanded data annotations, mendelian violations, etc
 
+		GENERATE_VCF_METRICS ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N P.02_MS_VCF_METRICS"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".MS_VCF_METRICS.log" \
+			-hold_jid L.01_APPLY_RECALIBRATION_SNP"_"$PROJECT \
+			$SCRIPT_DIR/P.02_MS_VCF_METRICS.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_DICT \
+				$DBSNP \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+	# annotate VCF with 1kg freqs, expanded data annotations, mendelian violations, etc
+
 		ANNOTATE_VCF ()
 		{
 			echo \
@@ -493,25 +513,24 @@ done
 				$SUBMIT_STAMP
 		}
 
-	# annotate VCF with 1kg freqs, expanded data annotations, mendelian violations, etc
+		# FILTER TO JUST VARIANT SITES FULL SET
 
-		GENERATE_VCF_METRICS ()
-		{
-			echo \
-			qsub \
-				$QSUB_ARGS \
-			-N P.02_MS_VCF_METRICS"_"$PROJECT \
-				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".MS_VCF_METRICS.log" \
-			-hold_jid L.01_APPLY_RECALIBRATION_SNP"_"$PROJECT \
-			$SCRIPT_DIR/P.02_MS_VCF_METRICS.sh \
-				$ALIGNMENT_CONTAINER \
-				$CORE_PATH \
-				$PROJECT \
-				$REF_DICT \
-				$DBSNP \
-				$SAMPLE_SHEET \
-				$SUBMIT_STAMP
-		}
+			ALL_SAMPLES_VARIANTS_ONLY ()
+			{
+				echo \
+				qsub \
+					$QSUB_ARGS \
+				-N S.01_FILTER_ALL_CONTROLS_VARIANTS_ONLY"_"$PROJECT \
+					-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".FILTER_ALL_CONTROLS_VARIANT_ONLY.log" \
+				-hold_jid P.01_VARIANT_ANNOTATOR"_"$PROJECT \
+				$SCRIPT_DIR/S.01_FILTER_ALL_CONTROLS_VARIANT_ONLY.sh \
+					$ALIGNMENT_CONTAINER \
+					$CORE_PATH \
+					$PROJECT \
+					$REF_GENOME \
+					$SAMPLE_SHEET \
+					$SUBMIT_STAMP
+			}
 
 # RUN STEPS
 
@@ -531,31 +550,19 @@ for PROJECT in $(awk 1 $SAMPLE_SHEET \
 		echo sleep 0.1s
 		APPLY_VQSR_SNP
 		echo sleep 0.1s
+		GENERATE_VCF_METRICS
+		echo sleep 0.1s
 		ANNOTATE_VCF
 		echo sleep 0.1s
-		GENERATE_VCF_METRICS
+		ALL_SAMPLES_VARIANTS_ONLY
 		echo sleep 0.1s
 done
 
+################
+##### KEEP #####
+################
 
-
-# ### Add all possible GATK annotations to the VCF file.
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 \
-# | uniq \
-# | awk '{print "qsub","-N","P.01_VARIANT_ANNOTATOR_"$1,\
-# "-hold_jid","L.01_APPLY_RECALIBRATION_INDEL_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$1".VARIANT_ANNOTATOR.log",\
-# "'$SCRIPT_DIR'""/P.01_VARIANT_ANNOTATOR.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'","'$PED_FILE'",$1,$2,"'$PHASE3_1KG_AUTOSOMES'""\n""sleep 3s"}'
-
-# ##### DOING VCF BREAKOUTS #####
-
-# ### SUBSETTING FROM COHORT (FAMILY PLUS CONTROL SET) VCF ###
-
-# # FILTER TO JUST VARIANT SITES
+# # FILTER TO JUST VARIANT SITES FULL SET
 
 # awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 # ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
@@ -567,7 +574,7 @@ done
 # "'$SCRIPT_DIR'""/S.01_FILTER_COHORT_VARIANT_ONLY.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
-# # FILTER TO JUST PASSING VARIANT SITES
+# # FILTER TO JUST PASSING VARIANT SITES FULL SAMPLES SET
 
 # awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
 # ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
@@ -593,6 +600,7 @@ done
 # "'$SCRIPT_DIR'""/S.06_FILTER_TO_SAMPLE_ALL_SITES.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
 
+
 # ## SUBSET TO SAMPLE VARIANTS ONLY 
 
 # awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
@@ -604,6 +612,16 @@ done
 # "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_VARIANTS.log",\
 # "'$SCRIPT_DIR'""/S.07_FILTER_TO_SAMPLE_VARIANTS.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
+
+# ##### DOING VCF BREAKOUTS #####
+
+##################
+##### IGNORE #####
+##################
+
+
+
+
 
 # ## SUBSET TO SAMPLE PASSING VARIANTS
 
