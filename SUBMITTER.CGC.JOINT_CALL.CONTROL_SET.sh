@@ -225,6 +225,7 @@
 			# 12  Genome_Ref=the reference genome used in the analysis pipeline
 
 				REF_GENOME=${SAMPLE_ARRAY[4]}
+					REF_DICT=$(echo $REF_GENOME | sed 's/fasta$/dict/g; s/fa$/dict/g')
 
 			#####################################
 			# 13  Operator: SKIP ################
@@ -433,7 +434,7 @@ done
 				$SUBMIT_STAMP
 		}
 
-	# apply the vqsr snp model
+	# apply the vqsr snp model. use 99.9% cut-off
 
 		APPLY_VQSR_INDEL ()
 		{
@@ -452,7 +453,7 @@ done
 				$SUBMIT_STAMP
 		}
 
-	# apply the vqsr snp model
+	# apply the vqsr snp model. use 99.9% cut-off
 
 		APPLY_VQSR_SNP ()
 		{
@@ -467,6 +468,47 @@ done
 				$CORE_PATH \
 				$PROJECT \
 				$REF_GENOME \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+	# annotate VCF with 1kg freqs, expanded data annotations, mendelian violations, etc
+
+		ANNOTATE_VCF ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N P.01_VARIANT_ANNOTATOR"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".VARIANT_ANNOTATOR.log" \
+			-hold_jid L.01_APPLY_RECALIBRATION_SNP"_"$PROJECT \
+			$SCRIPT_DIR/P.01_VARIANT_ANNOTATOR.sh \
+				$GATK_3_7_0_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_GENOME \
+				$PED_FILE \
+				$PHASE3_1KG_AUTOSOMES \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+	# annotate VCF with 1kg freqs, expanded data annotations, mendelian violations, etc
+
+		GENERATE_VCF_METRICS ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N P.02_MS_VCF_METRICS"_"$PROJECT \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT".MS_VCF_METRICS.log" \
+			-hold_jid L.01_APPLY_RECALIBRATION_SNP"_"$PROJECT \
+			$SCRIPT_DIR/P.02_MS_VCF_METRICS.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_DICT \
+				$DBSNP \
 				$SAMPLE_SHEET \
 				$SUBMIT_STAMP
 		}
@@ -489,7 +531,13 @@ for PROJECT in $(awk 1 $SAMPLE_SHEET \
 		echo sleep 0.1s
 		APPLY_VQSR_SNP
 		echo sleep 0.1s
+		ANNOTATE_VCF
+		echo sleep 0.1s
+		GENERATE_VCF_METRICS
+		echo sleep 0.1s
 done
+
+
 
 # ### Add all possible GATK annotations to the VCF file.
 

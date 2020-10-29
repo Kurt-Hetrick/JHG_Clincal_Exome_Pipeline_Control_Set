@@ -4,10 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-
-# tell sge to submit any of these queue when available
-#$ -q bigdata.q,lemon.q,prod.q,rnd.q,uhoh.q
-
 # tell sge that you are in the users current working directory
 #$ -cwd
 
@@ -21,85 +17,84 @@
 #$ -j y
 
 # export all variables, useful to find out what compute node the program was executed on
-# redirecting stderr/stdout to file as a log.
 
-set
+	set
 
-JAVA_1_8=$1
-GATK_DIR=$2
-CORE_PATH=$3
-PED_FILE=$4
+	echo
 
-PROJECT=$5
-REF_GENOME=$6
-PHASE3_1KG_AUTOSOMES=$7
+# INPUT VARIABLES
 
-START_ADD_MORE_ANNOTATION=`date '+%s'`
+	GATK_3_7_0_CONTAINER=$1
+	CORE_PATH=$2
+	PROJECT=$3
+	REF_GENOME=$4
+	PED_FILE=$5
+	PHASE3_1KG_AUTOSOMES=$6
+	SAMPLE_SHEET=$7
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
+	SUBMIT_STAMP=$8
 
-$JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
--T VariantAnnotator \
--R $REF_GENOME \
---disable_auto_index_creation_and_locking_when_reading_rods \
---annotation AlleleBalance \
---annotation AlleleBalanceBySample \
---annotation AlleleCountBySample \
---annotation GCContent \
---annotation GenotypeSummaries \
---annotation HomopolymerRun \
---annotation InbreedingCoeff \
---annotation MVLikelihoodRatio \
---annotation SampleList \
---annotation TandemRepeatAnnotator \
---annotation VariantType \
---resource:OneKGP $PHASE3_1KG_AUTOSOMES \
---expression OneKGP.AF \
---expression OneKGP.EAS_AF \
---expression OneKGP.AMR_AF \
---expression OneKGP.AFR_AF \
---expression OneKGP.EUR_AF \
---expression OneKGP.SAS_AF \
---resourceAlleleConcordance \
---pedigree $PED_FILE \
---pedigreeValidationType SILENT \
---variant $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.vcf \
--L $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.vcf \
--o $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz
+START_ADD_MORE_ANNOTATION=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
-END_ADD_MORE_ANNOTATION=`date '+%s'`
+	# construct command line
 
-HOSTNAME=`hostname`
+		CMD="singularity exec $GATK_3_7_0_CONTAINER java -jar" \
+			CMD=$CMD" /usr/GenomeAnalysisTK.jar" \
+		CMD=$CMD" -T VariantAnnotator" \
+			CMD=$CMD" -R $REF_GENOME" \
+			CMD=$CMD" --variant $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.vcf" \
+			CMD=$CMD" -o $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz" \
+			CMD=$CMD" -L $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.vcf" \
+			CMD=$CMD" --disable_auto_index_creation_and_locking_when_reading_rods" \
+			CMD=$CMD" --annotation AlleleBalance" \
+			CMD=$CMD" --annotation AlleleBalanceBySample" \
+			CMD=$CMD" --annotation AlleleCountBySample" \
+			CMD=$CMD" --annotation GCContent" \
+			CMD=$CMD" --annotation GenotypeSummaries" \
+			CMD=$CMD" --annotation HomopolymerRun" \
+			CMD=$CMD" --annotation InbreedingCoeff" \
+			CMD=$CMD" --annotation MVLikelihoodRatio" \
+			CMD=$CMD" --annotation SampleList" \
+			CMD=$CMD" --annotation TandemRepeatAnnotator" \
+			CMD=$CMD" --annotation VariantType" \
+			CMD=$CMD" --resource:OneKGP $PHASE3_1KG_AUTOSOMES" \
+			CMD=$CMD" --resourceAlleleConcordance" \
+			CMD=$CMD" --expression OneKGP.AF" \
+			CMD=$CMD" --expression OneKGP.EAS_AF" \
+			CMD=$CMD" --expression OneKGP.AMR_AF" \
+			CMD=$CMD" --expression OneKGP.AFR_AF" \
+			CMD=$CMD" --expression OneKGP.EUR_AF" \
+			CMD=$CMD" --expression OneKGP.SAS_AF" \
+			CMD=$CMD" --pedigree $PED_FILE" \
+			CMD=$CMD" --pedigreeValidationType SILENT"
 
-echo $PROJECT",M.001,ADD_MORE_ANNOTATION,"$HOSTNAME","$START_ADD_MORE_ANNOTATION","$END_ADD_MORE_ANNOTATION \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+	# write command line to file and execute the command line
 
-echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
--T VariantAnnotator \
--R $REF_GENOME \
---disable_auto_index_creation_and_locking_when_reading_rods \
---annotation AlleleBalance \
---annotation AlleleBalanceBySample \
---annotation AlleleCountBySample \
---annotation GCContent \
---annotation GenotypeSummaries \
---annotation HomopolymerRun \
---annotation InbreedingCoeff \
---annotation MVLikelihoodRatio \
---annotation SampleList \
---annotation TandemRepeatAnnotator \
---annotation VariantType \
---resource:OneKGP $PHASE3_1KG_AUTOSOMES \
---expression OneKGP.AF \
---expression OneKGP.EAS_AF \
---expression OneKGP.AMR_AF \
---expression OneKGP.AFR_AF \
---expression OneKGP.EUR_AF \
---expression OneKGP.SAS_AF \
---resourceAlleleConcordance \
---pedigree $PED_FILE \
---pedigreeValidationType SILENT \
---variant $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.vcf \
--L $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.vcf \
--o $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz \
->> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
+		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
+		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
+		echo $CMD | bash
 
-echo >> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
+	# check the exit signal at this point.
+
+		SCRIPT_STATUS=`echo $?`
+
+	# if exit does not equal 0 then exit with whatever the exit signal is at the end.
+	# also write to file that this job failed
+
+		if [ "$SCRIPT_STATUS" -ne 0 ]
+		 then
+			echo $SM_TAG $HOSTNAME $JOB_NAME $USER $SCRIPT_STATUS $SGE_STDERR_PATH \
+			>> $CORE_PATH/$PROJECT/TEMP/$SAMPLE_SHEET_NAME"_"$SUBMIT_STAMP"_ERRORS.txt"
+			exit $SCRIPT_STATUS
+		fi
+
+END_ADD_MORE_ANNOTATION=`date '+%s'` # capture time process ends for wall clock tracking purposes.
+
+# write out timing metrics to file
+
+	echo $PROJECT",M.001,ADD_MORE_ANNOTATION,"$HOSTNAME","$START_ADD_MORE_ANNOTATION","$END_ADD_MORE_ANNOTATION \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+
+# exit with the signal from the program
+
+	exit $SCRIPT_STATUS

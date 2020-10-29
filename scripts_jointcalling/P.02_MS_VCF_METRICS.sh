@@ -28,37 +28,29 @@
 	CORE_PATH=$2
 
 	PROJECT=$3
-	SM_TAG=$4
-	REF_GENOME=$5
+	REF_DICT=$4
+	DBSNP_138_VCF=$5
 	SAMPLE_SHEET=$6
 		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=$7
 
-## --write out bam file with a 4 bin qscore scheme, remove indel Q scores, emit original Q scores
-# have to change the way to specify this jar file eventually. gatk 4 devs are monsters.
-
-START_FINAL_BAM=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+START_MS_VCF_METRICS=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
 	# construct command line
 
 		CMD="singularity exec $ALIGNMENT_CONTAINER java -jar" \
 			CMD=$CMD" /gatk/gatk.jar" \
-		CMD=$CMD" ApplyBQSR" \
-			CMD=$CMD" --add-output-sam-program-record" \
-			CMD=$CMD" --use-original-qualities" \
-			CMD=$CMD" --emit-original-quals" \
-			CMD=$CMD" --reference $REF_GENOME" \
-			CMD=$CMD" --input $CORE_PATH/$PROJECT/TEMP/$SM_TAG".dup.bam"" \
-			CMD=$CMD" --bqsr-recal-file $CORE_PATH/$PROJECT/REPORTS/COUNT_COVARIATES/GATK_REPORT/$SM_TAG"_PERFORM_BQSR.bqsr"" \
-			CMD=$CMD" --static-quantized-quals 10" \
-			CMD=$CMD" --static-quantized-quals 20" \
-			CMD=$CMD" --static-quantized-quals 30" \
-			CMD=$CMD" --output $CORE_PATH/$PROJECT/TEMP/$SM_TAG".bam""
+		CMD=$CMD" CollectVariantCallingMetrics" \
+			CMD=$CMD" --INPUT $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.vcf" \
+			CMD=$CMD" --DBSNP $DBSNP_138_VCF" \
+			CMD=$CMD" --SEQUENCE_DICTIONARY $REF_DICT" \
+			CMD=$CMD" --OUTPUT $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR" \
+			CMD=$CMD" --THREAD_COUNT 6"
 
 	# write command line to file and execute the command line
 
-		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
-		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$SM_TAG"_command_lines.txt"
+		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
+		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
 		echo $CMD | bash
 
 	# check the exit signal at this point.
@@ -75,11 +67,19 @@ START_FINAL_BAM=`date '+%s'` # capture time process starts for wall clock tracki
 			exit $SCRIPT_STATUS
 		fi
 
-END_FINAL_BAM=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+START_MS_VCF_METRICS=`date '+%s'` # capture time process ends for wall clock tracking purposes.
+
+# add text extension to files.
+
+	mv -v $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.variant_calling_detail_metrics \
+	$CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.variant_calling_detail_metrics.txt
+
+	mv -v $CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.variant_calling_summary_metrics \
+	$CORE_PATH/$PROJECT/TEMP/CONTROL_DATA_SET.VQSR.variant_calling_summary_metrics.txt
 
 # write out timing metrics to file
 
-	echo $SM_TAG"_"$PROJECT",E.01,FINAL_BAM,"$HOSTNAME","$START_FINAL_BAM","$END_FINAL_BAM \
+	echo $PROJECT_MS",P01,MS_VCF_METRICS,"$HOSTNAME","$START_MS_VCF_METRICS","$END_MS_VCF_METRICS \
 	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program
