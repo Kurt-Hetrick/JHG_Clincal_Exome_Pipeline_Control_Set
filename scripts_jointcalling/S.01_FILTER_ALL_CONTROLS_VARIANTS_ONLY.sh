@@ -33,7 +33,7 @@
 		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=$6
 
-# Remove non variant sets from full call set
+# Filter to just on all of the variants for all samples
 
 START_FILTER_ALL_CONTROLS_VARIANT_ONLY=`date '+%s'` # capture time process starts for wall clock tracking purposes.
 
@@ -45,7 +45,7 @@ START_FILTER_ALL_CONTROLS_VARIANT_ONLY=`date '+%s'` # capture time process start
 			CMD=$CMD" --reference $REF_GENOME" \
 			CMD=$CMD" --variant $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz" \
 			CMD=$CMD" --output $CORE_PATH/$PROJECT/JOINT_VCF/CONTROLS_DATA_SET.VQSR.ANNOTATED.VARIANT_ONLY.vcf.gz" \
-			CMD=$CMD" --exclude-non-variants"
+			CMD=$CMD' --exclude-non-variants'
 
 	# write command line to file and execute the command line
 

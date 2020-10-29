@@ -33,9 +33,9 @@
 		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
 	SUBMIT_STAMP=$6
 
-# Remove non variant sets from full call set
+# Filter to just on passing variants for all samples
 
-START_FILTER_ALL_CONTROLS_VARIANT_ONLY=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+START_FILTER_ALL_CONTROLS_VARIANT_ONLY_PASS=`date '+%s'` # capture time process starts for wall clock tracking purposes
 
 	# construct command line
 
@@ -44,8 +44,9 @@ START_FILTER_ALL_CONTROLS_VARIANT_ONLY=`date '+%s'` # capture time process start
 		CMD=$CMD" SelectVariants" \
 			CMD=$CMD" --reference $REF_GENOME" \
 			CMD=$CMD" --variant $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz" \
-			CMD=$CMD" --output $CORE_PATH/$PROJECT/JOINT_VCF/CONTROLS_DATA_SET.VQSR.ANNOTATED.VARIANT_ONLY.vcf.gz" \
-			CMD=$CMD" --exclude-non-variants"
+			CMD=$CMD" --output $CORE_PATH/$PROJECT/JOINT_VCF/CONTROLS_DATA_SET.VQSR.ANNOTATED.VARIANT_ONLY_PASS.vcf.gz" \
+			CMD=$CMD" --exclude-non-variants" \
+			CMD=$CMD" --exclude-filtered"
 
 	# write command line to file and execute the command line
 
@@ -67,11 +68,11 @@ START_FILTER_ALL_CONTROLS_VARIANT_ONLY=`date '+%s'` # capture time process start
 			exit $SCRIPT_STATUS
 		fi
 
-END_FILTER_ALL_CONTROLS_VARIANT_ONLY=`date '+%s'` # capture time process ends for wall clock tracking purposes.
+END_FILTER_ALL_CONTROLS_VARIANT_ONLY_PASS=`date '+%s'` # capture time process ends for wall clock tracking purposes.
 
 # write out timing metrics to file
 
-	echo $PROJECT",S.001,FILTER_ALL_CONTROLS_VARIANT_ONLY,"$HOSTNAME","$START_FILTER_ALL_CONTROLS_VARIANT_ONLY","$END_FILTER_ALL_CONTROLS_VARIANT_ONLY \
+	echo $PROJECT",S.001,FILTER_COHORT_VARIANT_ONLY_PASS,"$HOSTNAME","$START_FILTER_COHORT_VARIANT_ONLY_PASS","$END_FILTER_COHORT_VARIANT_ONLY_PASS \
 	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
 
 # exit with the signal from the program
