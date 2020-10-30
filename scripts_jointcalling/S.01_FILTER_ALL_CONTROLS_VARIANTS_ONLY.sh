@@ -45,7 +45,7 @@ START_FILTER_ALL_CONTROLS_VARIANT_ONLY=`date '+%s'` # capture time process start
 			CMD=$CMD" --reference $REF_GENOME" \
 			CMD=$CMD" --variant $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz" \
 			CMD=$CMD" --output $CORE_PATH/$PROJECT/JOINT_VCF/CONTROLS_DATA_SET.VQSR.ANNOTATED.VARIANT_ONLY.vcf.gz" \
-			CMD=$CMD' --exclude-non-variants'
+			CMD=$CMD" --exclude-non-variants"
 
 	# write command line to file and execute the command line
 

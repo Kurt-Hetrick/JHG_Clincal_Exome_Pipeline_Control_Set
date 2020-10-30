@@ -4,9 +4,6 @@
 # tell sge to execute in bash
 #$ -S /bin/bash
 
-# tell sge to submit any of these queue when available
-#$ -q bigdata.q,lemon.q,prod.q,rnd.q,uhoh.q
-
 # tell sge that you are in the users current working directory
 #$ -cwd
 
@@ -20,58 +17,67 @@
 #$ -j y
 
 # export all variables, useful to find out what compute node the program was executed on
-# redirecting stderr/stdout to file as a log.
 
-set
+	set
 
-echo
+	echo
 
-JAVA_1_8=$1
-GATK_DIR=$2
-CORE_PATH=$3
+# INPUT VARIABLES
 
-PROJECT=$4
-SM_TAG=$5
-REF_GENOME=$6
+	ALIGNMENT_CONTAINER=$1
+	CORE_PATH=$2
 
-# Filter to just on all of the variants all
+	PROJECT=$3
+	REF_GENOME=$4
+	SM_TAG=$5
+	SAMPLE_SHEET=$6
+		SAMPLE_SHEET_NAME=$(basename $SAMPLE_SHEET .csv)
+	SUBMIT_STAMP=$7
 
-START_FILTER_TO_SAMPLE_ALL_SITES=`date '+%s'`
+# extract sample including all sites (varant and not variant)
 
-$JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
--T SelectVariants \
---disable_auto_index_creation_and_locking_when_reading_rods \
--R $REF_GENOME \
---keepOriginalAC \
---keepOriginalDP \
---removeUnusedAlternates \
---sample_name $SM_TAG \
---variant $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz \
--o $CORE_PATH/$PROJECT/VCF/FILTERED_ON_BAIT/$SM_TAG".ALL_SITES.vcf.gz"
+START_FILTER_TO_SAMPLE_ALL_SITES=`date '+%s'` # capture time process starts for wall clock tracking purposes
 
-END_FILTER_TO_SAMPLE_ALL_SITES=`date '+%s'`
+	# construct command line
 
-HOSTNAME=`hostname`
+		CMD="singularity exec $ALIGNMENT_CONTAINER java -jar" \
+			CMD=$CMD" /gatk/gatk.jar" \
+		CMD=$CMD" SelectVariants" \
+			CMD=$CMD" --reference $REF_GENOME" \
+			CMD=$CMD" --variant $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz" \
+			CMD=$CMD" --output $CORE_PATH/$PROJECT/VCF/FILTERED_ON_BAIT/$SM_TAG".ALL_SITES.vcf.gz"" \
+			CMD=$CMD" --sample-name $SM_TAG" \
+			CMD=$CMD" --remove-unused-alternates" \
+			CMD=$CMD" --keep-original-ac" \
+			CMD=$CMD" --keep-original-dp"
 
-echo $PROJECT",S.001,FILTER_TO_SAMPLE_ALL_SITES,"$HOSTNAME","$START_FILTER_TO_SAMPLE_ALL_SITES","$END_FILTER_TO_SAMPLE_ALL_SITES \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+	# write command line to file and execute the command line
 
-echo $JAVA_1_8/java -jar $GATK_DIR/GenomeAnalysisTK.jar \
--T SelectVariants \
---disable_auto_index_creation_and_locking_when_reading_rods \
--R $REF_GENOME \
---keepOriginalAC \
---keepOriginalDP \
---removeUnusedAlternates \
---sample_name $SM_TAG \
---variant $CORE_PATH/$PROJECT/JOINT_VCF/CONTROL_DATA_SET.VQSR.ANNOTATED.vcf.gz \
--o $CORE_PATH/$PROJECT/VCF/FILTERED_ON_BAIT/$SM_TAG".ALL_SITES.vcf.gz" \
->> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
+		echo $CMD >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
+		echo >> $CORE_PATH/$PROJECT/COMMAND_LINES/$PROJECT"_command_lines.txt"
+		echo $CMD | bash
 
-echo >> $CORE_PATH/$PROJECT/CONTROL_DATA_SET.COMMAND.LINES.txt
+	# check the exit signal at this point.
 
-md5sum $CORE_PATH/$PROJECT/VCF/FILTERED_ON_BAIT/$SM_TAG".ALL_SITES.vcf.gz" \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
+		SCRIPT_STATUS=`echo $?`
 
-md5sum $CORE_PATH/$PROJECT/VCF/FILTERED_ON_BAIT/$SM_TAG".ALL_SITES.vcf.gz.tbi" \
->> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".CIDR.Analysis.MD5.txt"
+	# if exit does not equal 0 then exit with whatever the exit signal is at the end.
+	# also write to file that this job failed
+
+		if [ "$SCRIPT_STATUS" -ne 0 ]
+		 then
+			echo $SM_TAG $HOSTNAME $JOB_NAME $USER $SCRIPT_STATUS $SGE_STDERR_PATH \
+			>> $CORE_PATH/$PROJECT/TEMP/$SAMPLE_SHEET_NAME"_"$SUBMIT_STAMP"_ERRORS.txt"
+			exit $SCRIPT_STATUS
+		fi
+
+END_FILTER_TO_SAMPLE_ALL_SITES=`date '+%s'` # capture time process ends for wall clock tracking
+
+# write out timing metrics to file
+
+	echo $PROJECT",S.001,FILTER_TO_SAMPLE_ALL_SITES,"$HOSTNAME","$START_FILTER_TO_SAMPLE_ALL_SITES","$END_FILTER_TO_SAMPLE_ALL_SITES \
+	>> $CORE_PATH/$PROJECT/REPORTS/$PROJECT".WALL.CLOCK.TIMES.csv"
+
+# exit with the signal from the program
+
+	exit $SCRIPT_STATUS

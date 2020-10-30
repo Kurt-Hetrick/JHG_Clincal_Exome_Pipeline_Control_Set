@@ -579,36 +579,46 @@ for PROJECT in $(awk 1 $SAMPLE_SHEET \
 		echo sleep 0.1s
 done
 
+################################
+##### PER SAMPLE BREAKOUTS #####
+################################
+
+	# FILTER TO SAMPLE WITH ALL SITES
+
+		FILTER_TO_ALL_SITES_FOR_SAMPLE ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N S.06_FILTER_TO_SAMPLE_ALL_SITES"_"$PROJECT"_"$SM_TAG \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT"_"$SM_TAG".FILTER_TO_ALL_SITES.log" \
+			-hold_jid P.01_VARIANT_ANNOTATOR"_"$PROJECT \
+			$SCRIPT_DIR/S.06_FILTER_TO_SAMPLE_ALL_SITES.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_GENOME \
+				$SM_TAG \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}
+
+for SAMPLE in $(awk 1 $SAMPLE_SHEET \
+		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
+		| awk 'BEGIN {FS=","} NR>1 {print $8}' \
+		| sort \
+		| uniq );
+	do
+		CREATE_SAMPLE_ARRAY
+		FILTER_TO_ALL_SITES_FOR_SAMPLE
+		echo sleep 0.1s
+done
+
 ################
 ##### KEEP #####
 ################
 
-# # FILTER TO JUST PASSING VARIANT SITES FULL SAMPLES SET
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 \
-# | uniq \
-# | awk '{print "qsub","-N","S.02_FILTER_COHORT_VARIANT_ONLY_PASS_"$1,\
-# "-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$1".FILTER_COHORT_VARIANT_ONLY_PASS.log",\
-# "'$SCRIPT_DIR'""/S.02_FILTER_COHORT_VARIANT_ONLY_PASS.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
-
 # ### SUBSETTING TO SAMPLE VCFS ###
-
-# ## SUBSET TO SAMPLE VCF ALL SITES ##
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{print "qsub","-N","S.06_FILTER_TO_SAMPLE_ALL_SITES_"$2"_"$1,\
-# "-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_ALL_SITES.log",\
-# "'$SCRIPT_DIR'""/S.06_FILTER_TO_SAMPLE_ALL_SITES.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
-
 
 # ## SUBSET TO SAMPLE VARIANTS ONLY 
 
@@ -622,15 +632,70 @@ done
 # "'$SCRIPT_DIR'""/S.07_FILTER_TO_SAMPLE_VARIANTS.sh",\
 # "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
 
+# ###################
+# ##### ANNOVAR #####
+# ###################
+
+# ## RUN ANNOVAR
+
+# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+# | sort -k 1,1 -k 2,2 \
+# | uniq \
+# | awk '{print "qsub","-N","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
+# "-hold_jid","S.07_FILTER_TO_SAMPLE_VARIANTS_"$2"_"$1,\
+# "-pe slots 5",\
+# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_ANNOVAR.log",\
+# "'$SCRIPT_DIR'""/S.07-A.01_RUN_ANNOVAR.sh",\
+# "'$JAVA_1_6'","'$CIDRSEQSUITE_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+
+# ## REFORMAT ANNOVAR
+
+# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+# | sort -k 1,1 -k 2,2 \
+# | uniq \
+# | awk '{print "qsub","-N","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$2"_"$1,\
+# "-hold_jid","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
+# "-o","'$CORE_PATH'" "/" $1"/LOGS/"$2"_"$1".REFORMAT_ANNOVAR.log",\
+# "'$SCRIPT_DIR'""/S.07-A.01-A.01_REFORMAT_ANNOVAR.sh",\
+# "'$ANNOVAR_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
+
+# ##########################
+# ##### QC REPORT PREP #####
+# ##########################
+
+# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$20,$8,$21,$22,$23,$24}' \
+# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+# | sort -k 1 -k 2 -k 3 \
+# | uniq \
+# | awk 'BEGIN {FS="\t"}
+# {print "qsub","-N","X.01-QC_REPORT_PREP_"$1"_"$3,\
+# "-hold_jid","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$3"_"$1,\
+# "-o","'$CORE_PATH'/"$1"/LOGS/"$3"_"$1".QC_REPORT_PREP.log",\
+# "'$SCRIPT_DIR'""/X.01-QC_REPORT_PREP.sh",\
+# "'$SAMTOOLS_DIR'","'$CORE_PATH'","'$DATAMASH_DIR'",$1,$2,$3,$4,$5,$6,$7"\n""sleep 30s"}'
+
+# ### END PROJECT TASKS ###
+
+# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
+# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
+# | sort -k 1 -k 2 \
+# | uniq \
+# | $DATAMASH_DIR/datamash -s -g 1 collapse 2 \
+# | awk 'BEGIN {FS="\t"}
+# gsub (/,/,",X.01-QC_REPORT_PREP_"$1"_",$2) \
+# {print "qsub","-N","X.01-X.01-END_PROJECT_TASKS_"$1,\
+# "-hold_jid","X.01-QC_REPORT_PREP_"$1"_"$2,\
+# "-o","'$CORE_PATH'/"$1"/LOGS/"$1".END_PROJECT_TASKS.log",\
+# "'$SCRIPT_DIR'""/X.01-X.01-END_PROJECT_TASKS.sh",\
+# "'$CORE_PATH'","'$DATAMASH_DIR'",$1"\n""sleep 3s"}'
+
 # ##### DOING VCF BREAKOUTS #####
 
 ##################
 ##### IGNORE #####
 ##################
-
-
-
-
 
 # ## SUBSET TO SAMPLE PASSING VARIANTS
 
@@ -884,62 +949,3 @@ done
 # "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES.log",\
 # "'$SCRIPT_DIR'""/S.06-A.01-A.01-A.01_VARIANT_TO_TABLE_TABIX_SAMPLE_ALL_SITES.sh",\
 # "'$TABIX_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 1s"}'
-
-# ###################
-# ##### ANNOVAR #####
-# ###################
-
-# ## RUN ANNOVAR
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1,1 -k 2,2 \
-# | uniq \
-# | awk '{print "qsub","-N","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
-# "-hold_jid","S.07_FILTER_TO_SAMPLE_VARIANTS_"$2"_"$1,\
-# "-pe slots 5",\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_ANNOVAR.log",\
-# "'$SCRIPT_DIR'""/S.07-A.01_RUN_ANNOVAR.sh",\
-# "'$JAVA_1_6'","'$CIDRSEQSUITE_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
-
-# ## REFORMAT ANNOVAR
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1,1 -k 2,2 \
-# | uniq \
-# | awk '{print "qsub","-N","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$2"_"$1,\
-# "-hold_jid","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
-# "-o","'$CORE_PATH'" "/" $1"/LOGS/"$2"_"$1".REFORMAT_ANNOVAR.log",\
-# "'$SCRIPT_DIR'""/S.07-A.01-A.01_REFORMAT_ANNOVAR.sh",\
-# "'$ANNOVAR_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
-
-# ##########################
-# ##### QC REPORT PREP #####
-# ##########################
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$20,$8,$21,$22,$23,$24}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 -k 3 \
-# | uniq \
-# | awk 'BEGIN {FS="\t"}
-# {print "qsub","-N","X.01-QC_REPORT_PREP_"$1"_"$3,\
-# "-hold_jid","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$3"_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$3"_"$1".QC_REPORT_PREP.log",\
-# "'$SCRIPT_DIR'""/X.01-QC_REPORT_PREP.sh",\
-# "'$SAMTOOLS_DIR'","'$CORE_PATH'","'$DATAMASH_DIR'",$1,$2,$3,$4,$5,$6,$7"\n""sleep 30s"}'
-
-# ### END PROJECT TASKS ###
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | $DATAMASH_DIR/datamash -s -g 1 collapse 2 \
-# | awk 'BEGIN {FS="\t"}
-# gsub (/,/,",X.01-QC_REPORT_PREP_"$1"_",$2) \
-# {print "qsub","-N","X.01-X.01-END_PROJECT_TASKS_"$1,\
-# "-hold_jid","X.01-QC_REPORT_PREP_"$1"_"$2,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$1".END_PROJECT_TASKS.log",\
-# "'$SCRIPT_DIR'""/X.01-X.01-END_PROJECT_TASKS.sh",\
-# "'$CORE_PATH'","'$DATAMASH_DIR'",$1"\n""sleep 3s"}'
