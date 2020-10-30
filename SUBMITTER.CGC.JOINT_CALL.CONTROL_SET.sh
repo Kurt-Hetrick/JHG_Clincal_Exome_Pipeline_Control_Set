@@ -603,6 +603,26 @@ done
 				$SUBMIT_STAMP
 		}
 
+	# FILTER TO SAMPLE WITH ALL VARIANT SITES
+
+		FILTER_TO_ALL_VARIANT_SITES_FOR_SAMPLE ()
+		{
+			echo \
+			qsub \
+				$QSUB_ARGS \
+			-N S.07_FILTER_TO_SAMPLE_ALL_VARIANTS"_"$PROJECT"_"$SM_TAG \
+				-o $CORE_PATH/$PROJECT/LOGS/$PROJECT"_"$SM_TAG".FILTER_TO_ALL_VARIANTS.log" \
+			-hold_jid P.01_VARIANT_ANNOTATOR"_"$PROJECT \
+			$SCRIPT_DIR/S.07_FILTER_TO_SAMPLE_ALL_VARIANTS.sh \
+				$ALIGNMENT_CONTAINER \
+				$CORE_PATH \
+				$PROJECT \
+				$REF_GENOME \
+				$SM_TAG \
+				$SAMPLE_SHEET \
+				$SUBMIT_STAMP
+		}	
+
 for SAMPLE in $(awk 1 $SAMPLE_SHEET \
 		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
 		| awk 'BEGIN {FS=","} NR>1 {print $8}' \
@@ -611,6 +631,8 @@ for SAMPLE in $(awk 1 $SAMPLE_SHEET \
 	do
 		CREATE_SAMPLE_ARRAY
 		FILTER_TO_ALL_SITES_FOR_SAMPLE
+		echo sleep 0.1s
+		FILTER_TO_ALL_VARIANT_SITES_FOR_SAMPLE
 		echo sleep 0.1s
 done
 
