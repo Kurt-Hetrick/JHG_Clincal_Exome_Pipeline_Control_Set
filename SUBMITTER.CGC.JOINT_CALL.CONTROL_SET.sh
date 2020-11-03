@@ -132,7 +132,8 @@
 		PLINK2_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/PLINK2"
 		KING_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/KING/Linux-king19"
 
-		JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
+		# JAVA_1_6="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/jre1.6.0_25/bin"
+		CIDRSEQSUITE_ANNOVAR_JAVA="/mnt/linuxtools/JAVA/jdk1.8.0_73/bin"
 		CIDRSEQSUITE_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/CIDRSeqSuiteSoftware_Version_4_0/"
 		ANNOVAR_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PROGRAMS/ANNOVAR/2013_09_11"
 
@@ -151,6 +152,7 @@
 	MILLS_1KG_GOLD_INDEL="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Mills_and_1000G_gold_standard.indels.b37.vcf"
 	PHASE3_1KG_AUTOSOMES="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.vcf.gz"
 	DBSNP_129="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/dbsnp_138.b37.excluding_sites_after_129.vcf"
+	CIDRSEQSUITE_PROPS_DIR="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES"
 
 #################################
 ##### MAKE A DIRECTORY TREE #####
@@ -621,7 +623,47 @@ done
 				$SM_TAG \
 				$SAMPLE_SHEET \
 				$SUBMIT_STAMP
-		}	
+		}
+
+		# RUN ANNOVAR
+
+			RUN_ANNOVAR ()
+			{
+				echo \
+				qsub \
+					$QSUB_ARGS \
+					-l excl=true \
+					-R y \
+				-N S.07-A.01_RUN_ANNOVAR"_"$PROJECT"_"$SM_TAG \
+					-o $CORE_PATH/$PROJECT/LOGS/$PROJECT"_"$SM_TAG".RUN_ANNOVAR.log" \
+				-hold_jid S.07_FILTER_TO_SAMPLE_ALL_VARIANTS"_"$PROJECT"_"$SM_TAG \
+				$SCRIPT_DIR/S.07-A.01_RUN_ANNOVAR.sh \
+					$CIDRSEQSUITE_ANNOVAR_JAVA \
+					$CIDRSEQSUITE_DIR \
+					$CIDRSEQSUITE_PROPS_DIR \
+					$CORE_PATH \
+					$PROJECT \
+					$SM_TAG \
+					$SAMPLE_SHEET \
+					$SUBMIT_STAMP
+			}
+
+			# REFORMAT ANNOVAR
+
+				REFORMAT_ANNOVAR ()
+				{
+					echo \
+					qsub \
+						$QSUB_ARGS \
+					-N S.07-A.01-A.01_REFORMAT_ANNOVAR"_"$PROJECT"_"$SM_TAG \
+						-o $CORE_PATH/$PROJECT/LOGS/$PROJECT"_"$SM_TAG".REFORMAT_ANNOVAR.log" \
+					-hold_jid S.07-A.01_RUN_ANNOVAR"_"$PROJECT"_"$SM_TAG \
+					$SCRIPT_DIR/S.07-A.01-A.01_REFORMAT_ANNOVAR.sh \
+						$ANNOVAR_DIR \
+						$CORE_PATH \
+						$PROJECT \
+						$SM_TAG
+				}
 
 for SAMPLE in $(awk 1 $SAMPLE_SHEET \
 		| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
@@ -634,54 +676,11 @@ for SAMPLE in $(awk 1 $SAMPLE_SHEET \
 		echo sleep 0.1s
 		FILTER_TO_ALL_VARIANT_SITES_FOR_SAMPLE
 		echo sleep 0.1s
+		RUN_ANNOVAR
+		echo sleep 0.1s
+		REFORMAT_ANNOVAR
+		echo sleep 0.1s
 done
-
-################
-##### KEEP #####
-################
-
-# ### SUBSETTING TO SAMPLE VCFS ###
-
-# ## SUBSET TO SAMPLE VARIANTS ONLY 
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8,$12}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1 -k 2 \
-# | uniq \
-# | awk '{print "qsub","-N","S.07_FILTER_TO_SAMPLE_VARIANTS_"$2"_"$1,\
-# "-hold_jid","P.01_VARIANT_ANNOTATOR_"$1,\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".FILTER_TO_VARIANTS.log",\
-# "'$SCRIPT_DIR'""/S.07_FILTER_TO_SAMPLE_VARIANTS.sh",\
-# "'$JAVA_1_8'","'$GATK_DIR'","'$CORE_PATH'",$1,$2,$3"\n""sleep 3s"}'
-
-# ###################
-# ##### ANNOVAR #####
-# ###################
-
-# ## RUN ANNOVAR
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1,1 -k 2,2 \
-# | uniq \
-# | awk '{print "qsub","-N","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
-# "-hold_jid","S.07_FILTER_TO_SAMPLE_VARIANTS_"$2"_"$1,\
-# "-pe slots 5",\
-# "-o","'$CORE_PATH'/"$1"/LOGS/"$2"_"$1".RUN_ANNOVAR.log",\
-# "'$SCRIPT_DIR'""/S.07-A.01_RUN_ANNOVAR.sh",\
-# "'$JAVA_1_6'","'$CIDRSEQSUITE_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
-
-# ## REFORMAT ANNOVAR
-
-# awk 'BEGIN {FS="\t"; OFS="\t"} {print $1,$8}' \
-# ~/CGC_PIPELINE_TEMP/$MANIFEST_PREFIX.$PED_PREFIX.join.txt \
-# | sort -k 1,1 -k 2,2 \
-# | uniq \
-# | awk '{print "qsub","-N","S.07-A.01-A.01_REFORMAT_ANNOVAR_"$2"_"$1,\
-# "-hold_jid","S.07-A.01_RUN_ANNOVAR_"$2"_"$1,\
-# "-o","'$CORE_PATH'" "/" $1"/LOGS/"$2"_"$1".REFORMAT_ANNOVAR.log",\
-# "'$SCRIPT_DIR'""/S.07-A.01-A.01_REFORMAT_ANNOVAR.sh",\
-# "'$ANNOVAR_DIR'","'$CORE_PATH'",$1,$2"\n""sleep 3s"}'
 
 # ##########################
 # ##### QC REPORT PREP #####
