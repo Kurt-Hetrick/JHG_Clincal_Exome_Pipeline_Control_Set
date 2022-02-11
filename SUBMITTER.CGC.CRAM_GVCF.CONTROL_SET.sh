@@ -106,7 +106,7 @@
 # PIPELINE PROGRAMS #
 #####################
 
-	ALIGNMENT_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/ddl_ce_control_align-0.0.3.simg"
+	ALIGNMENT_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/containers/ddl_ce_control_align-0.0.4.simg"
 	# contains the following software and is on Ubuntu 16.04.5 LTS
 		# gatk 4.0.11.0 (base image). also contains the following.
 			# Python 3.6.2 :: Continuum Analytics, Inc.
@@ -137,7 +137,7 @@
 			# tabix 1.10
 			# bcftools 1.10.2
 
-	GATK_3_7_0_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/images/gatk3-3.7-0.simg"
+	GATK_3_7_0_CONTAINER="/mnt/clinical/ddl/NGS/CIDRSeqSuite/containers/gatk3-3.7-0.simg"
 	# singularity pull docker://broadinstitute/gatk3:3.7-0
 	# used for generating the depth of coverage reports.
 		# comes with R 3.1.1 with appropriate packages needed to create gatk pdf output
