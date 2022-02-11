@@ -109,7 +109,7 @@ START_HAPLOTYPE_CALLER_GATHER=`date '+%s'` # capture time process starts for wal
 			exit $SCRIPT_STATUS
 		fi
 
-END_HAPLOTYPE_CALLER_GATHER=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+END_HAPLOTYPE_CALLER_GATHER=`date '+%s'` # capture time process stops for wall clock tracking purposes.
 
 # write out timing metrics to file
 

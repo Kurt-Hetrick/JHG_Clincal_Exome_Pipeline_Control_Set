@@ -151,7 +151,7 @@
 	GENE_LIST="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/RefSeqGene.GRCh37.rCRS.MT.bed"
 		# md5 dec069c279625cfb110c2e4c5480e036
 	VERIFY_VCF="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/Omni25_genotypes_1525_samples_v2.b37.PASS.ALL.sites.vcf"
-	CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINES/TWIST/JHGenomics_CGC_Clinical_Exome_Control_Set/GRCh37_RefSeqSelect_OMIM_DDL_CDS_exon_primary_assembly_NoYpar_HGNC_annotated.bed"
+	CODING_BED="/mnt/clinical/ddl/NGS/Exome_Resources/BED_FILES_PHASE_2/GRCh37_Mane-RefSeqSelect_OMIM_CDS_exon_primary_assembly_HGNC_annotated.bed"
 	CYTOBAND_BED="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/GRCh37.Cytobands.bed"
 	HAPMAP="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/hapmap_3.3.b37.vcf"
 	OMNI_1KG="/mnt/clinical/ddl/NGS/Exome_Resources/PIPELINE_FILES/1000G_omni2.5.b37.vcf"
@@ -504,6 +504,13 @@ done
 	# I want to clean this up eventually and get away from using awk to print the qsub line #
 	#########################################################################################
 
+		# 1. PROJECT
+		# 2. SM_TAG
+		# 3. FCID_LANE_INDEX
+		# 4. FCID_LANE_INDEX.bam
+		# 5. SM_TAG
+		# 6. DESCRIPTION (INSTRUMENT MODEL)
+
 		awk 1 $SAMPLE_SHEET \
 			| sed 's/\r//g; /^$/d; /^[[:space:]]*$/d; /^,/d' \
 			| awk 'BEGIN {FS=","; OFS="\t"} NR>1 {print $1,$8,$2"_"$3"_"$4,$2"_"$3"_"$4".bam",$8,$10}' \
@@ -642,9 +649,9 @@ done
 				$SUBMIT_STAMP
 		}
 
-	# ##########################################################################################
-	# # index the cram file and copy it so that there are both *crai and cram.crai *extensions #
-	# ##########################################################################################
+	##########################################################################################
+	# index the cram file and copy it so that there are both *crai and cram.crai *extensions #
+	##########################################################################################
 
 		INDEX_CRAM ()
 		{
@@ -680,6 +687,7 @@ for SAMPLE in $(awk 1 $SAMPLE_SHEET \
 		BAM_TO_CRAM
 		echo sleep 0.1s
 		INDEX_CRAM
+		echo sleep 0.1s
 done
 
 ########################################################################################

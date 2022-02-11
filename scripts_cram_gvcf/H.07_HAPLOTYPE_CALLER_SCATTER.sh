@@ -81,7 +81,7 @@ START_HAPLOTYPE_CALLER=`date '+%s'` # capture time process starts for wall clock
 		CMD=$CMD" --emitDroppedReads" \
 		CMD=$CMD" -o $CORE_PATH/$PROJECT/TEMP/$SM_TAG"."$CHROMOSOME".g.vcf.gz""
 
-END_HAPLOTYPE_CALLER=`date '+%s'` # capture time process starts for wall clock tracking purposes.
+END_HAPLOTYPE_CALLER=`date '+%s'` # capture time process stops for wall clock tracking purposes.
 
 # write command line to file and execute the command line
 
